@@ -1,0 +1,131 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- EDI attachment search filter -->
+    <record id="document_attachments_search" model="ir.ui.view">
+      <field name="name">edi.document.attachment.search</field>
+      <field name="model">ir.attachment</field>
+      <field name="inherit_id" ref="base.view_attachment_search"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+
+	<!-- Include resource name in default search -->
+	<xpath expr="//field[@name='name']" position="attributes">
+	  <attribute name="filter_domain">
+	    ['|','|',('name','ilike',self),
+		     ('datas_fname','ilike',self),
+		     ('res_name','ilike',self)]
+	  </attribute>
+	</xpath>
+
+	<!-- Allow for searching by content -->
+        <xpath expr="//field[@name='name']" position="after">
+          <field name="index_content" string="Content"/>
+        </xpath>
+
+      </field>
+    </record>
+
+    <!-- EDI attachment tree view -->
+    <record id="document_attachments_tree" model="ir.ui.view">
+      <field name="name">edi.document.attachment.tree</field>
+      <field name="model">ir.attachment</field>
+      <field name="inherit_id" ref="base.view_attachment_tree"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+
+	<!-- Prepend resource name -->
+	<xpath expr="//field[@name='name']" position="before">
+	  <field name="res_name" string="Document"/>
+	</xpath>
+
+	<!-- Hide internal fields -->
+	<xpath expr="//field[@name='res_model']" position="attributes">
+	  <attribute name="invisible">1</attribute>
+	</xpath>
+	<xpath expr="//field[@name='res_field']" position="attributes">
+	  <attribute name="invisible">1</attribute>
+	</xpath>
+	<xpath expr="//field[@name='res_id']" position="attributes">
+	  <attribute name="invisible">1</attribute>
+	</xpath>
+
+      </field>
+    </record>
+
+    <!-- EDI attachment form view -->
+    <record id="document_attachments_form" model="ir.ui.view">
+      <field name="name">edi.document.attachment.form</field>
+      <field name="model">ir.attachment</field>
+      <field name="inherit_id" ref="base.view_attachment_form"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+
+	<!-- Show "Attached To" group (including resource name) -->
+	<xpath expr="//field[@name='res_name']/ancestor::group[1]"
+	       position="attributes">
+	  <attribute name="groups"/>
+	</xpath>
+
+	<!-- Hide internal fields -->
+	<xpath expr="//field[@name='res_model']" position="attributes">
+	  <attribute name="invisible">1</attribute>
+	</xpath>
+	<xpath expr="//field[@name='res_field']" position="attributes">
+	  <attribute name="invisible">1</attribute>
+	</xpath>
+	<xpath expr="//field[@name='res_id']" position="attributes">
+	  <attribute name="invisible">1</attribute>
+	</xpath>
+	<xpath expr="//field[@name='public']" position="attributes">
+	  <attribute name="invisible">1</attribute>
+	</xpath>
+
+	<!-- Show "History" group -->
+	<xpath expr="//field[@name='create_uid']/ancestor::group[1]"
+	       position="attributes">
+	  <attribute name="groups"/>
+	</xpath>
+
+	<!-- Show "Indexed Content" group -->
+	<xpath expr="//field[@name='index_content']/ancestor::group[1]"
+	       position="attributes">
+	  <attribute name="groups"/>
+	</xpath>
+
+      </field>
+    </record>
+
+    <!-- EDI attachment action window -->
+    <record id="document_attachments_action" model="ir.actions.act_window">
+      <field name="name">EDI Attachments</field>
+      <field name="res_model">ir.attachment</field>
+      <field name="view_type">form</field>
+      <field name="view_mode">tree,form</field>
+      <field name="view_id" ref="document_attachments_tree"/>
+      <field name="search_view_id" ref="document_attachments_search"/>
+      <field name="domain">
+	[('res_model','=like','edi.document%'),
+	 ('res_field','!=',False)]
+      </field>
+      <field name="context">{'create': False}</field>
+      <field name="help" type="html">
+        <p>
+          No attachments yet.
+        </p>
+	<p>
+	  Attachments are used to store input and output data for EDI
+	  documents.  For example, an attachment could be a Product
+	  Master Data file in a custom CSV format.
+        </p>
+      </field>
+    </record>
+
+    <!-- EDI attachment menu item -->
+    <menuitem id="document_attachments_menu" name="Attachments"
+	      action="document_attachments_action"
+	      parent="document_menu" sequence="20"/>
+
+  </data>
+</odoo>

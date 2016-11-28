@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<templates>
+
+  <!-- Attachment audit information template -->
+  <t t-name="edi.ChatThread.AttachmentAudit">
+    <div>
+      <table class="table table-condensed">
+	<tr>
+	  <th>Name</th>
+	  <th>Size</th>
+	  <th>Checksum</th>
+	</tr>
+	<t t-foreach="message.edi_attachment_audit_ids" t-as="value">
+	  <tr>
+	    <td><span t-esc="value.datas_fname"/></td>
+	    <td><span t-esc="value.file_size"/></td>
+	    <td><span t-esc="value.checksum"/></td>
+	  </tr>
+	</t>
+      </table>
+    </div>
+  </t>
+
+  <!-- Add attachment audit information to mail message -->
+  <t t-extend="mail.ChatThread.Message">
+    <t t-jquery="div > div:has(.o_mail_info)" t-operation="append">
+      <t t-if="message.edi_attachment_audit_ids">
+	<t t-call="edi.ChatThread.AttachmentAudit"/>
+      </t>
+    </t>
+  </t>
+
+</templates>
