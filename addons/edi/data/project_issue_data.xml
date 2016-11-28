@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<odoo>
+  <data noupdate="1">
+
+    <!-- Create "New" issue stage -->
+    <record id="task_type_new" model="project.task.type">
+      <field name="name">New</field>
+      <field name="sequence" eval="10"/>
+      <field name="fold" eval="False"/>
+    </record>
+
+    <!-- Create "Closed" issue status -->
+    <record id="task_type_closed" model="project.task.type">
+      <field name="name">Closed</field>
+      <field name="sequence" eval="50"/>
+      <field name="fold" eval="True"/>
+    </record>
+
+    <!-- Create "EDI" project -->
+    <record id="project_default" model="project.project">
+      <field name="name">EDI</field>
+      <field name="use_issues" eval="True"/>
+      <field name="use_edi_fields" eval="True"/>
+      <field name="type_ids" eval="[(6,0,[ref('task_type_new'),
+					  ref('task_type_closed')])]"/>
+    </record>
+    <!-- Update project to disable use of tasks.  For some convoluted
+	 reason, this does not work at the point of project creation.
+    -->
+    <record id="project_default" model="project.project">
+      <field name="use_tasks" eval="False"/>
+    </record>
+
+  </data>
+</odoo>

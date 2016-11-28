@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- Top-level menu -->
+    <menuitem name="EDI" id="root_menu" sequence="60"/>
+
+    <!-- Documents menu -->
+    <menuitem name="Documents" id="document_menu" parent="root_menu"
+	      sequence="10"/>
+
+    <!-- Records menu -->
+    <menuitem name="Records" id="record_menu" parent="root_menu"
+	      sequence="20"/>
+
+    <!-- Communications menu -->
+    <menuitem name="Communications" id="communication_menu" parent="root_menu"
+	      sequence="30"/>
+
+    <!-- Configuration menu -->
+    <menuitem name="Configuration" id="config_menu" parent="root_menu"
+	      sequence="40"/>
+
+  </data>
+</odoo>

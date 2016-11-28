@@ -1,0 +1,215 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- Form view -->
+    <record id="document_form" model="ir.ui.view">
+      <field name="name">edi.document.form</field>
+      <field name="model">edi.document</field>
+      <field name="arch" type="xml">
+	<form string="EDI Document">
+	  <header>
+	    <button name="action_prepare" type="object" string="Prepare"
+		    states="draft" class="oe_highlight"/>
+	    <button name="action_execute" type="object" string="Execute"
+		    states="prep" class="oe_highlight"/>
+	    <button name="action_unprepare" type="object" string="Unprepare"
+		    states="prep"/>
+	    <button name="action_cancel" type="object" string="Cancel"
+		    class="btn-danger" confirm="Cancel this document?"
+		    states="draft,prep"/>
+	    <button name="action_close_issues" type="object"
+		    string="Close All Issues" class="btn-danger"
+		    confirm="Close all issues associated with this document?"
+		    attrs="{'invisible':[('issue_count','=',0),
+					 ('rel_issue_count','=',0)]}"/>
+	    <field name="state" widget="statusbar"
+		   statusbar_visible="draft,prep,done"/>
+	  </header>
+	  <sheet>
+	    <div name="button_box" class="oe_button_box">
+	      <div>
+		<button name="action_view_inputs" type="object"
+			class="oe_stat_button" icon="fa-paperclip">
+		  <field name="input_count" widget="statinfo"
+			 string="Inputs"/>
+		</button>
+		<button name="action_view_outputs" type="object"
+			class="oe_stat_button" icon="fa-paperclip">
+		  <field name="output_count" widget="statinfo"
+			 string="Outputs"/>
+		</button>
+	      </div>
+	      <div>
+		<button name="action_view_issues" type="object"
+			class="oe_stat_button" icon="fa-bug"
+			attrs="{'invisible':[('issue_count','=',0),
+					     ('rel_issue_count','=',0)]}">
+		  <div class="o_form_field o_stat_info">
+		    <span class="o_stat_value">
+		      <field name="issue_count" widget="statinfo" nolabel="1"/>
+		      <span attrs="{'invisible':[('rel_issue_count','=',0)]}">
+			+
+			<field name="rel_issue_count" widget="statinfo"
+			       nolabel="1"/>
+		      </span>
+		    </span>
+		    <span class="o_stat_text">Issues</span>
+		  </div>
+		</button>
+	      </div>
+	    </div>
+	    <div class="oe_title">
+	      <label for="name" class="oe_edit_only"/>
+	      <h1>
+		<field name="name" placeholder="e.g. PMD00001"/>
+	      </h1>
+	    </div>
+	    <group>
+	      <group name="basic">
+		<field name="doc_type_id"
+		       attrs="{'readonly': [('create_date','!=',False)]}"/>
+		<field name="gateway_id"/>
+		<field name="transfer_id"/>
+	      </group>
+	      <group name="history">
+		<field name="create_date" readonly="1"/>
+		<field name="prepare_date"/>
+		<field name="execute_date"/>
+	      </group>
+	    </group>
+	    <group name="info">
+	      <field name="note"/>
+	    </group>
+	    <notebook name="records"/>
+	  </sheet>
+	  <div class="oe_chatter">
+            <field name="message_follower_ids" widget="mail_followers"/>
+            <field name="message_ids" widget="mail_thread"/>
+          </div>
+	</form>
+      </field>
+    </record>
+
+    <!-- Tree view -->
+    <record id="document_tree" model="ir.ui.view">
+      <field name="name">edi.document.tree</field>
+      <field name="model">edi.document</field>
+      <field name="arch" type="xml">
+	<tree string="EDI Documents" default_order="id desc"
+	      decoration-info="state == 'draft'"
+	      decoration-muted="state == 'cancel'"
+	      decoration-danger="issue_count">
+	  <field name="name"/>
+	  <field name="doc_type_id"/>
+	  <field name="gateway_id"/>
+	  <field name="transfer_id"/>
+	  <field name="state"/>
+	  <field name="issue_count"/>
+	  <field name="create_date"/>
+	  <field name="prepare_date"/>
+	  <field name="execute_date"/>
+	</tree>
+      </field>
+    </record>
+
+    <!-- Search filter -->
+    <record id="document_search" model="ir.ui.view">
+      <field name="name">edi.document.search</field>
+      <field name="model">edi.document</field>
+      <field name="arch" type="xml">
+	<search string="Search EDI Document">
+	  <field name="name"/>
+	  <field name="doc_type_id"/>
+	  <field name="gateway_id"/>
+	  <field name="transfer_id"/>
+	  <field name="input_ids"/>
+	  <field name="output_ids"/>
+	  <field name="state"/>
+	  <group>
+	    <filter name="issues" string="Has Issues"
+		    domain="[('issue_count', '!=', 0)]"/>
+	    <filter name="incomplete" string="Incomplete"
+		    domain="[('state', 'in', ['draft','prep'])]"/>
+	  </group>
+	  <group string="Group By">
+	    <filter name="by_doc_type_id" string="Document Type" domain="[]"
+		    context="{'group_by': 'doc_type_id'}"/>
+	    <filter name="by_state" string="Status" domain="[]"
+		    context="{'group_by': 'state'}"/>
+	    <filter name="by_gateway_id" string="Gateway" domain="[]"
+		    context="{'group_by': 'gateway_id'}"/>
+	    <filter name="by_transfer_id" string="Transfer" domain="[]"
+		    context="{'group_by': 'transfer_id'}"/>
+	  </group>
+	</search>
+      </field>
+    </record>
+
+    <!-- Kanban view -->
+    <record id="document_kanban" model="ir.ui.view">
+      <field name="name">edi.document.kanban</field>
+      <field name="model">edi.document</field>
+      <field name="arch" type="xml">
+	<kanban default_order="id desc">
+	  <templates>
+	    <t t-name="kanban-box">
+	      <div class="oe_kanban_card oe_kanban_global_click">
+		<div class="row">
+		  <div class="col-xs-6">
+		    <strong><field name="name"/></strong>
+		  </div>
+		  <div class="col-xs-6">
+		    <span class="pull-right text-right">
+		      <field name="state"
+			     widget="kanban_label_selection"
+			     options="{'classes': {'draft': 'default',
+						   'cancel': 'danger',
+						   'done': 'success'}}"/>
+		      <div t-if="record.issue_count.raw_value"
+			   class="label label-warning">
+			<field name="issue_count"/>
+		      </div>
+		    </span>
+		  </div>
+		</div>
+		<div class="row text-muted">
+		  <div class="col-xs-12">
+		    <div><field name="doc_type_id"/></div>
+		    <div><field name="create_date"/></div>
+		  </div>
+		</div>
+	      </div>
+	    </t>
+	  </templates>
+	</kanban>
+      </field>
+    </record>
+
+    <!-- Action window -->
+    <record id="document_action" model="ir.actions.act_window">
+      <field name="name">EDI Documents</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.document</field>
+      <field name="view_type">form</field>
+      <field name="view_mode">tree,kanban,form</field>
+      <field name="view_id" ref="document_kanban"/>
+      <field name="search_view_id" ref="document_search"/>
+      <field name="help" type="html">
+	<p class="oe_view_nocontent_create">
+	  Click to create an EDI Document.
+	</p>
+	<p>
+	  Electronic Data Interchange (EDI) documents are used to
+	  automate the process of transferring data such as product
+	  definitions and purchase orders between systems.
+	</p>
+      </field>
+    </record>
+
+    <!-- Menu item -->
+    <menuitem id="document_document_menu" name="Documents"
+	      action="document_action" parent="document_menu" sequence="10"/>
+
+  </data>
+</odoo>

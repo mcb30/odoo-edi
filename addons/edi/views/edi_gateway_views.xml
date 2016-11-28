@@ -1,0 +1,185 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- Form view -->
+    <record id="gateway_form" model="ir.ui.view">
+      <field name="name">edi.gateway.form</field>
+      <field name="model">edi.gateway</field>
+      <field name="arch" type="xml">
+	<form string="EDI Gateway">
+	  <header>
+	    <field name="can_initiate" invisible="1"/>
+	    <button name="action_transfer" type="object"
+		    string="Transfer" class="oe_highlight"
+		    attrs="{'invisible':[('can_initiate','=',False)]}"/>
+	    <button name="action_test" type="object"
+		    string="Test Connection"
+		    attrs="{'invisible':[('can_initiate','=',False)]}"/>
+	    <button name="action_transfer" type="object"
+		    string="Receive Only"
+		    context="{'default_allow_process': False,
+			      'default_allow_send': False}"
+		    attrs="{'invisible':[('can_initiate','=',False)]}"/>
+	    <button name="action_transfer" type="object"
+		    string="Send Only"
+		    context="{'default_allow_receive': False,
+			      'default_allow_process': False}"
+		    attrs="{'invisible':[('can_initiate','=',False)]}"/>
+	    <button name="action_close_issues" type="object"
+		    string="Close All Issues" class="btn-danger"
+		    confirm="Close all issues associated with this gateway?"
+		    attrs="{'invisible':[('issue_count','=',0),
+					 ('rel_issue_count','=',0)]}"/>
+	  </header>
+	  <sheet>
+	    <div name="button_box" class="oe_button_box">
+	      <div>
+		<button name="action_view_paths" type="object"
+			class="oe_stat_button" icon="fa-folder-open">
+		  <field name="path_count" widget="statinfo" string="Paths"/>
+		</button>
+		<button name="action_view_cron" type="object"
+			class="oe_stat_button" icon="fa-clock-o">
+		  <field name="cron_count" widget="statinfo"
+			 string="Schedules"/>
+		</button>
+	      </div>
+	      <div>
+		<button name="action_view_transfers" type="object"
+			class="oe_stat_button" icon="fa-exchange">
+		  <field name="transfer_count" widget="statinfo"
+			 string="Transfers"/>
+		</button>
+		<button name="action_view_docs" type="object"
+			class="oe_stat_button" icon="fa-file-text-o">
+		  <field name="doc_count" widget="statinfo"
+			 string="Documents"/>
+		</button>
+	      </div>
+	      <div>
+		<button name="action_view_issues" type="object"
+			class="oe_stat_button" icon="fa-bug"
+			attrs="{'invisible':[('issue_count','=',0),
+					     ('rel_issue_count','=',0)]}">
+		  <div class="o_form_field o_stat_info">
+		    <span class="o_stat_value">
+		      <field name="issue_count" widget="statinfo" nolabel="1"/>
+		      <span attrs="{'invisible':[('rel_issue_count','=',0)]}">
+			+
+			<field name="rel_issue_count" widget="statinfo"
+			       nolabel="1"/>
+		      </span>
+		    </span>
+		  <span class="o_stat_text">Issues</span>
+		  </div>
+		</button>
+	      </div>
+	    </div>
+	    <div class="oe_title">
+	      <label for="name" class="oe_edit_only"/>
+	      <h1>
+		<field name="name" placeholder="e.g. FTP Server"/>
+	      </h1>
+	    </div>
+	    <group>
+	      <group name="conn" string="Connection">
+		<field name="model_id"/>
+		<field name="server"/>
+	      </group>
+	      <group name="history" string="History">
+		<field name="project_id"/>
+		<field name="last_transfer_id"/>
+	      </group>
+	    </group>
+	    <group>
+	      <group name="auth" string="Authentication">
+		<field name="username"/>
+		<field name="password" password="True"/>
+		<field name="ssh_host_key" filename="ssh_host_key_filename"/>
+		<field name="ssh_host_key_filename" invisible="1"
+		       class="oe_inline oe_right"/>
+		<field name="ssh_host_fingerprint"/>
+	      </group>
+	    </group>
+	  </sheet>
+	  <div class="oe_chatter">
+            <field name="message_follower_ids" widget="mail_followers"/>
+            <field name="message_ids" widget="mail_thread"/>
+          </div>
+	</form>
+      </field>
+    </record>
+
+    <!-- Tree view -->
+    <record id="gateway_tree" model="ir.ui.view">
+      <field name="name">edi.gateway.tree</field>
+      <field name="model">edi.gateway</field>
+      <field name="arch" type="xml">
+	<tree string="EDI Gateways"
+	      decoration-danger="issue_count">
+	  <field name="name"/>
+	  <field name="model_id"/>
+	  <field name="server"/>
+	  <field name="username"/>
+	  <field name="issue_count"/>
+	  <field name="last_transfer_id"/>
+	</tree>
+      </field>
+    </record>
+
+    <!-- Search filter -->
+    <record id="gateway_search" model="ir.ui.view">
+      <field name="name">edi.gateway.search</field>
+      <field name="model">edi.gateway</field>
+      <field name="arch" type="xml">
+	<search string="Search EDI Gateway">
+	  <field name="name" string="Gateway"
+		 filter_domain="['|',('name','ilike',self),
+				     ('server','ilike',self)]"/>
+	  <field name="model_id"/>
+	  <field name="server"/>
+	  <group>
+	    <filter name="issues" string="Has Issues"
+		    domain="[('issue_count', '!=', 0)]"/>
+	  </group>
+	  <group string="Group By">
+	    <filter name="by_model_id" string="Connection Model" domain="[]"
+		    context="{'group_by': 'model_id'}"/>
+	    <filter name="by_server" string="Server Address" domain="[]"
+		    context="{'group_by': 'server'}"/>
+	  </group>
+	</search>
+      </field>
+    </record>
+
+    <!-- Action window -->
+    <record id="gateway_action" model="ir.actions.act_window">
+      <field name="name">EDI Gateways</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.gateway</field>
+      <field name="view_type">form</field>
+      <field name="view_id" ref="gateway_tree"/>
+      <field name="search_view_id" ref="gateway_search"/>
+      <field name="context">
+	{'needaction_menu_ref': ['edi.transfer_menu',
+				 'edi.document_document_menu']}
+      </field>
+      <field name="help" type="html">
+	<p class="oe_view_nocontent_create">
+	  Click to create an EDI Gateway.
+	</p>
+	<p>
+	  Electronic Data Interchange (EDI) gateways are remote
+	  servers used to send and/or receive EDI documents such as
+	  product definitions and purchase orders.
+	</p>
+      </field>
+    </record>
+
+    <!-- Menu item -->
+    <menuitem id="gateway_menu" name="Gateways" action="gateway_action"
+	      parent="communication_menu" sequence="10"/>
+
+  </data>
+</odoo>

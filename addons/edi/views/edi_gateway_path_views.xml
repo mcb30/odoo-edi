@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- Form view -->
+    <record id="gateway_path_form" model="ir.ui.view">
+      <field name="name">edi.gateway.path.form</field>
+      <field name="model">edi.gateway.path</field>
+      <field name="arch" type="xml">
+	<form string="EDI Gateway Path">
+	  <sheet>
+	    <div class="oe_title">
+	      <label for="name" class="oe_edit_only"/>
+	      <h1>
+		<field name="name" placeholder="e.g. Product Master Data"/>
+	      </h1>
+	    </div>
+	    <group>
+	      <group name="basic" string="Path">
+		<field name="gateway_id"/>
+		<field name="path"/>
+	      </group>
+	      <group name="filter" string="Filtering">
+		<field name="allow_receive"/>
+		<field name="allow_send"/>
+		<field name="glob"/>
+		<field name="age_window" widget="float_time"/>
+		<field name="doc_type_ids" widget="many2many_tags"/>
+	      </group>
+	    </group>
+	  </sheet>
+	</form>
+      </field>
+    </record>
+
+    <!-- Tree view -->
+    <record id="gateway_path_tree" model="ir.ui.view">
+      <field name="name">edi.gateway.path.tree</field>
+      <field name="model">edi.gateway.path</field>
+      <field name="arch" type="xml">
+	<tree string="EDI Gateway Paths">
+	  <field name="sequence" widget="handle"/>
+	  <field name="name"/>
+	  <field name="gateway_id"/>
+	  <field name="path"/>
+	  <field name="allow_receive"/>
+	  <field name="allow_send"/>
+	  <field name="glob"/>
+	  <field name="age_window" widget="float_time"/>
+	  <field name="doc_type_ids" widget="many2many_tags"/>
+	</tree>
+      </field>
+    </record>
+
+    <!-- Search filter -->
+    <record id="gateway_path_search" model="ir.ui.view">
+      <field name="name">edi.gateway.path.search</field>
+      <field name="model">edi.gateway.path</field>
+      <field name="arch" type="xml">
+	<search string="Search EDI Gateway Path">
+	  <field name="name" string="Path"
+		 filter_domain="['|',('name','ilike',self),
+				     ('path','ilike',self)]"/>
+	  <field name="gateway_id"/>
+	  <field name="path"/>
+	  <group string="Group By">
+	    <filter name="by_gateway_id" string="Gateway" domain="[]"
+		    context="{'group_by': 'gateway_id'}"/>
+	  </group>
+	</search>
+      </field>
+    </record>
+
+    <!-- Action window -->
+    <record id="gateway_path_action" model="ir.actions.act_window">
+      <field name="name">EDI Gateway Paths</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.gateway.path</field>
+      <field name="view_type">form</field>
+      <field name="view_id" ref="gateway_path_tree"/>
+      <field name="search_view_id" ref="gateway_path_search"/>
+      <field name="help" type="html">
+	<p class="oe_view_nocontent_create">
+	  Click to create an EDI Gateway Path.
+	</p>
+	<p>
+	  Electronic Data Interchange (EDI) gateways are remote
+	  servers used to send and/or receive EDI documents such as
+	  product definitions and purchase orders.
+	</p>
+      </field>
+    </record>
+
+    <!-- Menu item -->
+    <menuitem id="gateway_path_menu" name="Paths" action="gateway_path_action"
+	      parent="communication_menu" sequence="20"/>
+
+  </data>
+</odoo>

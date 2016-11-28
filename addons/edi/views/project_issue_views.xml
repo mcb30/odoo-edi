@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- EDI project issue form -->
+    <record id="project_issue_form" model="ir.ui.view">
+      <field name="name">edi.project.issue.form</field>
+      <field name="model">project.issue</field>
+      <field name="inherit_id" ref="project_issue.project_issue_form_view"/>
+      <field name="arch" type="xml">
+	<xpath expr="//field[@name='project_id']" position="after">
+	  <field name="use_edi_fields" invisible="1"/>
+	  <field name="edi_doc_id"
+		 attrs="{'invisible':[('use_edi_fields','=',False)]}"/>
+	  <field name="edi_gateway_id"
+		 attrs="{'invisible':[('use_edi_fields','=',False)]}"/>
+	  <field name="edi_transfer_id"
+		 attrs="{'invisible':[('use_edi_fields','=',False)]}"/>
+	</xpath>
+      </field>
+    </record>
+
+  </data>
+</odoo>

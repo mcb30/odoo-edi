@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- Form view -->
+    <record id="record_type_form" model="ir.ui.view">
+      <field name="name">edi.record.type.form</field>
+      <field name="model">edi.record.type</field>
+      <field name="arch" type="xml">
+	<form string="EDI Record Type">
+	  <sheet>
+	    <div class="oe_title">
+	      <label for="name" class="oe_edit_only"/>
+	      <h1>
+		<field name="name" placeholder="e.g. Product Definition"/>
+	      </h1>
+	    </div>
+	    <group>
+	      <field name="model_id"/>
+	      <field name="doc_type_ids" widget="many2many_tags"/>
+	    </group>
+	  </sheet>
+	</form>
+      </field>
+    </record>
+
+    <!-- Tree view -->
+    <record id="record_type_tree" model="ir.ui.view">
+      <field name="name">edi.record.type.tree</field>
+      <field name="model">edi.record.type</field>
+      <field name="arch" type="xml">
+	<tree string="EDI Record Types">
+	  <field name="sequence" widget="handle"/>
+	  <field name="name"/>
+	  <field name="model_id"/>
+	  <field name="doc_type_ids" widget="many2many_tags"/>
+	</tree>
+      </field>
+    </record>
+
+    <!-- Search filter -->
+    <record id="record_type_search" model="ir.ui.view">
+      <field name="name">edi.record.type.search</field>
+      <field name="model">edi.record.type</field>
+      <field name="arch" type="xml">
+	<search string="Search EDI Record Type">
+	  <field name="name"/>
+	  <field name="model_id"/>
+	</search>
+      </field>
+    </record>
+
+    <!-- Action window -->
+    <record id="record_type_action" model="ir.actions.act_window">
+      <field name="name">EDI Record Types</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.record.type</field>
+      <field name="view_type">form</field>
+      <field name="view_id" ref="record_type_tree"/>
+      <field name="search_view_id" ref="record_type_search"/>
+      <field name="help" type="html">
+	<p class="oe_view_nocontent_create">
+	  Click to create an EDI Record Type.
+	</p>
+	<p>
+	  Electronic Data Interchange (EDI) documents are used to
+	  automate the process of transferring data such as product
+	  definitions and purchase orders between systems.
+	</p>
+      </field>
+    </record>
+
+    <!-- Menu item -->
+    <menuitem id="record_type_menu" name="Record Types"
+	      action="record_type_action" parent="config_menu" sequence="20"/>
+
+  </data>
+</odoo>

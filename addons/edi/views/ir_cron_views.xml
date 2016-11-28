@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- Action window -->
+    <record id="cron_action" model="ir.actions.act_window">
+      <field name="name">EDI Schedule</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">ir.cron</field>
+      <field name="view_type">form</field>
+      <field name="view_mode">tree,form</field>
+      <field name="domain">[('model', '=', 'edi.gateway')]</field>
+      <field name="context">{'create': False}</field>
+    </record>
+
+    <!-- Menu item -->
+    <menuitem id="cron_menu" name="Schedule" action="cron_action"
+	      parent="communication_menu" sequence="40"/>
+
+  </data>
+</odoo>

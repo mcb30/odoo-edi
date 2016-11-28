@@ -1,0 +1,171 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- Form view -->
+    <record id="transfer_form" model="ir.ui.view">
+      <field name="name">edi.transfer.form</field>
+      <field name="model">edi.transfer</field>
+      <field name="arch" type="xml">
+	<form string="EDI Transfer">
+	  <header>
+	    <button name="action_close_issues" type="object"
+		    string="Close All Issues" class="btn-danger"
+		    confirm="Close all issues associated with this transfer?"
+		    attrs="{'invisible':[('issue_count','=',0),
+					 ('rel_issue_count','=',0)]}"/>
+	  </header>
+	  <sheet>
+	    <div name="button_box" class="oe_button_box">
+	      <div>
+		<button name="action_view_inputs" type="object"
+			class="oe_stat_button" icon="fa-paperclip">
+		  <field name="input_count" widget="statinfo"
+			 string="Inputs"/>
+		</button>
+		<button name="action_view_outputs" type="object"
+			class="oe_stat_button" icon="fa-paperclip">
+		  <field name="output_count" widget="statinfo"
+			 string="Outputs"/>
+		</button>
+	      </div>
+	      <div>
+		<button name="action_view_issues" type="object"
+			class="oe_stat_button" icon="fa-bug"
+			attrs="{'invisible':[('issue_count','=',0),
+					     ('rel_issue_count','=',0)]}">
+		  <div class="o_form_field o_stat_info">
+		    <span class="o_stat_value">
+		      <field name="issue_count" widget="statinfo" nolabel="1"/>
+		      <span attrs="{'invisible':[('rel_issue_count','=',0)]}">
+			+
+			<field name="rel_issue_count" widget="statinfo"
+			       nolabel="1"/>
+		      </span>
+		    </span>
+		    <span class="o_stat_text">Issues</span>
+		  </div>
+		</button>
+		<button name="action_view_docs" type="object"
+			class="oe_stat_button" icon="fa-file-text-o">
+		  <field name="doc_count" widget="statinfo"
+			 string="Documents"/>
+		</button>
+	      </div>
+	    </div>
+	    <div class="oe_title">
+	      <label for="name" class="oe_edit_only"/>
+	      <h1>
+		<field name="name"/>
+	      </h1>
+	    </div>
+	    <group>
+	      <group name="basic">
+		<field name="gateway_id"/>
+		<field name="create_date" readonly="1"/>
+	      </group>
+	      <group name="options">
+		<field name="allow_receive"/>
+		<field name="allow_process"/>
+		<field name="allow_send"/>
+	      </group>
+	    </group>
+	    <group name="info">
+	      <field name="note"/>
+	    </group>
+	    <notebook>
+	      <page name="docs" string="Documents">
+		<field name="doc_ids" widget="many2many_kanban"/>
+	      </page>
+	      <page name="inputs" string="Inputs">
+		<field name="input_ids"/>
+	      </page>
+	      <page name="outputs" string="Outputs">
+		<field name="output_ids"/>
+	      </page>
+	    </notebook>
+	  </sheet>
+	  <div class="oe_chatter">
+            <field name="message_follower_ids" widget="mail_followers"/>
+            <field name="message_ids" widget="mail_thread"/>
+          </div>
+	</form>
+      </field>
+    </record>
+
+    <!-- Tree view -->
+    <record id="transfer_tree" model="ir.ui.view">
+      <field name="name">edi.transfer.tree</field>
+      <field name="model">edi.transfer</field>
+      <field name="arch" type="xml">
+	<tree string="EDI Transfers" default_order="id desc"
+	      decoration-danger="issue_count">
+	  <field name="name"/>
+	  <field name="gateway_id"/>
+	  <field name="create_date"/>
+	  <field name="issue_count"/>
+	  <field name="input_count"/>
+	  <field name="output_count"/>
+	  <field name="doc_count"/>
+	</tree>
+      </field>
+    </record>
+
+    <!-- Search filter -->
+    <record id="transfer_search" model="ir.ui.view">
+      <field name="name">edi.transfer.search</field>
+      <field name="model">edi.transfer</field>
+      <field name="arch" type="xml">
+	<search string="Search EDI Transfer">
+	  <field name="name"/>
+	  <field name="gateway_id"/>
+	  <field name="input_ids"/>
+	  <field name="output_ids"/>
+	  <field name="doc_ids"/>
+	  <group>
+	    <filter name="issues" string="Has Issues"
+		    domain="[('issue_count', '!=', 0)]"/>
+	  </group>
+	  <group>
+	    <filter name="inputs" string="Has Inputs"
+		    domain="[('input_count', '!=', 0)]"/>
+	    <filter name="outputs" string="Has Outputs"
+		    domain="[('output_count', '!=', 0)]"/>
+	    <filter name="docs" string="Has Documents"
+		    domain="[('doc_count', '!=', 0)]"/>
+	  </group>
+	  <group string="Group By">
+	    <filter name="by_gateway_id" string="Gateway" domain="[]"
+		    context="{'group_by': 'gateway_id'}"/>
+	  </group>
+	</search>
+      </field>
+    </record>
+
+    <!-- Action window -->
+    <record id="transfer_action" model="ir.actions.act_window">
+      <field name="name">EDI Transfers</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.transfer</field>
+      <field name="view_type">form</field>
+      <field name="view_id" ref="transfer_tree"/>
+      <field name="search_view_id" ref="transfer_search"/>
+      <field name="context">
+	{
+	'create': False,
+	'needaction_menu_ref': ['edi.document_document_menu'],
+	}
+      </field>
+      <field name="help" type="html">
+	<p>
+          No transfers yet.
+        </p>
+      </field>
+    </record>
+
+    <!-- Menu item -->
+    <menuitem id="transfer_menu" name="Transfers" action="transfer_action"
+	      parent="communication_menu" sequence="30"/>
+
+  </data>
+</odoo>
