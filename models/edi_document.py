@@ -57,6 +57,13 @@ class EdiDocumentType(models.Model):
     _sql_constraints = [('model_uniq', 'unique (model_id)',
                          'The document model must be unique')]
 
+    @api.multi
+    def compute_use_record(self, field, model):
+        """Compute use of record type"""
+        for doc_type in self:
+            rec_models = doc_type.mapped('rec_type_ids.model_id.model')
+            setattr(doc_type, field, (model in rec_models))
+
     @api.model
     def autocreate(self, inputs):
         """Autocreate documents based on input attachments"""
