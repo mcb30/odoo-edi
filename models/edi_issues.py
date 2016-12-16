@@ -56,9 +56,8 @@ class EdiIssue(models.AbstractModel):
                                      store=True)
 
     @api.multi
-    @api.depends('issue_ids', 'issue_ids.stage_id', 'issue_ids.stage_id.fold',
-                 'issue_ids.edi_doc_id', 'issue_ids.edi_gateway_id',
-                 'issue_ids.edi_transfer_id')
+    @api.depends('issue_ids', 'issue_ids.stage_id', 'issue_ids.edi_doc_id',
+                 'issue_ids.edi_gateway_id', 'issue_ids.edi_transfer_id')
     def _compute_issue_counts(self):
         """Compute number of open issues (for UI display)"""
         inverse = self._fields['issue_ids'].inverse_name
