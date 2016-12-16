@@ -64,7 +64,7 @@ class EdiIssue(models.AbstractModel):
         inverse = self._fields['issue_ids'].inverse_name
         related = [edi_field
                    for field, edi_field in EDI_FIELD_MAP
-                   if edi_field != inverse and not hasattr(self, field)]
+                   if edi_field != inverse and field not in self._fields]
         for issues in self:
             issues.issue_count = len(issues.issue_ids.filtered(
                 lambda x: all(not getattr(x, f) for f in related)
