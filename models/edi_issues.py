@@ -107,18 +107,30 @@ class EdiIssue(models.AbstractModel):
         vals['name'] = ('[%s] %s' % (self.name, title))
         issue = self.env['project.issue'].create(vals)
 
+        # Construct list of threads
+        threads = [self]
+        for field, edi_field in EDI_FIELD_MAP:
+            if field in self._fields:
+                thread = getattr(self, field)
+                if thread:
+                    threads += thread
+
         # Add traceback if applicable
         trace = '\n'.join(traceback.format_exception(type, err, tb))
         _logger.error(trace)
         if not isinstance(err, UserError):
             issue.message_post(body=trace, content_subtype='plaintext')
-            self.message_post(body=trace, content_subtype='plaintext')
+            for thread in threads:
+                thread.message_post(body=trace, content_subtype='plaintext')
 
         # Add detail if applicable
         if detail:
             issue.message_post(body=detail, content_subtype='plaintext')
 
-        self.message_post(body=(fmt % title), content_subtype='plaintext')
+        # Add summary
+        for thread in threads:
+            thread.message_post(body=(fmt % title),
+                                content_subtype='plaintext')
         return issue
 
     @api.multi
