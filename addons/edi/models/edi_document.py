@@ -94,8 +94,7 @@ class EdiDocumentType(models.Model):
         self.ensure_one()
         Document = self.env['edi.document']
         doc = Document.create({'doc_type_id': self.id})
-        if doc.action_prepare():
-            doc.action_execute()
+        doc.action_execute()
         return doc
 
 
@@ -266,6 +265,8 @@ class EdiDocument(models.Model):
         """
         self.ensure_one()
         # Check document state
+        if self.state == 'draft':
+            self.action_prepare()
         if self.state != 'prep':
             raise UserError(_('Cannot execute a %s document') %
                             self._get_state_name())
