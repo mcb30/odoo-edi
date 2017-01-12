@@ -154,6 +154,10 @@
 	{
 	'create': False,
 	'needaction_menu_ref': ['edi.document_document_menu'],
+	'search_default_issues': True,
+	'search_default_inputs': True,
+	'search_default_outputs': True,
+	'search_default_docs': True,
 	}
       </field>
       <field name="help" type="html">
