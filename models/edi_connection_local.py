@@ -91,15 +91,16 @@ class EdiConnectionLocal(models.AbstractModel):
         """Send output attachments"""
         Document = self.env['edi.document']
 
-        # Get list of output attachments
+        # Get list of output documents
         min_date = (datetime.now() - timedelta(hours=path.age_window))
-        outputs = Document.search([
+        docs = Document.search([
             ('execute_date', '>=', fields.Datetime.to_string(min_date)),
             ('doc_type_id', 'in', path.doc_type_ids.mapped('id'))
-            ]).mapped('output_ids')
+            ])
 
         # Send attachments
-        for attachment in outputs:
+        outputs = Attachment.browse()
+        for attachment in docs.mapped('output_ids'):
 
             # Skip files not matching glob pattern
             if not fnmatch.fnmatch(attachment.datas_fname, path.glob):
@@ -122,5 +123,8 @@ class EdiConnectionLocal(models.AbstractModel):
 
             # Rename temporary file
             os.rename(temppath, filepath)
+
+            # Record output as sent
+            outputs += attachment
 
         return outputs
