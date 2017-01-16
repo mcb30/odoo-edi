@@ -112,16 +112,13 @@ class EdiConnectionSFTP(models.AbstractModel):
             ('execute_date', '>=', fields.Datetime.to_string(min_date)),
             ('doc_type_id', 'in', path.doc_type_ids.mapped('id'))
             ]).mapped('output_ids').filtered(
-            lambda x: (x.datas_fname not in files or
-                       x.file_size != files[x.datas_fname])
+            lambda x: (fnmatch.fnmatch(x.datas_fname, path.glob) and
+                       (x.datas_fname not in files or
+                        x.file_size != files[x.datas_fname]))
             )
 
         # Send attachments
         for attachment in outputs:
-
-            # Skip files not matching glob pattern
-            if not fnmatch.fnmatch(attachment.datas_fname, path.glob):
-                continue
 
             # Send file with temporary filename
             temppath = os.path.join(path.path, ('.%s~' % uuid.uuid4().hex))
