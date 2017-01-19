@@ -90,6 +90,8 @@ class EdiConnectionLocal(models.AbstractModel):
     def send_outputs(self, conn, path, transfer):
         """Send output attachments"""
         Document = self.env['edi.document']
+        Attachment = self.env['ir.attachment']
+        outputs = Attachment.browse()
 
         # Get list of output documents
         min_date = (datetime.now() - timedelta(hours=path.age_window))
@@ -99,7 +101,6 @@ class EdiConnectionLocal(models.AbstractModel):
             ])
 
         # Send attachments
-        outputs = Attachment.browse()
         for attachment in docs.mapped('output_ids'):
 
             # Skip files not matching glob pattern
