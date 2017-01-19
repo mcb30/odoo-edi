@@ -102,23 +102,30 @@ class EdiConnectionSFTP(models.AbstractModel):
     def send_outputs(self, conn, path, transfer):
         """Send output attachments"""
         Document = self.env['edi.document']
+        Attachment = self.env['ir.attachment']
+        outputs = Attachment.browse()
 
         # Get names and sizes of existing files
         files = {x.filename: x.st_size for x in conn.listdir_attr(path.path)}
 
-        # Get list of not-yet-sent attachments
+        # Get list of output documents
         min_date = (datetime.now() - timedelta(hours=path.age_window))
-        outputs = Document.search([
+        docs = Document.search([
             ('execute_date', '>=', fields.Datetime.to_string(min_date)),
             ('doc_type_id', 'in', path.doc_type_ids.mapped('id'))
-            ]).mapped('output_ids').filtered(
-            lambda x: (fnmatch.fnmatch(x.datas_fname, path.glob) and
-                       (x.datas_fname not in files or
-                        x.file_size != files[x.datas_fname]))
-            )
+            ])
 
         # Send attachments
-        for attachment in outputs:
+        for attachment in docs.mapped('output_ids'):
+
+            # Skip files not matching glob pattern
+            if not fnmatch.fnmatch(attachment.datas_fname, path.glob):
+                continue
+
+            # Skip files already existing in remote directory
+            if (attachment.datas_fname in files and
+                attachment.file_size == files[attachment.datas_fname]):
+                continue
 
             # Send file with temporary filename
             temppath = os.path.join(path.path, ('.%s~' % uuid.uuid4().hex))
@@ -129,5 +136,8 @@ class EdiConnectionSFTP(models.AbstractModel):
 
             # Rename temporary file
             conn.rename(temppath, filepath)
+
+            # Record output as sent
+            outputs += attachment
 
         return outputs
