@@ -197,6 +197,13 @@ class EdiDocument(models.Model):
         return new
 
     @api.multi
+    def lock_for_action(self):
+        """Lock document"""
+        for doc in self:
+            # Obtain a database row-level exclusive lock by writing the record
+            doc.state = doc.state
+
+    @api.multi
     def execute_records(self):
         """Execute records"""
         self.ensure_one()
@@ -211,6 +218,8 @@ class EdiDocument(models.Model):
         Parse input attachments and create corresponding EDI records.
         """
         self.ensure_one()
+        # Lock document
+        self.lock_for_action()
         # Check document state
         if self.state != 'draft':
             raise UserError(_('Cannot prepare a %s document') %
@@ -240,6 +249,8 @@ class EdiDocument(models.Model):
     def action_unprepare(self):
         """Return Prepared document to Draft state"""
         self.ensure_one()
+        # Lock document
+        self.lock_for_action()
         # Check document state
         if self.state != 'prep':
             raise UserError(_('Cannot unprepare a %s document') %
@@ -264,6 +275,8 @@ class EdiDocument(models.Model):
         Parse EDI records and update database.
         """
         self.ensure_one()
+        # Lock document
+        self.lock_for_action()
         # Check document state
         if self.state == 'draft':
             self.action_prepare()
@@ -300,6 +313,8 @@ class EdiDocument(models.Model):
     def action_cancel(self):
         """Cancel document"""
         self.ensure_one()
+        # Lock document
+        self.lock_for_action()
         # Check document state
         if self.state == 'done':
             raise UserError(_('Cannot cancel a %s document') %
