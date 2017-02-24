@@ -45,7 +45,10 @@ class EdiConnectionSFTP(models.AbstractModel):
     @api.model
     def connect(self, gateway):
         """Connect to SFTP server"""
-        return SFTPOnlyClient.from_ssh_client(gateway.ssh_connect())
+        conn = SFTPOnlyClient.from_ssh_client(gateway.ssh_connect())
+        if gateway.timeout:
+            conn.get_channel().settimeout(gateway.timeout)
+        return conn
 
     @api.model
     def receive_inputs(self, conn, path, transfer):

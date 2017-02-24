@@ -100,6 +100,7 @@ class EdiGateway(models.Model):
     can_initiate = fields.Boolean(string='Initiate Connections',
                                   compute='_compute_can_initiate')
     server = fields.Char(string='Server Address')
+    timeout = fields.Float(string='Timeout (in seconds)')
 
     # Authentication
     username = fields.Char(string='Username')
@@ -203,6 +204,9 @@ class EdiGateway(models.Model):
                 kwargs['username'] = self.username
             if self.password:
                 kwargs['password'] = self.password
+            if self.timeout:
+                kwargs['timeout'] = self.timeout
+                kwargs['banner_timeout'] = self.timeout
             ssh.connect(self.server, **kwargs)
         except paramiko.SSHException as e:
             raise UserError(e.message)
