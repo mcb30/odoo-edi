@@ -121,7 +121,7 @@ class EdiIssue(models.AbstractModel):
         if not isinstance(err, UserError):
             issue.message_post(body=trace, content_subtype='plaintext')
             for thread in threads:
-                thread.message_post(body=trace, content_subtype='plaintext')
+                thread.sudo().message_post(body=trace, content_subtype='plaintext')
 
         # Add detail if applicable
         if detail:
@@ -129,7 +129,7 @@ class EdiIssue(models.AbstractModel):
 
         # Add summary
         for thread in threads:
-            thread.message_post(body=(fmt % title),
+            thread.sudo().message_post(body=(fmt % title),
                                 content_subtype='plaintext')
         return issue
 
