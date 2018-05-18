@@ -2,7 +2,6 @@ from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
 import sys
-import base64
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -40,6 +39,13 @@ class EdiDocumentType(models.Model):
                                        ('model', '=like', '%.edi.document.%')],
                                required=True, index=True)
     rec_type_ids = fields.Many2many('edi.record.type', string='Record Types')
+    defer_execute = fields.Boolean(string='Can defer execution',
+                                   default=False, required=False,
+                                   help='Allow a document type to be '
+                                        'executed later so it will not block. '
+                                        'Behaviour of deferred execution is '
+                                        'controlled by each documents '
+                                        'doc.deferred_priority')
 
     # Autodetection order when detecting a document type based upon
     # the set of input attachments.
@@ -132,6 +138,13 @@ class EdiDocument(models.Model):
     execute_date = fields.Datetime(string='Executed on', readonly=True,
                                    copy=False)
     note = fields.Text(string='Notes')
+    deferred_priority = fields.Integer(string='Priority for deferred execute',
+                                       default=10,
+                                       help='When running deferred documents '
+                                            'higher values are prioritised. '
+                                            'Values above 90 are all executed '
+                                            'together in the first deferred '
+                                            'run')
 
     # Communications
     transfer_id = fields.Many2one('edi.transfer', string='Transfer',
@@ -210,6 +223,42 @@ class EdiDocument(models.Model):
         for rec_type in self.doc_type_id.rec_type_ids:
             RecModel = self.env[rec_type.model_id.model]
             RecModel.search([('doc_id', '=', self.id)]).execute()
+
+    @api.model
+    def deferred_execute(self):
+        """
+        Find and execute any deferred documents that are prepared, are allowed
+        to be executed automatically, and have no issues.
+        transfer_id is not copied, so duplicated docs have no transfer_id and
+        will not be executed automatically.
+        """
+        docs = self.search([
+            ('doc_type_id.defer_execute', '=', True),
+            ('transfer_id', '!=', False),
+            ('issue_ids', '=', False),
+            ('state', '=', 'prep'),
+        ], order='deferred_priority DESC, prepare_date ASC')
+
+        # moved out of the search into a filter as the resultant query was too long.
+        docs = docs.filtered(lambda d: d.transfer_id.allow_process is True)
+
+        # Execute all high priority docs
+        high_prio_docs = docs.filtered(lambda p: p.deferred_priority > 90)
+        if high_prio_docs:
+            _logger.info(_('Executing %d deferred documents') %
+                           len(high_prio_docs))
+            for doc in high_prio_docs:
+                _logger.info(_('%s beginning deferred execution of %s') %
+                               (doc.gateway_id.name, doc.name))
+                doc.with_context(deferred_execution=True).action_execute()
+        # Or execute one, the highest priority/oldest.
+        elif docs:
+            doc = docs[0]
+            _logger.info(_('%s beginning deferred execution of %s') %
+                           (doc.gateway_id.name, doc.name))
+            doc.with_context(deferred_execution=True).action_execute()
+            doc.transfer_id.message_post(body=(_(
+                'Completed deferred execution of %s') % doc.name))
 
     @api.multi
     def action_prepare(self):

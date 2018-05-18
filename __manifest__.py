@@ -19,10 +19,10 @@ Key Features
 * Send and receive documents to/from remote EDI servers
 * Schedule polling of remote EDI servers
 * Process EDI documents via XML-RPC interface
-* Handle errors via Odoo issue tracker
+* Handle errors via Odoo project manager
     """,
     'version': '0.1',
-    'depends': ['project_issue', 'document'],
+    'depends': ['project', 'document'],
     'external_dependencies': {'python': ['paramiko']},
     'author': 'Michael Brown <mbrown@fensystems.co.uk>',
     'category': 'Extra Tools',

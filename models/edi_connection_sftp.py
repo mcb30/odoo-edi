@@ -1,5 +1,5 @@
 from odoo import api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import ValidationError
 from odoo.tools.translate import _
 from datetime import datetime, timedelta
 import os.path
@@ -86,7 +86,7 @@ class EdiConnectionSFTP(models.AbstractModel):
             attachment = Attachment.create({
                 'name': dirent.filename,
                 'datas_fname': dirent.filename,
-                'datas': base64.b64encode(str(data)),
+                'datas': base64.b64encode(data),
                 'res_model': 'edi.document',
                 'res_field': 'input_ids',
                 })

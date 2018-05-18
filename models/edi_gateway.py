@@ -1,6 +1,8 @@
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
+from odoo import tools
+from odoo.tools import config
 from contextlib import closing
 import sys
 import base64
@@ -17,7 +19,7 @@ class ir_cron(models.Model):
     _inherit = 'ir.cron'
 
     # This field is referenced by edi.gateway, but does not exist in
-    # Odoo 10.0 and earlier.  Ensure that the field exists to allow
+    # Odoo 11.0 and earlier.  Ensure that the field exists to allow
     # for a smoother upgrade path.
     res_id = fields.Integer()
 
@@ -32,14 +34,14 @@ class EdiAutoAddHostKeyPolicy(paramiko.MissingHostKeyPolicy):
         if self.gw.ssh_host_key:
             # Verify host key
             line = base64.b64decode(self.gw.ssh_host_key)
-            entry = paramiko.hostkeys.HostKeyEntry.from_line(line)
+            entry = paramiko.hostkeys.HostKeyEntry.from_line(line.decode())
             if hostname not in entry.hostnames or key != entry.key:
                 raise paramiko.BadHostKeyException(hostname, key, entry.key)
         else:
             # Auto-add host key
             entry = paramiko.hostkeys.HostKeyEntry([hostname], key)
             line = entry.to_line()
-            self.gw.ssh_host_key = base64.b64encode(line)
+            self.gw.ssh_host_key = base64.b64encode(line.encode())
             self.gw.ssh_host_key_filename = SSH_KNOWN_HOSTS
             self.gw.message_post(body=(_('Added host key for "%s" (%s)') %
                                        (self.gw.server,
@@ -104,7 +106,12 @@ class EdiGateway(models.Model):
 
     # Authentication
     username = fields.Char(string='Username')
-    password = fields.Char(string='Password', invisible=True, copy=False)
+    password = fields.Char(string='Password', invisible=True, copy=False,
+                           store=False, compute='_get_config_password')
+    config_password_option = fields.Char(string='Password config option',
+                                         help='Config option from which to '
+                                              'retrieve the password for '
+                                              'this gateway.')
     ssh_host_key = fields.Binary(string='SSH Host Key')
     ssh_host_key_filename = fields.Char(default=SSH_KNOWN_HOSTS)
     ssh_host_fingerprint = fields.Char(string='SSH Host Fingerprint',
@@ -136,11 +143,14 @@ class EdiGateway(models.Model):
 
     # Scheduled jobs
     cron_ids = fields.One2many('ir.cron', 'res_id',
-                               domain=[('model', '=', 'edi.gateway'),
-                                       ('function', '=', 'action_transfer')],
+                               domain=[('model_name', '=', 'edi.gateway'),
+                                       ('code', '=', 'model.action_transfer()')],
                                string='Schedule')
     cron_count = fields.Integer(string='Schedule Count',
                                 compute='_compute_cron_count')
+
+    is_production_gateway = fields.Boolean(string='Production Gateway',
+                                           default=False)
 
     @api.multi
     @api.depends('model_id')
@@ -165,6 +175,13 @@ class EdiGateway(models.Model):
             gw.transfer_count = len(gw.transfer_ids)
 
     @api.multi
+    @api.depends('config_password_option')
+    def _get_config_password(self):
+        """Get the password from config file."""
+        for gw in self:
+            gw.password = config.get_misc('edi', gw.config_password_option)
+
+    @api.multi
     @api.depends('doc_ids')
     def _compute_doc_count(self):
         """Compute number of documents (for UI display)"""
@@ -185,7 +202,7 @@ class EdiGateway(models.Model):
         for gw in self:
             if gw.ssh_host_key:
                 line = base64.b64decode(gw.ssh_host_key)
-                entry = paramiko.hostkeys.HostKeyEntry.from_line(line)
+                entry = paramiko.hostkeys.HostKeyEntry.from_line(line.decode())
                 digest = entry.key.get_fingerprint()
                 gw.ssh_host_fingerprint = (':'.join(x.encode('hex')
                                                     for x in digest))
@@ -209,7 +226,7 @@ class EdiGateway(models.Model):
                 kwargs['banner_timeout'] = self.timeout
             ssh.connect(self.server, **kwargs)
         except paramiko.SSHException as e:
-            raise UserError(e.message)
+            raise UserError(e)
         return ssh
 
     @api.multi
@@ -252,10 +269,11 @@ class EdiGateway(models.Model):
         """View scheduled jobs"""
         self.ensure_one()
         action = self.env.ref('edi.cron_action').read()[0]
-        action['domain'] = [('model', '=', 'edi.gateway'),
-                            ('function', '=', 'action_transfer'),
+        action['domain'] = [('model_name', '=', 'edi.gateway'),
+                            ('code', '=', 'model.action_transfer()'),
                             ('res_id', '=', self.id)]
         action['context'] = {'default_model': 'edi.gateway',
+                             # TODO check default_action
                              'default_function': 'action_transfer',
                              'default_res_id': self.id,
                              'create': True}
@@ -279,6 +297,18 @@ class EdiGateway(models.Model):
     def do_transfer(self, conn=None):
         """Receive input attachments, process documents, send outputs"""
         self.ensure_one()
+
+        # Production gateways will only transfer if on a production server.
+        # Non-production gateways will only transfer if on a non-production server.
+        config_is_production = config.get_misc('edi', 'enable_production_gateways', default=False)
+        if self.is_production_gateway != config_is_production:
+            raise EnvironmentError(_('Failed to do transfer. '
+                                     'Reason: mismatched value for '
+                                     'gateway.is_production_gateway.\n'
+                                     'Gateway is "%s" while server setting '
+                                     'is "%s"') % (self.is_production_gateway,
+                                                   config_is_production))
+
         transfer = self.transfer_ids.create({'gateway_id': self.id})
         self.lock_for_transfer(transfer)
         Model = self.env[self.model_id.model]
@@ -299,16 +329,16 @@ class EdiGateway(models.Model):
         transfer = self.do_transfer()
         return (not transfer.issue_ids)
 
-    @api.multi
-    def xmlrpc_transfer(self, **kwargs):
-        """Receive input attachments, process documents, send outputs"""
-        self = self or self.env.ref('edi.gateway_xmlrpc')
-        self.ensure_one()
-        conn = dict(**kwargs)
-        transfer = self.do_transfer(conn=conn)
-        conn['docs'] = [{'id': x.id, 'name': x.name, 'state': x.state}
-                        for x in transfer.doc_ids]
-        if transfer.issue_ids:
-            conn['errors'] = [{'id': x.id, 'name': x.name}
-                              for x in transfer.issue_ids]
-        return conn
+    # @api.multi
+    # def xmlrpc_transfer(self, **kwargs):
+    #     """Receive input attachments, process documents, send outputs"""
+    #     self = self or self.env.ref('edi.gateway_xmlrpc')
+    #     self.ensure_one()
+    #     conn = dict(**kwargs)
+    #     transfer = self.do_transfer(conn=conn)
+    #     conn['docs'] = [{'id': x.id, 'name': x.name, 'state': x.state}
+    #                     for x in transfer.doc_ids]
+    #     if transfer.issue_ids:
+    #         conn['errors'] = [{'id': x.id, 'name': x.name}
+    #                           for x in transfer.issue_ids]
+    #     return conn

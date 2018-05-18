@@ -51,6 +51,7 @@ class EdiConnectionLocal(models.AbstractModel):
             filepath = os.path.join(path.path, filename)
             stat = os.stat(filepath)
 
+
             # Skip files outside the age window
             if datetime.fromtimestamp(stat.st_mtime) < min_date:
                 continue
@@ -71,7 +72,7 @@ class EdiConnectionLocal(models.AbstractModel):
             attachment = Attachment.create({
                 'name': filename,
                 'datas_fname': filename,
-                'datas': base64.b64encode(str(data)),
+                'datas': base64.b64encode(data),
                 'res_model': 'edi.document',
                 'res_field': 'input_ids',
                 })
