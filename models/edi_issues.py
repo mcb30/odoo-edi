@@ -104,7 +104,7 @@ class EdiIssue(models.AbstractModel):
 
         # Parse exception
         args = list(err.args)
-        title = str(args[0] or err)
+        title = str(err)
         detail = '\n'.join([str(x) for x in args if x])
 
         # Construct issue
