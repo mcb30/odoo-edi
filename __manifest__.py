@@ -32,7 +32,7 @@ Key Features
              'data/edi_document_data.xml',
              'data/edi_gateway_local_data.xml',
              'data/edi_gateway_mail_data.xml',
-             'data/edi_gateway_xmlrpc_data.xml',
+             #'data/edi_gateway_xmlrpc_data.xml',
              'views/edi_menu_views.xml',
              'views/edi_document_views.xml',
              'views/edi_document_type_views.xml',
