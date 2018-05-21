@@ -38,7 +38,8 @@ class EdiIssue(models.AbstractModel):
 
     _name = 'edi.issues'
     _description = 'EDI Issue-Tracked Object'
-    # TODO: check 'ir.needaction_mixin'
+    # TODO: 'ir.needaction_mixin' has been removed from odoo10 to odoo11
+    #       nothing similar has been implemented yet
     _inherit = ['mail.thread']#, 'ir.needaction_mixin']
 
     def _default_project_id(self):
@@ -74,6 +75,8 @@ class EdiIssue(models.AbstractModel):
     @api.model
     def _needaction_domain_get(self):
         """Compute domain to filter records requiring an action"""
+        # TODO: 'ir.needaction_mixin' has been removed from odoo10 to odoo11
+        #       nothing similar has been implemented yet
         return [('issue_count', '!=', 0)]
 
     @api.multi
