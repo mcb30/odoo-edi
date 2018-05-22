@@ -144,7 +144,7 @@ class EdiGateway(models.Model):
     # Scheduled jobs
     cron_ids = fields.One2many('ir.cron', 'res_id',
                                domain=[('model_name', '=', 'edi.gateway'),
-                                       ('code', '=', 'model.action_transfer()')],
+                                       ('code', 'like', '%action_transfer%')],
                                string='Schedule')
     cron_count = fields.Integer(string='Schedule Count',
                                 compute='_compute_cron_count')
@@ -270,11 +270,11 @@ class EdiGateway(models.Model):
         self.ensure_one()
         action = self.env.ref('edi.cron_action').read()[0]
         action['domain'] = [('model_name', '=', 'edi.gateway'),
-                            ('code', '=', 'model.action_transfer()'),
+                            ('code', 'like', '%action_transfer%'),
                             ('res_id', '=', self.id)]
-        action['context'] = {'default_model': 'edi.gateway',
-                             # TODO check default_action
-                             'default_function': 'action_transfer',
+        action['context'] = {'default_model_id': self.model_id.id,
+                             'default_state': 'code',
+                             'default_code': 'model.action_transfer()',
                              'default_res_id': self.id,
                              'create': True}
         return action

@@ -39,7 +39,8 @@ class EdiIssue(models.AbstractModel):
     _name = 'edi.issues'
     _description = 'EDI Issue-Tracked Object'
     # TODO: 'ir.needaction_mixin' has been removed from odoo10 to odoo11
-    #       nothing similar has been implemented yet
+    #       nothing similar has been implemented yet.
+    #       US1019 to deal with it.
     _inherit = ['mail.thread']#, 'ir.needaction_mixin']
 
     def _default_project_id(self):

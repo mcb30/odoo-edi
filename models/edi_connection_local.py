@@ -51,7 +51,6 @@ class EdiConnectionLocal(models.AbstractModel):
             filepath = os.path.join(path.path, filename)
             stat = os.stat(filepath)
 
-
             # Skip files outside the age window
             if datetime.fromtimestamp(stat.st_mtime) < min_date:
                 continue
