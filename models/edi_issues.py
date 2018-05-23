@@ -7,8 +7,7 @@ import logging
 _logger = logging.getLogger(__name__)
 
 EDI_FIELD_MAP = [(field, ('edi_%s' % field))
-                 for field in 'doc_id', 'gateway_id', 'transfer_id']
-
+                 for field in ['doc_id', 'gateway_id', 'transfer_id']]
 
 class Project(models.Model):
 
@@ -19,7 +18,7 @@ class Project(models.Model):
 
 class ProjectIssue(models.Model):
 
-    _inherit = 'project.issue'
+    _inherit = 'project.task'
 
     use_edi_fields = fields.Boolean(related='project_id.use_edi_fields')
     edi_doc_id = fields.Many2one('edi.document', string='EDI Document',
@@ -39,14 +38,17 @@ class EdiIssue(models.AbstractModel):
 
     _name = 'edi.issues'
     _description = 'EDI Issue-Tracked Object'
-    _inherit = ['mail.thread', 'ir.needaction_mixin']
+    # TODO: 'ir.needaction_mixin' has been removed from odoo10 to odoo11
+    #       nothing similar has been implemented yet.
+    #       US1019 to deal with it.
+    _inherit = ['mail.thread']#, 'ir.needaction_mixin']
 
     def _default_project_id(self):
         return self.env.ref('edi.project_default')
 
     project_id = fields.Many2one('project.project', string='Issue Tracker',
                                  required=True, default=_default_project_id)
-    issue_ids = fields.One2many('project.issue', string='Issues',
+    issue_ids = fields.One2many('project.task', string='Issues',
                                 domain=['|', ('stage_id.fold', '=', False),
                                              ('stage_id', '=', False)])
     issue_count = fields.Integer(string='Issue Count',
@@ -74,6 +76,8 @@ class EdiIssue(models.AbstractModel):
     @api.model
     def _needaction_domain_get(self):
         """Compute domain to filter records requiring an action"""
+        # TODO: 'ir.needaction_mixin' has been removed from odoo10 to odoo11
+        #       nothing similar has been implemented yet
         return [('issue_count', '!=', 0)]
 
     @api.multi
@@ -84,6 +88,11 @@ class EdiIssue(models.AbstractModel):
         vals[self._fields['issue_ids'].inverse_name] = self.id
         for field, edi_field in EDI_FIELD_MAP:
             if hasattr(self, field):
+                if 'deferred_execution' in self.env.context and field == 'gateway_id':
+                    # Hack to skip logging the error on the gateway if an error
+                    # occurs during deferred execution as this causes
+                    # serilisation errors that mask the underlying error.
+                    continue
                 rec = getattr(self, field)
                 if rec:
                     vals[edi_field] = rec.id
@@ -99,18 +108,23 @@ class EdiIssue(models.AbstractModel):
 
         # Parse exception
         args = list(err.args)
-        title = str(args[0] or err)
+        title = str(err)
         detail = '\n'.join([str(x) for x in args if x])
 
         # Construct issue
         vals = self._issue_vals()
         vals['name'] = ('[%s] %s' % (self.name, title))
-        issue = self.env['project.issue'].create(vals)
+        issue = self.env['project.task'].create(vals)
 
         # Construct list of threads
         threads = [self]
         for field, edi_field in EDI_FIELD_MAP:
             if field in self._fields:
+                if 'deferred_execution' in self.env.context and field == 'gateway_id':
+                    # Hack to skip logging the error on the gateway if an error
+                    # occurs during deferred execution as this causes
+                    # serilisation errors that mask the underlying error.
+                    continue
                 thread = getattr(self, field)
                 if thread:
                     threads += thread
@@ -121,7 +135,7 @@ class EdiIssue(models.AbstractModel):
         if not isinstance(err, UserError):
             issue.message_post(body=trace, content_subtype='plaintext')
             for thread in threads:
-                thread.message_post(body=trace, content_subtype='plaintext')
+                thread.sudo().message_post(body=trace, content_subtype='plaintext')
 
         # Add detail if applicable
         if detail:
@@ -129,7 +143,7 @@ class EdiIssue(models.AbstractModel):
 
         # Add summary
         for thread in threads:
-            thread.message_post(body=(fmt % title),
+            thread.sudo().message_post(body=(fmt % title),
                                 content_subtype='plaintext')
         return issue
 
@@ -145,7 +159,7 @@ class EdiIssue(models.AbstractModel):
     def action_view_issues(self):
         """View open issues"""
         self.ensure_one()
-        action = self.env.ref('project_issue.action_view_issues').read()[0]
+        action = self.env.ref('project.action_view_task').read()[0]
         action['domain'] = [(self._fields['issue_ids'].inverse_name,
                              '=', self.id)]
         action['context'] = {'default_%s' % k: v

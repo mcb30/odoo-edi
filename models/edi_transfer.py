@@ -1,7 +1,5 @@
 from odoo import api, fields, models
-from odoo.exceptions import UserError
 from odoo.tools.translate import _
-import sys
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -176,13 +174,17 @@ class EdiTransfer(models.Model):
                              (self.gateway_id.name, doc.name))
                 prepared = doc.action_prepare()
                 if prepared:
-                    _logger.info('%s executing %s' %
-                                 (self.gateway_id.name, doc.name))
-                    executed = doc.action_execute()
-                    if executed:
-                        self.message_post(body=(_('Executed %s') % doc.name))
+                    if not doc.doc_type_id.defer_execute:
+                        _logger.info('%s executing %s' %
+                                     (self.gateway_id.name, doc.name))
+                        executed = doc.action_execute()
+                        if executed:
+                            self.message_post(body=(_('Executed %s') % doc.name))
+                        else:
+                            self.message_post(body=(_('Prepared %s') % doc.name))
                     else:
-                        self.message_post(body=(_('Prepared %s') % doc.name))
+                        _logger.info(_("%s deferring %s") % (doc.gateway_id.name,
+                                                           doc.name))
 
         # Send outputs, if applicable
         if self.allow_send:
