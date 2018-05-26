@@ -19,16 +19,9 @@
     <!-- Create "EDI" project -->
     <record id="project_default" model="project.project">
       <field name="name">EDI</field>
-      <field name="use_issues" eval="True"/>
       <field name="use_edi_fields" eval="True"/>
       <field name="type_ids" eval="[(6,0,[ref('task_type_new'),
 					  ref('task_type_closed')])]"/>
-    </record>
-    <!-- Update project to disable use of tasks.  For some convoluted
-	 reason, this does not work at the point of project creation.
-    -->
-    <record id="project_default" model="project.project">
-      <field name="use_tasks" eval="False"/>
     </record>
 
   </data>

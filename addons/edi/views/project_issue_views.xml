@@ -5,8 +5,8 @@
     <!-- EDI project issue form -->
     <record id="project_issue_form" model="ir.ui.view">
       <field name="name">edi.project.issue.form</field>
-      <field name="model">project.issue</field>
-      <field name="inherit_id" ref="project_issue.project_issue_form_view"/>
+      <field name="model">project.task</field>
+      <field name="inherit_id" ref="project.view_task_form2"/>
       <field name="arch" type="xml">
 	<xpath expr="//field[@name='project_id']" position="after">
 	  <field name="use_edi_fields" invisible="1"/>
