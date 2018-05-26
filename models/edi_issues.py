@@ -18,7 +18,7 @@ class Project(models.Model):
 
 class ProjectIssue(models.Model):
 
-    _inherit = 'project.issue'
+    _inherit = 'project.task'
 
     use_edi_fields = fields.Boolean(related='project_id.use_edi_fields')
     edi_doc_id = fields.Many2one('edi.document', string='EDI Document',
@@ -45,7 +45,7 @@ class EdiIssue(models.AbstractModel):
 
     project_id = fields.Many2one('project.project', string='Issue Tracker',
                                  required=True, default=_default_project_id)
-    issue_ids = fields.One2many('project.issue', string='Issues',
+    issue_ids = fields.One2many('project.task', string='Issues',
                                 domain=['|', ('stage_id.fold', '=', False),
                                         ('stage_id', '=', False)])
     issue_count = fields.Integer(string='Issue Count',
@@ -104,7 +104,7 @@ class EdiIssue(models.AbstractModel):
         # Construct issue
         vals = self._issue_vals()
         vals['name'] = ('[%s] %s' % (self.name, title))
-        issue = self.env['project.issue'].create(vals)
+        issue = self.env['project.task'].create(vals)
 
         # Construct list of threads
         threads = [self]
@@ -144,7 +144,7 @@ class EdiIssue(models.AbstractModel):
     def action_view_issues(self):
         """View open issues"""
         self.ensure_one()
-        action = self.env.ref('project_issue.action_view_issues').read()[0]
+        action = self.env.ref('project.action_view_task').read()[0]
         action['domain'] = [(self._fields['issue_ids'].inverse_name,
                              '=', self.id)]
         action['context'] = {'default_%s' % k: v
