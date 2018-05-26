@@ -1,14 +1,14 @@
-from odoo import api, fields, models
-from odoo.exceptions import UserError
-from odoo.tools.translate import _
 from datetime import datetime, timedelta
 import os
 import os.path
 import fnmatch
 import base64
 import uuid
-
 import logging
+from odoo import api, fields, models
+from odoo.exceptions import ValidationError
+from odoo.tools.translate import _
+
 _logger = logging.getLogger(__name__)
 
 
@@ -29,12 +29,12 @@ class EdiConnectionLocal(models.AbstractModel):
     _description = 'EDI Local Connection'
 
     @api.model
-    def connect(self, gateway):
+    def connect(self, _gateway):
         """Connect to local filesystem"""
         return DummyConnection()
 
     @api.model
-    def receive_inputs(self, conn, path, transfer):
+    def receive_inputs(self, _conn, path, transfer):
         """Receive input attachments"""
         Attachment = self.env['ir.attachment']
         inputs = Attachment.browse()
@@ -87,7 +87,7 @@ class EdiConnectionLocal(models.AbstractModel):
         return inputs
 
     @api.model
-    def send_outputs(self, conn, path, transfer):
+    def send_outputs(self, _conn, path, transfer):
         """Send output attachments"""
         Document = self.env['edi.document']
         Attachment = self.env['ir.attachment']

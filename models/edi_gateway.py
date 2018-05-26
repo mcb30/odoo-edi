@@ -1,12 +1,12 @@
-from odoo import api, fields, models
-from odoo.exceptions import UserError
-from odoo.tools.translate import _
 from contextlib import closing
 import sys
 import base64
-import paramiko
-
 import logging
+import paramiko
+from odoo import api, fields, models
+from odoo.exceptions import UserError
+from odoo.tools.translate import _
+
 _logger = logging.getLogger(__name__)
 
 SSH_KNOWN_HOSTS = 'known_hosts'
@@ -267,7 +267,7 @@ class EdiGateway(models.Model):
         self.ensure_one()
         Model = self.env[self.model_id.model]
         try:
-            with closing(Model.connect(self)) as conn:
+            with closing(Model.connect(self)) as _conn:
                 pass
         except Exception as err:
             self.raise_issue(_('Connection test failed: %s'), *sys.exc_info())
@@ -297,7 +297,7 @@ class EdiGateway(models.Model):
         """Receive input attachments, process documents, send outputs"""
         self.ensure_one()
         transfer = self.do_transfer()
-        return (not transfer.issue_ids)
+        return not transfer.issue_ids
 
     @api.multi
     def xmlrpc_transfer(self, **kwargs):

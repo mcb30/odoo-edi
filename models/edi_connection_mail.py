@@ -1,13 +1,8 @@
-from odoo import api, fields, models
-from odoo.exceptions import UserError
-from odoo.tools.translate import _
-from odoo.tools import generate_tracking_message_id
 from datetime import datetime, timedelta
-import os.path
 import fnmatch
-import base64
-
 import logging
+from odoo import api, fields, models
+
 _logger = logging.getLogger(__name__)
 
 
@@ -27,7 +22,7 @@ class EdiConnectionMail(models.AbstractModel):
     _description = 'EDI Mail Connection'
 
     @api.model
-    def connect(self, gateway):
+    def connect(self, _gateway):
         """Connect to mail server"""
         return DummyConnection()
 
@@ -37,7 +32,7 @@ class EdiConnectionMail(models.AbstractModel):
         pass
 
     @api.model
-    def send_outputs(self, conn, path, transfer):
+    def send_outputs(self, _conn, path, _transfer):
         """Send output attachments"""
         Attachment = self.env['ir.attachment']
         Document = self.env['edi.document']

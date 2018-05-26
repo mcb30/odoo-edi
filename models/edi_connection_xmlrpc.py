@@ -1,9 +1,7 @@
-from odoo import api, fields, models
-from odoo.exceptions import UserError
-from odoo.tools.translate import _
 import fnmatch
-
 import logging
+from odoo import api, models
+
 _logger = logging.getLogger(__name__)
 
 
@@ -18,7 +16,7 @@ class EdiConnectionXMLRPC(models.AbstractModel):
     _description = 'EDI XML-RPC Connection'
 
     @api.model
-    def receive_inputs(self, conn, path, transfer):
+    def receive_inputs(self, conn, path, _transfer):
         """Receive input attachments"""
         Attachment = self.env['ir.attachment']
         inputs = Attachment.browse()

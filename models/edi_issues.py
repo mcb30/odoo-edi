@@ -1,9 +1,8 @@
+import traceback
+import logging
 from odoo import api, fields, models
 from odoo.exceptions import UserError
-from odoo.tools.translate import _
-import traceback
 
-import logging
 _logger = logging.getLogger(__name__)
 
 EDI_FIELD_MAP = [(field, ('edi_%s' % field))
@@ -25,7 +24,7 @@ class ProjectIssue(models.Model):
     edi_doc_id = fields.Many2one('edi.document', string='EDI Document',
                                  index=True, ondelete='cascade')
     edi_gateway_id = fields.Many2one('edi.gateway', string='EDI Gateway',
-                                index=True, ondelete='cascade')
+                                     index=True, ondelete='cascade')
     edi_transfer_id = fields.Many2one('edi.transfer', string='EDI Transfer',
                                       index=True, ondelete='cascade')
 
@@ -48,7 +47,7 @@ class EdiIssue(models.AbstractModel):
                                  required=True, default=_default_project_id)
     issue_ids = fields.One2many('project.issue', string='Issues',
                                 domain=['|', ('stage_id.fold', '=', False),
-                                             ('stage_id', '=', False)])
+                                        ('stage_id', '=', False)])
     issue_count = fields.Integer(string='Issue Count',
                                  compute='_compute_issue_counts', store=True)
     rel_issue_count = fields.Integer(string='Related Issue Count',
@@ -109,7 +108,7 @@ class EdiIssue(models.AbstractModel):
 
         # Construct list of threads
         threads = [self]
-        for field, edi_field in EDI_FIELD_MAP:
+        for field, _edi_field in EDI_FIELD_MAP:
             if field in self._fields:
                 thread = getattr(self, field)
                 if thread:

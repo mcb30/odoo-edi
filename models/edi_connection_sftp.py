@@ -1,14 +1,14 @@
-from odoo import api, fields, models
-from odoo.exceptions import UserError
-from odoo.tools.translate import _
 from datetime import datetime, timedelta
 import os.path
 import fnmatch
 import base64
 import uuid
-import paramiko
-
 import logging
+import paramiko
+from odoo import api, fields, models
+from odoo.exceptions import ValidationError
+from odoo.tools.translate import _
+
 _logger = logging.getLogger(__name__)
 
 

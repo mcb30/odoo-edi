@@ -1,10 +1,9 @@
+import sys
+import logging
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
-import sys
-import base64
 
-import logging
 _logger = logging.getLogger(__name__)
 
 
@@ -231,7 +230,7 @@ class EdiDocument(models.Model):
         Audit.audit_attachments(self, self.input_ids,
                                 body=_('Input attachments'))
         # Prepare document
-        _logger.info('Preparing %s' % self.name)
+        _logger.info('Preparing %s', self.name)
         DocModel = self.env[self.doc_type_id.model_id.model]
         try:
             with self.env.cr.savepoint():
@@ -242,7 +241,7 @@ class EdiDocument(models.Model):
         # Mark as prepared
         self.prepare_date = fields.Datetime.now()
         self.state = 'prep'
-        _logger.info('Prepared %s' % self.name)
+        _logger.info('Prepared %s', self.name)
         return True
 
     @api.multi
@@ -258,14 +257,14 @@ class EdiDocument(models.Model):
         # Close any stale issues
         self.close_issues()
         # Delete any records
-        _logger.info('Unpreparing %s' % self.name)
+        _logger.info('Unpreparing %s', self.name)
         for rec_type in self.doc_type_id.rec_type_ids.sorted(reverse=True):
-                Model = self.env[rec_type.model_id.model]
-                Model.search([('doc_id', '=', self.id)]).unlink()
+            Model = self.env[rec_type.model_id.model]
+            Model.search([('doc_id', '=', self.id)]).unlink()
         # Mark as in draft
         self.prepare_date = None
         self.state = 'draft'
-        _logger.info('Unprepared %s' % self.name)
+        _logger.info('Unprepared %s', self.name)
         return True
 
     @api.multi
@@ -286,7 +285,7 @@ class EdiDocument(models.Model):
         # Close any stale issues
         self.close_issues()
         # Execute document
-        _logger.info('Executing %s' % self.name)
+        _logger.info('Executing %s', self.name)
         DocModel = self.env[self.doc_type_id.model_id.model]
         try:
             with self.env.cr.savepoint():
@@ -306,7 +305,7 @@ class EdiDocument(models.Model):
         # Mark as processed
         self.execute_date = fields.Datetime.now()
         self.state = 'done'
-        _logger.info('Executed %s' % self.name)
+        _logger.info('Executed %s', self.name)
         return True
 
     @api.multi
@@ -323,7 +322,7 @@ class EdiDocument(models.Model):
         self.close_issues()
         # Mark as cancelled
         self.state = 'cancel'
-        _logger.info('Cancelled %s' % self.name)
+        _logger.info('Cancelled %s', self.name)
         return True
 
     @api.multi
@@ -361,5 +360,5 @@ class EdiUnknownDocument(models.AbstractModel):
     _description = 'Unknown Document'
 
     @api.model
-    def prepare(self, doc):
+    def prepare(self, _doc):
         raise UserError(_('Unknown document type'))
