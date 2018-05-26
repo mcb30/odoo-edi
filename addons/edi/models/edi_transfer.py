@@ -1,9 +1,7 @@
-from odoo import api, fields, models
-from odoo.exceptions import UserError
-from odoo.tools.translate import _
-import sys
-
 import logging
+from odoo import api, fields, models
+from odoo.tools.translate import _
+
 _logger = logging.getLogger(__name__)
 
 
@@ -136,9 +134,9 @@ class EdiTransfer(models.Model):
             for doc in docs:
                 Audit.audit_attachments(self, doc.input_ids,
                                         body=(_('Created %s') % doc.name))
-                _logger.info('%s created %s (%s)' %
-                             (self.gateway_id.name, doc.name,
-                              ', '.join(doc.mapped('input_ids.datas_fname'))))
+                _logger.info('%s created %s (%s)',
+                             self.gateway_id.name, doc.name,
+                             ', '.join(doc.mapped('input_ids.datas_fname')))
 
     @api.multi
     def send_outputs(self, conn):
@@ -172,12 +170,12 @@ class EdiTransfer(models.Model):
         # Prepare and execute documents, if applicable
         if self.allow_process:
             for doc in self.doc_ids:
-                _logger.info('%s preparing %s' %
-                             (self.gateway_id.name, doc.name))
+                _logger.info('%s preparing %s',
+                             self.gateway_id.name, doc.name)
                 prepared = doc.action_prepare()
                 if prepared:
-                    _logger.info('%s executing %s' %
-                                 (self.gateway_id.name, doc.name))
+                    _logger.info('%s executing %s',
+                                 self.gateway_id.name, doc.name)
                     executed = doc.action_execute()
                     if executed:
                         self.message_post(body=(_('Executed %s') % doc.name))
@@ -188,4 +186,4 @@ class EdiTransfer(models.Model):
         if self.allow_send:
             self.send_outputs(conn)
 
-        _logger.info('%s transfer complete' % self.gateway_id.name)
+        _logger.info('%s transfer complete', self.gateway_id.name)
