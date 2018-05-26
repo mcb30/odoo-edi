@@ -5,7 +5,7 @@ WE63) into a series of tokens.
 """
 
 from ply import lex
-from model import Requirement, Type
+from .model import Requirement, Type
 
 states = (
     ('string', 'exclusive'),

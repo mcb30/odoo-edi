@@ -6,8 +6,8 @@ WE63) into an abstract syntax description.
 
 from warnings import warn_explicit
 from ply import yacc
-from lexer import tokens
-from model import Syntax
+from .lexer import tokens
+from .model import Syntax
 
 
 # Structural elements
