@@ -7,7 +7,7 @@ import logging
 _logger = logging.getLogger(__name__)
 
 EDI_FIELD_MAP = [(field, ('edi_%s' % field))
-                 for field in 'doc_id', 'gateway_id', 'transfer_id']
+                 for field in ('doc_id', 'gateway_id', 'transfer_id')]
 
 
 class Project(models.Model):

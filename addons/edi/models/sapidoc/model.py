@@ -65,7 +65,7 @@ class Record(object):
                          if (k != 'SDATA' and
                              isinstance(getattr(cls, k), Field) and
                              getattr(self, k) is not None)),
-                         key=lambda (k, v, o): o)
+                        key=lambda k_v_o: k_v_o[2])
         return ('%s(%s)' % (self.__class__.__name__,
                             ', '.join('%s=%r' % (k, v) for k, v, o in fields)))
 
