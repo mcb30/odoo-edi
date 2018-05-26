@@ -38,7 +38,7 @@ class EdiIssue(models.AbstractModel):
 
     _name = 'edi.issues'
     _description = 'EDI Issue-Tracked Object'
-    _inherit = ['mail.thread', 'ir.needaction_mixin']
+    _inherit = ['mail.thread']
 
     def _default_project_id(self):
         return self.env.ref('edi.project_default')
@@ -69,11 +69,6 @@ class EdiIssue(models.AbstractModel):
                 ))
             issues.rel_issue_count = (len(issues.issue_ids) -
                                       issues.issue_count)
-
-    @api.model
-    def _needaction_domain_get(self):
-        """Compute domain to filter records requiring an action"""
-        return [('issue_count', '!=', 0)]
 
     @api.multi
     def _issue_vals(self):
