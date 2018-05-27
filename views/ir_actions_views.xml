@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- Action form view -->
+    <record id="actions_form" model="ir.ui.view">
+      <field name="name">ir.actions.server.form</field>
+      <field name="model">ir.actions.server</field>
+      <field name="inherit_id" ref="base.view_server_action_form"/>
+      <field name="arch" type="xml">
+	<field name="link_field_id" position="after">
+	  <field name="edi_gateway_id"
+		 attrs="{'invisible': [('state', '!=', 'edi')],
+			 'required': [('state', '=', 'edi')]}"/>
+	</field>
+      </field>
+    </record>
+
+  </data>
+</odoo>
