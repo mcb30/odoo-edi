@@ -35,7 +35,7 @@ class EdiAutoAddHostKeyPolicy(paramiko.MissingHostKeyPolicy):
     def missing_host_key(self, client, hostname, key):
         if self.gw.ssh_host_key:
             # Verify host key
-            line = base64.b64decode(self.gw.ssh_host_key)
+            line = base64.b64decode(self.gw.ssh_host_key).decode()
             entry = paramiko.hostkeys.HostKeyEntry.from_line(line)
             if hostname not in entry.hostnames or key != entry.key:
                 raise paramiko.BadHostKeyException(hostname, key, entry.key)
@@ -43,7 +43,7 @@ class EdiAutoAddHostKeyPolicy(paramiko.MissingHostKeyPolicy):
             # Auto-add host key
             entry = paramiko.hostkeys.HostKeyEntry([hostname], key)
             line = entry.to_line()
-            self.gw.ssh_host_key = base64.b64encode(line)
+            self.gw.ssh_host_key = base64.b64encode(line.encode())
             self.gw.ssh_host_key_filename = SSH_KNOWN_HOSTS
             self.gw.message_post(body=(_('Added host key for "%s" (%s)') %
                                        (self.gw.server,
@@ -212,7 +212,7 @@ class EdiGateway(models.Model):
                 kwargs['banner_timeout'] = self.timeout
             ssh.connect(self.server, **kwargs)
         except paramiko.SSHException as e:
-            raise UserError(e.message)
+            raise UserError(*e.args)
         return ssh
 
     @api.multi
