@@ -12,14 +12,18 @@ _logger = logging.getLogger(__name__)
 SSH_KNOWN_HOSTS = 'known_hosts'
 
 
-class ir_cron(models.Model):
+class ServerActions(models.Model):
+    """Add EDI Transfer option in server actions"""
 
-    _inherit = 'ir.cron'
+    _inherit = 'ir.actions.server'
 
-    # This field is referenced by edi.gateway, but does not exist in
-    # Odoo 10.0 and earlier.  Ensure that the field exists to allow
-    # for a smoother upgrade path.
-    res_id = fields.Integer()
+    state = fields.Selection(selection_add=[('edi', 'EDI Transfer')])
+    edi_gateway_id = fields.Many2one('edi.gateway', string='EDI Gateway',
+                                     index=True, ondelete='cascade')
+
+    @api.model
+    def run_action_edi(self, action, eval_context=None):
+        action.edi_gateway_id.action_transfer()
 
 
 class EdiAutoAddHostKeyPolicy(paramiko.MissingHostKeyPolicy):
@@ -135,9 +139,8 @@ class EdiGateway(models.Model):
                                compute='_compute_doc_count')
 
     # Scheduled jobs
-    cron_ids = fields.One2many('ir.cron', 'res_id',
-                               domain=[('model', '=', 'edi.gateway'),
-                                       ('function', '=', 'action_transfer')],
+    cron_ids = fields.One2many('ir.cron', 'edi_gateway_id',
+                               domain=[('state', '=', 'edi')],
                                string='Schedule')
     cron_count = fields.Integer(string='Schedule Count',
                                 compute='_compute_cron_count')
@@ -252,13 +255,15 @@ class EdiGateway(models.Model):
         """View scheduled jobs"""
         self.ensure_one()
         action = self.env.ref('edi.cron_action').read()[0]
-        action['domain'] = [('model', '=', 'edi.gateway'),
-                            ('function', '=', 'action_transfer'),
-                            ('res_id', '=', self.id)]
-        action['context'] = {'default_model': 'edi.gateway',
-                             'default_function': 'action_transfer',
-                             'default_res_id': self.id,
-                             'create': True}
+        action['domain'] = [('state', '=', 'edi'),
+                            ('edi_gateway_id', '=', self.id)]
+        action['context'] = {
+            'default_model_id': self.env['ir.model']._get_id('edi.gateway'),
+            'default_state': 'edi',
+            'default_edi_gateway_id': self.id,
+            'default_numbercall': -1,
+            'create': True
+        }
         return action
 
     @api.multi
