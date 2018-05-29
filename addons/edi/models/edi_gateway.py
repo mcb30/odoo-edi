@@ -187,11 +187,10 @@ class EdiGateway(models.Model):
         """Compute SSH host key fingerprint"""
         for gw in self:
             if gw.ssh_host_key:
-                line = base64.b64decode(gw.ssh_host_key)
+                line = base64.b64decode(gw.ssh_host_key).decode()
                 entry = paramiko.hostkeys.HostKeyEntry.from_line(line)
                 digest = entry.key.get_fingerprint()
-                gw.ssh_host_fingerprint = (':'.join(x.encode('hex')
-                                                    for x in digest))
+                gw.ssh_host_fingerprint = ':'.join('%02x' % x for x in digest)
             else:
                 gw.ssh_host_fingerprint = None
 
