@@ -65,7 +65,8 @@ class EdiConnectionLocal(models.AbstractModel):
 
             # Read file
             _logger.info('%s reading %s', transfer.gateway_id.name, filepath)
-            data = open(filepath, mode='rb').read()
+            with open(filepath, mode='rb') as f:
+                data = f.read()
 
             # Create new attachment for received file
             attachment = Attachment.create({
@@ -120,7 +121,8 @@ class EdiConnectionLocal(models.AbstractModel):
             temppath = os.path.join(path.path, ('.%s~' % uuid.uuid4().hex))
             _logger.info('%s writing %s', transfer.gateway_id.name, filepath)
             data = base64.b64decode(attachment.datas)
-            open(temppath, mode='wb').write(data)
+            with open(temppath, mode='wb') as f:
+                f.write(data)
 
             # Rename temporary file
             os.rename(temppath, filepath)
