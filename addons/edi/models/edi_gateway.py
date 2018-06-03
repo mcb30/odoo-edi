@@ -199,6 +199,7 @@ class EdiGateway(models.Model):
             else:
                 gw.ssh_host_fingerprint = None
 
+    @api.multi
     @api.constrains('password', 'config_password')
     def _check_passwords(self):
         for gw in self:
