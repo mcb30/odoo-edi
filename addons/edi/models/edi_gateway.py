@@ -22,6 +22,7 @@ class ServerActions(models.Model):
 
     @api.model
     def run_action_edi(self, action, eval_context=None):
+        # pylint: disable=unused-argument
         action.edi_gateway_id.action_transfer()
 
 
@@ -288,11 +289,11 @@ class EdiGateway(models.Model):
         Model = self.env[self.model_id.model]
         try:
             # pylint: disable=broad-except
-            if conn:
+            if conn is not None:
                 transfer.do_transfer(conn)
             else:
-                with closing(Model.connect(self)) as conn:
-                    transfer.do_transfer(conn)
+                with closing(Model.connect(self)) as auto_conn:
+                    transfer.do_transfer(auto_conn)
         except Exception as err:
             transfer.raise_issue(_("Transfer failed: %s"), err)
         return transfer

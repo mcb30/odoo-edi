@@ -6,7 +6,7 @@ WE63) into an abstract syntax description.
 
 from warnings import warn_explicit
 from ply import yacc
-from .lexer import tokens
+from .lexer import tokens # pylint: disable=unused-import
 from .model import Syntax
 
 

@@ -232,6 +232,7 @@ class EdiDocument(models.Model):
         _logger.info("Preparing %s", self.name)
         DocModel = self.env[self.doc_type_id.model_id.model]
         try:
+            # pylint: disable=broad-except
             with self.env.cr.savepoint():
                 DocModel.prepare(self)
         except Exception as err:
@@ -287,6 +288,7 @@ class EdiDocument(models.Model):
         _logger.info("Executing %s", self.name)
         DocModel = self.env[self.doc_type_id.model_id.model]
         try:
+            # pylint: disable=broad-except
             with self.env.cr.savepoint():
                 if hasattr(DocModel, 'execute'):
                     # Use custom document execution method, if applicable

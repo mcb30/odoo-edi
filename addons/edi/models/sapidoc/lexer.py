@@ -98,7 +98,7 @@ def t_requirement_REQUIREMENT(t):
     t.lexer.begin('INITIAL')
     return t
 
-def t_ANY_error(t):
+def t_ANY_error(_t):
     # There is no way to reach this, but we define it to avoid a
     # spurious warning.
     pass

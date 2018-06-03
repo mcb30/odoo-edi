@@ -1,3 +1,4 @@
+# pylint: disable=pointless-statement
 {
     'name': "EDI",
     'summary': "Electronic Data Interchange",

@@ -22,6 +22,7 @@ class SFTPOnlyClient(paramiko.SFTPClient):
     @classmethod
     def from_ssh_client(cls, ssh):
         """Construct SFTP client from SSH client"""
+        # pylint: disable=attribute-defined-outside-init
         self = cls.from_transport(ssh.get_transport())
         self.__sftp_only_ssh = ssh
         return self
@@ -126,9 +127,16 @@ class EdiConnectionSFTP(models.AbstractModel):
                 continue
 
             # Skip files already existing in remote directory
-            if (attachment.datas_fname in files and
-                attachment.file_size == files[attachment.datas_fname]):
-                continue
+            if attachment.datas_fname in files:
+                # Assume that a file size check is sufficient to
+                # identify duplicate files.  We cannot sensibly check
+                # the timestamp since there is no guarantee that local
+                # and remote clocks remain in sync (or in the same
+                # time zone), and we cannot use checksums without
+                # retrieving the potential duplicate file (which may
+                # not be possible due to access restrictions).
+                if attachment.file_size == files[attachment.datas_fname]:
+                    continue
 
             # Send file with temporary filename
             temppath = os.path.join(path.path, ('.%s~' % uuid.uuid4().hex))

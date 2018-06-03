@@ -104,13 +104,14 @@ class Type(Enum):
     CHARACTER = CharacterField
 
 
+def Node(name, fields):
+    res = namedtuple(name, fields)
+    res.__new__.__defaults__ = (None,) * len(res._fields)
+    return res
+
+
 class Syntax(object):
     """IDoc abstract syntax tree"""
-
-    def Node(name, fields):
-        res = namedtuple(name, fields)
-        res.__new__.__defaults__ = (None,) * len(res._fields)
-        return res
 
     Field = Node('Field', ['name', 'text', 'type', 'length', 'field_pos',
                            'character_first', 'character_last'])
