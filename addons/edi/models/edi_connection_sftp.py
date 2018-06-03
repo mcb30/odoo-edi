@@ -89,7 +89,7 @@ class EdiConnectionSFTP(models.AbstractModel):
                 'datas': base64.b64encode(data),
                 'res_model': 'edi.document',
                 'res_field': 'input_ids',
-                })
+            })
             inputs += attachment
 
             # Check received size
@@ -97,7 +97,7 @@ class EdiConnectionSFTP(models.AbstractModel):
                 raise ValidationError(
                     _("File size mismatch (expected %d got %d)") %
                     (dirent.st_size, attachment.file_size)
-                    )
+                )
 
         return inputs
 
@@ -116,7 +116,7 @@ class EdiConnectionSFTP(models.AbstractModel):
         docs = Document.search([
             ('execute_date', '>=', fields.Datetime.to_string(min_date)),
             ('doc_type_id', 'in', path.doc_type_ids.mapped('id'))
-            ])
+        ])
 
         # Send attachments
         for attachment in docs.mapped('output_ids'):

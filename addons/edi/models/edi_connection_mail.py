@@ -47,14 +47,14 @@ class EdiConnectionMail(models.AbstractModel):
             ('execute_date', '>=', fields.Datetime.to_string(min_date)),
             ('doc_type_id', 'in', path.doc_type_ids.mapped('id')),
             ('output_ids', '!=', False),
-            ])
+        ])
 
         # Identify attachments already sent via this path
         sent = Mail.search([
             ('date', '>=', fields.Datetime.to_string(min_date)),
             ('model', '=', 'edi.gateway.path'),
             ('res_id', '=', path.id),
-            ]).mapped('attachment_ids')
+        ]).mapped('attachment_ids')
 
         # Send documents
         outputs = Attachment.browse()
@@ -63,7 +63,7 @@ class EdiConnectionMail(models.AbstractModel):
             # Identify applicable attachments
             attachments = doc.output_ids.filtered(
                 lambda x: fnmatch.fnmatch(x.datas_fname, path.glob)
-                )
+            )
 
             # Skip documents where all attachments have already been sent
             if attachments <= sent:

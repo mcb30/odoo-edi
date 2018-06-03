@@ -39,7 +39,7 @@ class EdiConnectionXMLRPC(models.AbstractModel):
                 'datas': str(f['data']),
                 'res_model': 'edi.document',
                 'res_field': 'input_ids',
-                })
+            })
             inputs += attachment
 
             # Consume input file
@@ -63,7 +63,7 @@ class EdiConnectionXMLRPC(models.AbstractModel):
         # Identify output attachments
         outputs = docs.mapped('output_ids').filtered(
             lambda x: fnmatch.fnmatch(x.datas_fname, path.glob)
-            )
+        )
 
         # Create output files from attachments
         conn[path.path] += [{'name': x.datas_fname, 'data': x.datas}

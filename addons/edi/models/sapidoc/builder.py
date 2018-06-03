@@ -51,7 +51,7 @@ class Model(object):
             'ControlRecord': ControlRecord,
             'DataRecord': DataRecord,
             'DataRecords': DataRecords,
-            }
+        }
         self.doc = type(self.tree.segments.idoc.name, (IDoc,), ns)
 
     def __call__(self, raw):

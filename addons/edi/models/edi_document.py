@@ -191,7 +191,7 @@ class EdiDocument(models.Model):
             attachment.copy({
                 'res_id': new.id,
                 'datas': attachment.datas,
-                })
+            })
         return new
 
     @api.multi

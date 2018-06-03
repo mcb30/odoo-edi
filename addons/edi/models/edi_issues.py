@@ -66,7 +66,7 @@ class EdiIssue(models.AbstractModel):
         for issues in self:
             issues.issue_count = len(issues.issue_ids.filtered(
                 lambda x: all(not getattr(x, f) for f in related)
-                ))
+            ))
             issues.rel_issue_count = (len(issues.issue_ids) -
                                       issues.issue_count)
 

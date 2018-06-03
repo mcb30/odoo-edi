@@ -12,7 +12,7 @@ states = (
     ('number', 'exclusive'),
     ('typename', 'exclusive'),
     ('requirement', 'exclusive'),
-    )
+)
 
 keywords = {
     'BEGIN_FIELDS': None,
@@ -46,7 +46,7 @@ keywords = {
     'QUALIFIED': None,
     'BEGIN_GROUP': 'number',
     'END_GROUP': None,
-    }
+}
 
 tokens = ['STRING', 'NUMBER', 'TYPENAME', 'REQUIREMENT'] + keywords.keys()
 

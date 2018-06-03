@@ -20,7 +20,7 @@ class Message(models.Model):
             if msg.edi_attachment_audit_ids:
                 edi_attachment_audit_ids = msg.edi_attachment_audit_ids.read([
                     'datas_fname', 'file_size', 'checksum',
-                    ])
+                ])
                 value['edi_attachment_audit_ids'] = edi_attachment_audit_ids
         return values
 
