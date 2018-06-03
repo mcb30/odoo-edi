@@ -84,7 +84,7 @@ class EdiIssue(models.AbstractModel):
         return vals
 
     @api.multi
-    def raise_issue(self, fmt, type, err, tb):
+    def raise_issue(self, fmt, err):
         """Raise issue via issue tracker
 
         Raise an issue in the associated issue tracker.
@@ -92,9 +92,8 @@ class EdiIssue(models.AbstractModel):
         self.ensure_one()
 
         # Parse exception
-        args = list(err.args)
-        title = str(args[0] or err)
-        detail = '\n'.join([str(x) for x in args if x])
+        title = err.name if isinstance(err, UserError) else str(err)
+        tbe = traceback.TracebackException.from_exception(err)
 
         # Construct issue
         vals = self._issue_vals()
@@ -110,17 +109,13 @@ class EdiIssue(models.AbstractModel):
                     threads += thread
 
         # Add traceback if applicable
-        trace = '\n'.join(traceback.format_exception(type, err, tb))
+        trace = ''.join(tbe.format())
         _logger.error(trace)
         if not isinstance(err, UserError):
             issue.message_post(body=trace, content_subtype='plaintext')
             for thread in threads:
                 thread.sudo().message_post(body=trace,
                                            content_subtype='plaintext')
-
-        # Add detail if applicable
-        if detail:
-            issue.message_post(body=detail, content_subtype='plaintext')
 
         # Add summary
         for thread in threads:

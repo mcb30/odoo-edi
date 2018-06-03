@@ -1,4 +1,3 @@
-import sys
 import logging
 from odoo import api, fields, models
 from odoo.exceptions import UserError
@@ -235,8 +234,8 @@ class EdiDocument(models.Model):
         try:
             with self.env.cr.savepoint():
                 DocModel.prepare(self)
-        except Exception as e:
-            self.raise_issue(_('Preparation failed: %s'), *sys.exc_info())
+        except Exception as err:
+            self.raise_issue(_('Preparation failed: %s'), err)
             return False
         # Mark as prepared
         self.prepare_date = fields.Datetime.now()
@@ -295,8 +294,8 @@ class EdiDocument(models.Model):
                 else:
                     # Otherwise, execute all records
                     self.execute_records()
-        except Exception as e:
-            self.raise_issue(_('Execution failed: %s'), *sys.exc_info())
+        except Exception as err:
+            self.raise_issue(_('Execution failed: %s'), err)
             return False
         # Create audit trail
         Audit = self.env['edi.attachment.audit']

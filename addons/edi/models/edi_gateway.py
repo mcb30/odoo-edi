@@ -1,5 +1,4 @@
 from contextlib import closing
-import sys
 import base64
 import logging
 import paramiko
@@ -210,8 +209,8 @@ class EdiGateway(models.Model):
                 kwargs['timeout'] = self.timeout
                 kwargs['banner_timeout'] = self.timeout
             ssh.connect(self.server, **kwargs)
-        except paramiko.SSHException as e:
-            raise UserError(*e.args)
+        except paramiko.SSHException as err:
+            raise UserError(err) from err
         return ssh
 
     @api.multi
@@ -271,10 +270,11 @@ class EdiGateway(models.Model):
         self.ensure_one()
         Model = self.env[self.model_id.model]
         try:
+            # pylint: disable=broad-except
             with closing(Model.connect(self)) as _conn:
                 pass
         except Exception as err:
-            self.raise_issue(_('Connection test failed: %s'), *sys.exc_info())
+            self.raise_issue(_('Connection test failed: %s'), err)
             return False
         self.message_post(body=_('Connection tested successfully'))
         return True
@@ -287,13 +287,14 @@ class EdiGateway(models.Model):
         self.lock_for_transfer(transfer)
         Model = self.env[self.model_id.model]
         try:
+            # pylint: disable=broad-except
             if conn:
                 transfer.do_transfer(conn)
             else:
                 with closing(Model.connect(self)) as conn:
                     transfer.do_transfer(conn)
         except Exception as err:
-            transfer.raise_issue(_('Transfer failed: %s'), *sys.exc_info())
+            transfer.raise_issue(_('Transfer failed: %s'), err)
         return transfer
 
     @api.multi
