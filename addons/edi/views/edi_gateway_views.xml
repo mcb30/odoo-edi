@@ -96,6 +96,7 @@
 	      <group name="auth" string="Authentication">
 		<field name="username"/>
 		<field name="password" password="True"/>
+		<field name="config_password"/>
 		<field name="ssh_host_key" filename="ssh_host_key_filename"/>
 		<field name="ssh_host_key_filename" invisible="1"
 		       class="oe_inline oe_right"/>

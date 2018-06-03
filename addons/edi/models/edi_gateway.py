@@ -3,7 +3,8 @@ import base64
 import logging
 import paramiko
 from odoo import api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
+from odoo.tools import config
 from odoo.tools.translate import _
 
 _logger = logging.getLogger(__name__)
@@ -109,6 +110,10 @@ class EdiGateway(models.Model):
     # Authentication
     username = fields.Char(string="Username")
     password = fields.Char(string="Password", invisible=True, copy=False)
+    config_password = fields.Char(
+        string="Password configuration option",
+        help="Configuration file option holding the password",
+    )
     ssh_host_key = fields.Binary(string="SSH Host Key")
     ssh_host_key_filename = fields.Char(default=SSH_KNOWN_HOSTS)
     ssh_host_fingerprint = fields.Char(string="SSH Host Fingerprint",
@@ -194,6 +199,28 @@ class EdiGateway(models.Model):
             else:
                 gw.ssh_host_fingerprint = None
 
+    @api.constrains('password', 'config_password')
+    def _check_passwords(self):
+        for gw in self:
+            if gw.password and gw.config_password:
+                raise ValidationError(_("You cannot specify both a password "
+                                        "and a password configuration option"))
+
+    @api.multi
+    def _get_password(self):
+        """Get password (from database record or from configuration file)"""
+        self.ensure_one()
+        if self.password:
+            return self.password
+        if self.config_password:
+            section, _sep, key = self.config_password.rpartition('.')
+            password = config.get_misc(section or 'edi', key)
+            if password is None:
+                raise UserError(_("Missing configuration option '%s'") %
+                                self.config_password)
+            return password
+        return None
+
     @api.multi
     def ssh_connect(self):
         """Connect to SSH server"""
@@ -204,8 +231,9 @@ class EdiGateway(models.Model):
             kwargs = {}
             if self.username:
                 kwargs['username'] = self.username
-            if self.password:
-                kwargs['password'] = self.password
+            password = self._get_password()
+            if password:
+                kwargs['password'] = password
             if self.timeout:
                 kwargs['timeout'] = self.timeout
                 kwargs['banner_timeout'] = self.timeout
