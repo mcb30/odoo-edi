@@ -67,7 +67,7 @@ class Record(object):
                              getattr(self, k) is not None)),
                         key=lambda k_v_o: k_v_o[2])
         return ('%s(%s)' % (self.__class__.__name__,
-                            ', '.join('%s=%r' % (k, v) for k, v, o in fields)))
+                            ', '.join("%s=%r" % (k, v) for k, v, o in fields)))
 
 
 class IDoc(object):

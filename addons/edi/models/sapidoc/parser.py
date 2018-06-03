@@ -90,7 +90,7 @@ def p_properties_concat(p):
        group_properties : group_properties group_property"""
     p[0] = p[1]
     if p[2][0] in p[0]:
-        warn_explicit('Duplicate property "%s"' % p[2][0].upper(),
+        warn_explicit("Duplicate property '%s'" % p[2][0].upper(),
                       SyntaxError, '', p.lexer.lineno)
         raise SyntaxError
     p[0][p[2][0]] = p[2][1]

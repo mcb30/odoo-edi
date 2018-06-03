@@ -16,8 +16,8 @@ class ServerActions(models.Model):
 
     _inherit = 'ir.actions.server'
 
-    state = fields.Selection(selection_add=[('edi', 'EDI Transfer')])
-    edi_gateway_id = fields.Many2one('edi.gateway', string='EDI Gateway',
+    state = fields.Selection(selection_add=[('edi', "EDI Transfer")])
+    edi_gateway_id = fields.Many2one('edi.gateway', string="EDI Gateway",
                                      index=True, ondelete='cascade')
 
     @api.model
@@ -44,10 +44,10 @@ class EdiAutoAddHostKeyPolicy(paramiko.MissingHostKeyPolicy):
             line = entry.to_line()
             self.gw.ssh_host_key = base64.b64encode(line.encode())
             self.gw.ssh_host_key_filename = SSH_KNOWN_HOSTS
-            self.gw.message_post(body=(_('Added host key for "%s" (%s)') %
+            self.gw.message_post(body=(_("Added host key for '%s' (%s)") %
                                        (self.gw.server,
                                         self.gw.ssh_host_fingerprint)))
-            _logger.warning('Added host key for "%s" (%s)',
+            _logger.warning("Added host key for '%s' (%s)",
                             self.gw.server, self.gw.ssh_host_fingerprint)
 
 
@@ -59,26 +59,26 @@ class EdiPath(models.Model):
     """
 
     _name = 'edi.gateway.path'
-    _description = 'EDI Gateway Path'
+    _description = "EDI Gateway Path"
     _order = 'gateway_id, sequence, id'
 
     # Basic fields
-    name = fields.Char(string='Name', required=True, index=True)
-    sequence = fields.Integer(string='Sequence', help='Processing Order')
-    gateway_id = fields.Many2one('edi.gateway', string='Gateway',
+    name = fields.Char(string="Name", required=True, index=True)
+    sequence = fields.Integer(string="Sequence", help="Processing Order")
+    gateway_id = fields.Many2one('edi.gateway', string="Gateway",
                                  required=True, index=True, ondelete='cascade')
-    path = fields.Char(string='Directory Path', required=True)
+    path = fields.Char(string="Directory Path", required=True)
 
     # Filtering
-    allow_receive = fields.Boolean(string='Receive Inputs', required=True,
+    allow_receive = fields.Boolean(string="Receive Inputs", required=True,
                                    default=True)
-    allow_send = fields.Boolean(string='Send Outputs', required=True,
+    allow_send = fields.Boolean(string="Send Outputs", required=True,
                                 default=True)
-    glob = fields.Char(string='Filename Pattern', required=True, default='*')
-    age_window = fields.Float(string='Age Window (in hours)', required=True,
+    glob = fields.Char(string="Filename Pattern", required=True, default='*')
+    age_window = fields.Float(string="Age Window (in hours)", required=True,
                               default=24)
     doc_type_ids = fields.Many2many('edi.document.type',
-                                    string='Document Types')
+                                    string="Document Types")
 
 
 class EdiGateway(models.Model):
@@ -89,28 +89,28 @@ class EdiGateway(models.Model):
     """
 
     _name = 'edi.gateway'
-    _description = 'EDI Gateway'
+    _description = "EDI Gateway"
     _inherit = ['edi.issues', 'mail.thread']
 
     # Basic fields
-    name = fields.Char(string='Name', required=True, index=True)
-    model_id = fields.Many2one('ir.model', string='Connection Model',
+    name = fields.Char(string="Name", required=True, index=True)
+    model_id = fields.Many2one('ir.model', string="Connection Model",
                                domain=['|',
                                        ('model', '=like', 'edi.connection.%'),
                                        ('model', '=like',
                                         '%.edi.connection.%')],
                                required=True, index=True)
-    can_initiate = fields.Boolean(string='Initiate Connections',
+    can_initiate = fields.Boolean(string="Initiate Connections",
                                   compute='_compute_can_initiate')
-    server = fields.Char(string='Server Address')
-    timeout = fields.Float(string='Timeout (in seconds)')
+    server = fields.Char(string="Server Address")
+    timeout = fields.Float(string="Timeout (in seconds)")
 
     # Authentication
-    username = fields.Char(string='Username')
-    password = fields.Char(string='Password', invisible=True, copy=False)
-    ssh_host_key = fields.Binary(string='SSH Host Key')
+    username = fields.Char(string="Username")
+    password = fields.Char(string="Password", invisible=True, copy=False)
+    ssh_host_key = fields.Binary(string="SSH Host Key")
     ssh_host_key_filename = fields.Char(default=SSH_KNOWN_HOSTS)
-    ssh_host_fingerprint = fields.Char(string='SSH Host Fingerprint',
+    ssh_host_fingerprint = fields.Char(string="SSH Host Fingerprint",
                                        readonly=True, store=True,
                                        compute='_compute_ssh_host_fingerprint')
 
@@ -119,29 +119,29 @@ class EdiGateway(models.Model):
 
     # Paths
     path_ids = fields.One2many('edi.gateway.path', 'gateway_id',
-                               string='Paths')
-    path_count = fields.Integer(string='Path Count',
+                               string="Paths")
+    path_count = fields.Integer(string="Path Count",
                                 compute='_compute_path_count')
 
     # Transfers
     transfer_ids = fields.One2many('edi.transfer', 'gateway_id',
-                                   string='Transfers')
-    transfer_count = fields.Integer(string='Transfer Count',
+                                   string="Transfers")
+    transfer_count = fields.Integer(string="Transfer Count",
                                     compute='_compute_transfer_count')
-    last_transfer_id = fields.Many2one('edi.transfer', string='Last Transfer',
+    last_transfer_id = fields.Many2one('edi.transfer', string="Last Transfer",
                                        readonly=True, copy=False)
 
     # Documents
     doc_ids = fields.One2many('edi.document', 'gateway_id',
-                              string='Documents', readonly=True)
-    doc_count = fields.Integer(string='Document Count',
+                              string="Documents", readonly=True)
+    doc_count = fields.Integer(string="Document Count",
                                compute='_compute_doc_count')
 
     # Scheduled jobs
     cron_ids = fields.One2many('ir.cron', 'edi_gateway_id',
                                domain=[('state', '=', 'edi')],
-                               string='Schedule')
-    cron_count = fields.Integer(string='Schedule Count',
+                               string="Schedule")
+    cron_count = fields.Integer(string="Schedule Count",
                                 compute='_compute_cron_count')
 
     @api.multi
@@ -274,9 +274,9 @@ class EdiGateway(models.Model):
             with closing(Model.connect(self)) as _conn:
                 pass
         except Exception as err:
-            self.raise_issue(_('Connection test failed: %s'), err)
+            self.raise_issue(_("Connection test failed: %s"), err)
             return False
-        self.message_post(body=_('Connection tested successfully'))
+        self.message_post(body=_("Connection tested successfully"))
         return True
 
     @api.multi
@@ -294,7 +294,7 @@ class EdiGateway(models.Model):
                 with closing(Model.connect(self)) as conn:
                     transfer.do_transfer(conn)
         except Exception as err:
-            transfer.raise_issue(_('Transfer failed: %s'), err)
+            transfer.raise_issue(_("Transfer failed: %s"), err)
         return transfer
 
     @api.multi

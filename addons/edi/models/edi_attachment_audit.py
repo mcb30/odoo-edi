@@ -28,20 +28,20 @@ class Message(models.Model):
 class EdiAttachmentAudit(models.Model):
 
     _name = 'edi.attachment.audit'
-    _description = 'EDI Attachment Audit'
+    _description = "EDI Attachment Audit"
 
     # Associated record
-    mail_message_id = fields.Many2one('mail.message', string='Message',
+    mail_message_id = fields.Many2one('mail.message', string="Message",
                                       required=True, index=True,
                                       readonly=True, ondelete='cascade')
 
     # Audit information
-    attachment_id = fields.Many2one('ir.attachment', string='Attachment',
+    attachment_id = fields.Many2one('ir.attachment', string="Attachment",
                                     index=True, readonly=True,
                                     ondelete='set null')
-    datas_fname = fields.Char(string='File Name', readonly=True)
-    file_size = fields.Integer(string='File Size', readonly=True)
-    checksum = fields.Char(string='Checksum', readonly=True)
+    datas_fname = fields.Char(string="File Name", readonly=True)
+    file_size = fields.Integer(string="File Size", readonly=True)
+    checksum = fields.Char(string="Checksum", readonly=True)
 
     @api.model
     def audit_attachments(self, thread, attachments, **kwargs):

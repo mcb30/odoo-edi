@@ -20,7 +20,7 @@ class EdiDocumentType(models.Model):
     """
 
     _name = 'edi.document.type'
-    _description = 'EDI Document Type'
+    _description = "EDI Document Type"
     _order = 'sequence, id'
 
     def _default_sequence_id(self):
@@ -30,30 +30,30 @@ class EdiDocumentType(models.Model):
         return self.env.ref('edi.project_default')
 
     # Basic fields
-    name = fields.Char(string='Name', required=True, index=True)
-    model_id = fields.Many2one('ir.model', string='Document Model',
+    name = fields.Char(string="Name", required=True, index=True)
+    model_id = fields.Many2one('ir.model', string="Document Model",
                                domain=[('model', '!=', 'edi.document.type'),
                                        '|',
                                        ('model', '=like', 'edi.document.%'),
                                        ('model', '=like', '%.edi.document.%')],
                                required=True, index=True)
-    rec_type_ids = fields.Many2many('edi.record.type', string='Record Types')
+    rec_type_ids = fields.Many2many('edi.record.type', string="Record Types")
 
     # Autodetection order when detecting a document type based upon
     # the set of input attachments.
-    sequence = fields.Integer(string='Sequence', help='Autodetection Order')
+    sequence = fields.Integer(string="Sequence", help="Autodetection Order")
 
     # Sequence for generating document names
     sequence_id = fields.Many2one('ir.sequence',
-                                  string='Document Name Sequence',
+                                  string="Document Name Sequence",
                                   required=True, default=_default_sequence_id)
 
     # Issue tracker used for asynchronously reporting errors
-    project_id = fields.Many2one('project.project', string='Issue Tracker',
+    project_id = fields.Many2one('project.project', string="Issue Tracker",
                                  required=True, default=_default_project_id)
 
     _sql_constraints = [('model_uniq', 'unique (model_id)',
-                         'The document model must be unique')]
+                         "The document model must be unique")]
 
     @api.multi
     def compute_use_record(self, field, model):
@@ -109,30 +109,30 @@ class EdiDocument(models.Model):
     """
 
     _name = 'edi.document'
-    _description = 'EDI Document'
+    _description = "EDI Document"
     _inherit = ['edi.issues', 'mail.thread']
 
     # Basic fields
-    name = fields.Char(string='Name', index=True, copy=False,
+    name = fields.Char(string="Name", index=True, copy=False,
                        states={'done': [('readonly', True)],
                                'cancel': [('readonly', True)]})
-    state = fields.Selection([('draft', 'New'),
-                              ('cancel', 'Cancelled'),
-                              ('prep', 'Prepared'),
-                              ('done', 'Completed')],
-                             string='Status', readonly=True, index=True,
+    state = fields.Selection([('draft', "New"),
+                              ('cancel', "Cancelled"),
+                              ('prep', "Prepared"),
+                              ('done', "Completed")],
+                             string="Status", readonly=True, index=True,
                              default='draft', copy=False,
                              track_visibility='onchange')
-    doc_type_id = fields.Many2one('edi.document.type', string='Document Type',
+    doc_type_id = fields.Many2one('edi.document.type', string="Document Type",
                                   required=True, readonly=True)
-    prepare_date = fields.Datetime(string='Prepared on', readonly=True,
+    prepare_date = fields.Datetime(string="Prepared on", readonly=True,
                                    copy=False)
-    execute_date = fields.Datetime(string='Executed on', readonly=True,
+    execute_date = fields.Datetime(string="Executed on", readonly=True,
                                    copy=False)
-    note = fields.Text(string='Notes')
+    note = fields.Text(string="Notes")
 
     # Communications
-    transfer_id = fields.Many2one('edi.transfer', string='Transfer',
+    transfer_id = fields.Many2one('edi.transfer', string="Transfer",
                                   readonly=True, copy=False)
     gateway_id = fields.Many2one('edi.gateway',
                                  related='transfer_id.gateway_id',
@@ -142,14 +142,14 @@ class EdiDocument(models.Model):
     input_ids = fields.One2many('ir.attachment', 'res_id',
                                 domain=[('res_model', '=', 'edi.document'),
                                         ('res_field', '=', 'input_ids')],
-                                string='Input Attachments')
+                                string="Input Attachments")
     output_ids = fields.One2many('ir.attachment', 'res_id',
                                  domain=[('res_model', '=', 'edi.document'),
                                          ('res_field', '=', 'output_ids')],
-                                 string='Output Attachments')
-    input_count = fields.Integer(string='Input Count',
+                                 string="Output Attachments")
+    input_count = fields.Integer(string="Input Count",
                                  compute='_compute_input_count', store=True)
-    output_count = fields.Integer(string='Output Count',
+    output_count = fields.Integer(string="Output Count",
                                   compute='_compute_output_count', store=True)
 
     # Issues (i.e. asynchronously reported errors)
@@ -220,27 +220,27 @@ class EdiDocument(models.Model):
         self.lock_for_action()
         # Check document state
         if self.state != 'draft':
-            raise UserError(_('Cannot prepare a %s document') %
+            raise UserError(_("Cannot prepare a %s document") %
                             self._get_state_name())
         # Close any stale issues
         self.close_issues()
         # Create audit trail
         Audit = self.env['edi.attachment.audit']
         Audit.audit_attachments(self, self.input_ids,
-                                body=_('Input attachments'))
+                                body=_("Input attachments"))
         # Prepare document
-        _logger.info('Preparing %s', self.name)
+        _logger.info("Preparing %s", self.name)
         DocModel = self.env[self.doc_type_id.model_id.model]
         try:
             with self.env.cr.savepoint():
                 DocModel.prepare(self)
         except Exception as err:
-            self.raise_issue(_('Preparation failed: %s'), err)
+            self.raise_issue(_("Preparation failed: %s"), err)
             return False
         # Mark as prepared
         self.prepare_date = fields.Datetime.now()
         self.state = 'prep'
-        _logger.info('Prepared %s', self.name)
+        _logger.info("Prepared %s", self.name)
         return True
 
     @api.multi
@@ -251,19 +251,19 @@ class EdiDocument(models.Model):
         self.lock_for_action()
         # Check document state
         if self.state != 'prep':
-            raise UserError(_('Cannot unprepare a %s document') %
+            raise UserError(_("Cannot unprepare a %s document") %
                             self._get_state_name())
         # Close any stale issues
         self.close_issues()
         # Delete any records
-        _logger.info('Unpreparing %s', self.name)
+        _logger.info("Unpreparing %s", self.name)
         for rec_type in self.doc_type_id.rec_type_ids.sorted(reverse=True):
             Model = self.env[rec_type.model_id.model]
             Model.search([('doc_id', '=', self.id)]).unlink()
         # Mark as in draft
         self.prepare_date = None
         self.state = 'draft'
-        _logger.info('Unprepared %s', self.name)
+        _logger.info("Unprepared %s", self.name)
         return True
 
     @api.multi
@@ -279,12 +279,12 @@ class EdiDocument(models.Model):
         if self.state == 'draft':
             self.action_prepare()
         if self.state != 'prep':
-            raise UserError(_('Cannot execute a %s document') %
+            raise UserError(_("Cannot execute a %s document") %
                             self._get_state_name())
         # Close any stale issues
         self.close_issues()
         # Execute document
-        _logger.info('Executing %s', self.name)
+        _logger.info("Executing %s", self.name)
         DocModel = self.env[self.doc_type_id.model_id.model]
         try:
             with self.env.cr.savepoint():
@@ -295,16 +295,16 @@ class EdiDocument(models.Model):
                     # Otherwise, execute all records
                     self.execute_records()
         except Exception as err:
-            self.raise_issue(_('Execution failed: %s'), err)
+            self.raise_issue(_("Execution failed: %s"), err)
             return False
         # Create audit trail
         Audit = self.env['edi.attachment.audit']
         Audit.audit_attachments(self, self.output_ids,
-                                body=_('Output attachments'))
+                                body=_("Output attachments"))
         # Mark as processed
         self.execute_date = fields.Datetime.now()
         self.state = 'done'
-        _logger.info('Executed %s', self.name)
+        _logger.info("Executed %s", self.name)
         return True
 
     @api.multi
@@ -315,13 +315,13 @@ class EdiDocument(models.Model):
         self.lock_for_action()
         # Check document state
         if self.state == 'done':
-            raise UserError(_('Cannot cancel a %s document') %
+            raise UserError(_("Cannot cancel a %s document") %
                             self._get_state_name())
         # Close any stale issues
         self.close_issues()
         # Mark as cancelled
         self.state = 'cancel'
-        _logger.info('Cancelled %s', self.name)
+        _logger.info("Cancelled %s", self.name)
         return True
 
     @api.multi
@@ -329,7 +329,7 @@ class EdiDocument(models.Model):
         """View input attachments"""
         self.ensure_one()
         action = self.env.ref('edi.document_attachments_action').read()[0]
-        action['display_name'] = _('Inputs')
+        action['display_name'] = _("Inputs")
         action['domain'] = [('res_model', '=', 'edi.document'),
                             ('res_field', '=', 'input_ids'),
                             ('res_id', '=', self.id)]
@@ -343,7 +343,7 @@ class EdiDocument(models.Model):
         """View output attachments"""
         self.ensure_one()
         action = self.env.ref('edi.document_attachments_action').read()[0]
-        action['display_name'] = _('Outputs')
+        action['display_name'] = _("Outputs")
         action['domain'] = [('res_model', '=', 'edi.document'),
                             ('res_field', '=', 'output_ids'),
                             ('res_id', '=', self.id)]
@@ -356,8 +356,8 @@ class EdiDocument(models.Model):
 class EdiUnknownDocument(models.AbstractModel):
 
     _name = 'edi.document.unknown'
-    _description = 'Unknown Document'
+    _description = "Unknown Document"
 
     @api.model
     def prepare(self, _doc):
-        raise UserError(_('Unknown document type'))
+        raise UserError(_("Unknown document type"))

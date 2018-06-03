@@ -13,7 +13,7 @@ class Project(models.Model):
 
     _inherit = 'project.project'
 
-    use_edi_fields = fields.Boolean(string='Use EDI Fields', default=False)
+    use_edi_fields = fields.Boolean(string="Use EDI Fields", default=False)
 
 
 class ProjectIssue(models.Model):
@@ -21,11 +21,11 @@ class ProjectIssue(models.Model):
     _inherit = 'project.task'
 
     use_edi_fields = fields.Boolean(related='project_id.use_edi_fields')
-    edi_doc_id = fields.Many2one('edi.document', string='EDI Document',
+    edi_doc_id = fields.Many2one('edi.document', string="EDI Document",
                                  index=True, ondelete='cascade')
-    edi_gateway_id = fields.Many2one('edi.gateway', string='EDI Gateway',
+    edi_gateway_id = fields.Many2one('edi.gateway', string="EDI Gateway",
                                      index=True, ondelete='cascade')
-    edi_transfer_id = fields.Many2one('edi.transfer', string='EDI Transfer',
+    edi_transfer_id = fields.Many2one('edi.transfer', string="EDI Transfer",
                                       index=True, ondelete='cascade')
 
 
@@ -37,20 +37,20 @@ class EdiIssue(models.AbstractModel):
     """
 
     _name = 'edi.issues'
-    _description = 'EDI Issue-Tracked Object'
+    _description = "EDI Issue-Tracked Object"
     _inherit = ['mail.thread']
 
     def _default_project_id(self):
         return self.env.ref('edi.project_default')
 
-    project_id = fields.Many2one('project.project', string='Issue Tracker',
+    project_id = fields.Many2one('project.project', string="Issue Tracker",
                                  required=True, default=_default_project_id)
-    issue_ids = fields.One2many('project.task', string='Issues',
+    issue_ids = fields.One2many('project.task', string="Issues",
                                 domain=['|', ('stage_id.fold', '=', False),
                                         ('stage_id', '=', False)])
-    issue_count = fields.Integer(string='Issue Count',
+    issue_count = fields.Integer(string="Issue Count",
                                  compute='_compute_issue_counts', store=True)
-    rel_issue_count = fields.Integer(string='Related Issue Count',
+    rel_issue_count = fields.Integer(string="Related Issue Count",
                                      compute='_compute_issue_counts',
                                      store=True)
 
@@ -97,7 +97,7 @@ class EdiIssue(models.AbstractModel):
 
         # Construct issue
         vals = self._issue_vals()
-        vals['name'] = ('[%s] %s' % (self.name, title))
+        vals['name'] = ("[%s] %s" % (self.name, title))
         issue = self.env['project.task'].create(vals)
 
         # Construct list of threads

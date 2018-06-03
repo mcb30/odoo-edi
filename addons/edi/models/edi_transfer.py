@@ -13,44 +13,44 @@ class EdiTransfer(models.Model):
     """
 
     _name = 'edi.transfer'
-    _description = 'EDI Transfer'
+    _description = "EDI Transfer"
     _inherit = ['edi.issues', 'mail.thread']
 
     def _default_name(self):
         return fields.Datetime.now()
 
     # Basic fields
-    name = fields.Char(string='Name', required=True, index=True,
+    name = fields.Char(string="Name", required=True, index=True,
                        default=_default_name)
-    gateway_id = fields.Many2one('edi.gateway', string='Gateway',
+    gateway_id = fields.Many2one('edi.gateway', string="Gateway",
                                  required=True, index=True, readonly=True,
                                  ondelete='restrict')
-    note = fields.Text(string='Notes')
-    allow_receive = fields.Boolean(string='Receive Inputs', required=True,
+    note = fields.Text(string="Notes")
+    allow_receive = fields.Boolean(string="Receive Inputs", required=True,
                                    default=True, readonly=True)
-    allow_process = fields.Boolean(string='Process Documents', required=True,
+    allow_process = fields.Boolean(string="Process Documents", required=True,
                                    default=True, readonly=True)
-    allow_send = fields.Boolean(string='Send Outputs', required=True,
+    allow_send = fields.Boolean(string="Send Outputs", required=True,
                                 default=True, readonly=True)
 
     # Associated documents and attachments
     doc_ids = fields.One2many('edi.document', 'transfer_id',
-                              string='Documents', readonly=True)
+                              string="Documents", readonly=True)
     input_ids = fields.Many2many('ir.attachment',
                                  'edi_transfer_input_ids',
                                  domain=[('res_model', '=', 'edi.document'),
                                          ('res_field', '=', 'input_ids')],
-                                 string='Input Attachments', readonly=True)
+                                 string="Input Attachments", readonly=True)
     output_ids = fields.Many2many('ir.attachment',
                                   'edi_transfer_output_ids',
                                   domain=[('res_model', '=', 'edi.document'),
                                           ('res_field', '=', 'output_ids')],
-                                  string='Output Attachments', readonly=True)
-    doc_count = fields.Integer(string='Document Count',
+                                  string="Output Attachments", readonly=True)
+    doc_count = fields.Integer(string="Document Count",
                                compute='_compute_doc_count', store=True)
-    input_count = fields.Integer(string='Input Count',
+    input_count = fields.Integer(string="Input Count",
                                  compute='_compute_input_count', store=True)
-    output_count = fields.Integer(string='Output Count',
+    output_count = fields.Integer(string="Output Count",
                                   compute='_compute_output_count', store=True)
 
     # Issue tracking used for asynchronously reporting errors
@@ -89,7 +89,7 @@ class EdiTransfer(models.Model):
         """View input attachments"""
         self.ensure_one()
         action = self.env.ref('edi.document_attachments_action').read()[0]
-        action['display_name'] = _('Inputs')
+        action['display_name'] = _("Inputs")
         action['domain'] = [('id', 'in', self.mapped('input_ids.id'))]
         action['context'] = {'create': False}
         return action
@@ -99,7 +99,7 @@ class EdiTransfer(models.Model):
         """View output attachments"""
         self.ensure_one()
         action = self.env.ref('edi.document_attachments_action').read()[0]
-        action['display_name'] = _('Outputs')
+        action['display_name'] = _("Outputs")
         action['domain'] = [('id', 'in', self.mapped('output_ids.id'))]
         action['context'] = {'create': False}
         return action
@@ -119,7 +119,7 @@ class EdiTransfer(models.Model):
 
             # Log received input attachments
             Audit.audit_attachments(self, inputs,
-                                    body=(_('Received %s') % path.name))
+                                    body=(_("Received %s") % path.name))
 
             # Associate input attachments with this transfer
             self.input_ids += inputs
@@ -133,10 +133,10 @@ class EdiTransfer(models.Model):
             # Log created documents
             for doc in docs:
                 Audit.audit_attachments(self, doc.input_ids,
-                                        body=(_('Created %s') % doc.name))
-                _logger.info('%s created %s (%s)',
+                                        body=(_("Created %s") % doc.name))
+                _logger.info("%s created %s (%s)",
                              self.gateway_id.name, doc.name,
-                             ', '.join(doc.mapped('input_ids.datas_fname')))
+                             ", ".join(doc.mapped('input_ids.datas_fname')))
 
     @api.multi
     def send_outputs(self, conn):
@@ -153,7 +153,7 @@ class EdiTransfer(models.Model):
 
             # Log sent attachments
             Audit.audit_attachments(self, outputs,
-                                    body=(_('Sent %s') % path.name))
+                                    body=(_("Sent %s") % path.name))
 
             # Associate output attachments with this transfer
             self.output_ids += outputs
@@ -170,20 +170,20 @@ class EdiTransfer(models.Model):
         # Prepare and execute documents, if applicable
         if self.allow_process:
             for doc in self.doc_ids:
-                _logger.info('%s preparing %s',
+                _logger.info("%s preparing %s",
                              self.gateway_id.name, doc.name)
                 prepared = doc.action_prepare()
                 if prepared:
-                    _logger.info('%s executing %s',
+                    _logger.info("%s executing %s",
                                  self.gateway_id.name, doc.name)
                     executed = doc.action_execute()
                     if executed:
-                        self.message_post(body=(_('Executed %s') % doc.name))
+                        self.message_post(body=(_("Executed %s") % doc.name))
                     else:
-                        self.message_post(body=(_('Prepared %s') % doc.name))
+                        self.message_post(body=(_("Prepared %s") % doc.name))
 
         # Send outputs, if applicable
         if self.allow_send:
             self.send_outputs(conn)
 
-        _logger.info('%s transfer complete', self.gateway_id.name)
+        _logger.info("%s transfer complete", self.gateway_id.name)

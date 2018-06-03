@@ -13,7 +13,7 @@ class EdiConnectionXMLRPC(models.AbstractModel):
     """
 
     _name = 'edi.connection.xmlrpc'
-    _description = 'EDI XML-RPC Connection'
+    _description = "EDI XML-RPC Connection"
 
     @api.model
     def receive_inputs(self, conn, path, _transfer):

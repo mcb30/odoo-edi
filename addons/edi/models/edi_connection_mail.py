@@ -19,7 +19,7 @@ class EdiConnectionMail(models.AbstractModel):
     """
 
     _name = 'edi.connection.mail'
-    _description = 'EDI Mail Connection'
+    _description = "EDI Mail Connection"
 
     @api.model
     def connect(self, _gateway):

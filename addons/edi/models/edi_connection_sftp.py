@@ -40,7 +40,7 @@ class EdiConnectionSFTP(models.AbstractModel):
     """
 
     _name = 'edi.connection.sftp'
-    _description = 'EDI SFTP Connection'
+    _description = "EDI SFTP Connection"
 
     @api.model
     def connect(self, gateway):
@@ -78,7 +78,7 @@ class EdiConnectionSFTP(models.AbstractModel):
 
             # Receive file
             filepath = os.path.join(path.path, dirent.filename)
-            _logger.info('%s receiving %s', transfer.gateway_id.name,
+            _logger.info("%s receiving %s", transfer.gateway_id.name,
                          filepath)
             data = conn.file(filepath, mode='r').read()
 
@@ -95,7 +95,7 @@ class EdiConnectionSFTP(models.AbstractModel):
             # Check received size
             if attachment.file_size != dirent.st_size:
                 raise ValidationError(
-                    _('File size mismatch (expected %d got %d)') %
+                    _("File size mismatch (expected %d got %d)") %
                     (dirent.st_size, attachment.file_size)
                     )
 
@@ -133,7 +133,7 @@ class EdiConnectionSFTP(models.AbstractModel):
             # Send file with temporary filename
             temppath = os.path.join(path.path, ('.%s~' % uuid.uuid4().hex))
             filepath = os.path.join(path.path, attachment.datas_fname)
-            _logger.info('%s sending %s', transfer.gateway_id.name, filepath)
+            _logger.info("%s sending %s", transfer.gateway_id.name, filepath)
             data = base64.b64decode(attachment.datas)
             conn.file(temppath, mode='w').write(data)
 

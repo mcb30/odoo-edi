@@ -26,7 +26,7 @@ class EdiConnectionLocal(models.AbstractModel):
     """
 
     _name = 'edi.connection.local'
-    _description = 'EDI Local Connection'
+    _description = "EDI Local Connection"
 
     @api.model
     def connect(self, _gateway):
@@ -64,7 +64,7 @@ class EdiConnectionLocal(models.AbstractModel):
                 continue
 
             # Read file
-            _logger.info('%s reading %s', transfer.gateway_id.name, filepath)
+            _logger.info("%s reading %s", transfer.gateway_id.name, filepath)
             with open(filepath, mode='rb') as f:
                 data = f.read()
 
@@ -81,7 +81,7 @@ class EdiConnectionLocal(models.AbstractModel):
             # Check received size
             if attachment.file_size != stat.st_size:
                 raise ValidationError(
-                    _('File size mismatch (expected %d got %d)') %
+                    _("File size mismatch (expected %d got %d)") %
                     (stat.st_size, attachment.file_size)
                     )
 
@@ -119,7 +119,7 @@ class EdiConnectionLocal(models.AbstractModel):
 
             # Write file with temporary filename
             temppath = os.path.join(path.path, ('.%s~' % uuid.uuid4().hex))
-            _logger.info('%s writing %s', transfer.gateway_id.name, filepath)
+            _logger.info("%s writing %s", transfer.gateway_id.name, filepath)
             data = base64.b64decode(attachment.datas)
             with open(temppath, mode='wb') as f:
                 f.write(data)

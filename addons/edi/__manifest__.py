@@ -1,6 +1,6 @@
 {
-    'name': 'EDI',
-    'summary': 'Electronic Data Interchange',
+    'name': "EDI",
+    'summary': "Electronic Data Interchange",
     'description': """
 Electronic Data Interchange
 ===========================
@@ -24,8 +24,8 @@ Key Features
     'version': '0.1',
     'depends': ['project', 'document'],
     'external_dependencies': {'python': ['paramiko']},
-    'author': 'Michael Brown <mbrown@fensystems.co.uk>',
-    'category': 'Extra Tools',
+    'author': "Michael Brown <mbrown@fensystems.co.uk>",
+    'category': "Extra Tools",
     'data': [
              'security/ir.model.access.csv',
              'data/project_issue_data.xml',
