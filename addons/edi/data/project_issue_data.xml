@@ -19,6 +19,7 @@
     <!-- Create "EDI" project -->
     <record id="project_default" model="project.project">
       <field name="name">EDI</field>
+      <field name="label_tasks">Issues</field>
       <field name="use_edi_fields" eval="True"/>
       <field name="type_ids" eval="[(6,0,[ref('task_type_new'),
 					  ref('task_type_closed')])]"/>
