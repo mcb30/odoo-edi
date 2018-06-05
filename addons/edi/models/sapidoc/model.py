@@ -25,7 +25,7 @@ class Field(object):
             return self
         value = record[self.chars].tobytes().strip()
         if value:
-            return value
+            return value.decode()
 
     def __set__(self, record, value):
         """Set field value in containing record"""

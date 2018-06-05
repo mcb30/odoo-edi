@@ -48,7 +48,7 @@ keywords = {
     'END_GROUP': None,
 }
 
-tokens = ['STRING', 'NUMBER', 'TYPENAME', 'REQUIREMENT'] + keywords.keys()
+tokens = ['STRING', 'NUMBER', 'TYPENAME', 'REQUIREMENT'] + list(keywords.keys())
 
 t_ANY_ignore = ' \t'
 
