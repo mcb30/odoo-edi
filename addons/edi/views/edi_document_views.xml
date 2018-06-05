@@ -81,7 +81,8 @@
 	    <group name="info">
 	      <field name="note"/>
 	    </group>
-	    <notebook name="records">
+	    <notebook name="records"
+		      attrs="{'invisible':[('prepare_date','=',False)]}">
 	      <field name="rec_type_names" invisible="1"/>
 	    </notebook>
 	  </sheet>
