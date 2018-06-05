@@ -38,6 +38,8 @@ class EdiDocumentType(models.Model):
                                        ('model', '=like', '%.edi.document.%')],
                                required=True, index=True)
     rec_type_ids = fields.Many2many('edi.record.type', string="Record Types")
+    rec_type_names = fields.Char(string="Record Type Names",
+                                 compute='_compute_rec_type_names', store=True)
 
     # Autodetection order when detecting a document type based upon
     # the set of input attachments.
@@ -56,11 +58,26 @@ class EdiDocumentType(models.Model):
                          "The document model must be unique")]
 
     @api.multi
-    def compute_use_record(self, field, model):
-        """Compute use of record type"""
+    @api.depends('rec_type_ids', 'rec_type_ids.model_id',
+                 'rec_type_ids.model_id.model')
+    def _compute_rec_type_names(self):
+        """Compute record type name list
+
+        The record type name list is used by the view definitions to
+        determine whether or not to display particular record-specific
+        pages within the document form view.
+
+        This avoids the need for each record type to define a custom
+        boolean field on ``edi.document.type`` to convey the same
+        information.
+
+        Note that this hack would be entirely unnecessary if the Odoo
+        domain syntax allowed us to express the concept of "visible if
+        ``rec_type_ids`` contains <value>".
+        """
         for doc_type in self:
             rec_models = doc_type.mapped('rec_type_ids.model_id.model')
-            setattr(doc_type, field, (model in rec_models))
+            doc_type.rec_type_names = '/%s/' % '/'.join(rec_models)
 
     @api.model
     def autocreate(self, inputs):
@@ -155,6 +172,9 @@ class EdiDocument(models.Model):
     # Issues (i.e. asynchronously reported errors)
     project_id = fields.Many2one(related='doc_type_id.project_id')
     issue_ids = fields.One2many(inverse_name='edi_doc_id')
+
+    # Related fields provided solely for use by views
+    rec_type_names = fields.Char(related='doc_type_id.rec_type_names')
 
     @api.depends('input_ids', 'input_ids.res_id')
     def _compute_input_count(self):

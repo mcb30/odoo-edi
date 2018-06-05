@@ -81,7 +81,9 @@
 	    <group name="info">
 	      <field name="note"/>
 	    </group>
-	    <notebook name="records"/>
+	    <notebook name="records">
+	      <field name="rec_type_names" invisible="1"/>
+	    </notebook>
 	  </sheet>
 	  <div class="oe_chatter">
             <field name="message_follower_ids" widget="mail_followers"/>
