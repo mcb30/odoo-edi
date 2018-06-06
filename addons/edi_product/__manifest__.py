@@ -20,6 +20,8 @@ Key Features
     'data': [
         'security/ir.model.access.csv',
         'views/edi_product_views.xml',
+        'views/edi_product_tutorial_views.xml',
         'data/edi_product_data.xml',
+        'data/edi_product_tutorial_data.xml',
     ],
 }
