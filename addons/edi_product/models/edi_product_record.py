@@ -9,7 +9,7 @@ _logger = logging.getLogger(__name__)
 
 
 class EdiProductRecord(models.AbstractModel):
-    """An EDI product record
+    """EDI product record
 
     This is the base model for EDI product records.  Each row
     represents a product that will be created or updated when the

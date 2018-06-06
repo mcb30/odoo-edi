@@ -11,7 +11,7 @@ _logger = logging.getLogger(__name__)
 
 
 class EdiProductDocument(models.AbstractModel):
-    """An EDI product document
+    """EDI product document
 
     This is the base model for EDI product documents.  Each row
     represents a collection of EDI product records that, in turn,

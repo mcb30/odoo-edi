@@ -1,4 +1,4 @@
-# pylint: disable=pointless-statement
+# pylint: disable=missing-docstring,pointless-statement
 {
     'name': "EDI for Products & Pricelists",
     'description': """

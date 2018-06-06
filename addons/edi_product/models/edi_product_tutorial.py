@@ -15,6 +15,7 @@ from odoo.tools import float_compare
 
 
 class EdiDocument(models.Model):
+    """Extend ``edi.document`` to include EDI product tutorial records"""
 
     _inherit = 'edi.document'
 
@@ -23,6 +24,7 @@ class EdiDocument(models.Model):
 
 
 class EdiProductTutorialRecord(models.Model):
+    """EDI product tutorial record"""
 
     ROUNDING = 0.01
 
@@ -56,6 +58,7 @@ class EdiProductTutorialRecord(models.Model):
 
 
 class EdiProductTutorialDocument(models.AbstractModel):
+    """EDI product tutorial document model"""
 
     _name = 'edi.product.tutorial.document'
     _inherit = 'edi.product.document'

@@ -9,7 +9,7 @@ Matmas01 = SapIDoc('edi_product', 'static', 'sapidoc', 'matmas01.txt')
 
 
 class MaterialNumberGroupKey(object):
-    """A key usable for grouping IDoc data records by material number"""
+    """Key usable for grouping IDoc data records by material number"""
 
     def __init__(self):
         self.matnr = None
@@ -20,7 +20,7 @@ class MaterialNumberGroupKey(object):
 
 
 class EdiDocument(models.Model):
-    """Extend ``edi.document`` to include SAP products"""
+    """Extend ``edi.document`` to include EDI product SAP IDoc records"""
 
     _inherit = 'edi.document'
 
@@ -29,7 +29,7 @@ class EdiDocument(models.Model):
 
 
 class EdiProductSapRecord(models.Model):
-    """An EDI product SAP IDoc record"""
+    """EDI product SAP IDoc record"""
 
     ROUNDING = 0.01
 
@@ -58,7 +58,7 @@ class EdiProductSapRecord(models.Model):
 
 
 class EdiProductSapMatmas01(models.AbstractModel):
-    """SAP MATMAS01 (Material Master) IDoc"""
+    """SAP MATMAS01 (Material Master) IDoc document model"""
 
     SAP_FIELD_MAP = {
         'MAKTX': 'description',
