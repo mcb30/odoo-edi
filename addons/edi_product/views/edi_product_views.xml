@@ -32,7 +32,7 @@
       <field name="name">edi.product.record.tree</field>
       <field name="model">edi.product.record</field>
       <field name="arch" type="xml">
-	<tree string="Products">
+	<tree string="Products" default_order="doc_id desc, id">
 	  <field name="name"/>
 	  <field name="doc_id"/>
 	  <field name="product_id"/>
