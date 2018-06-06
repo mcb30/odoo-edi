@@ -19,6 +19,7 @@ class EdiConnectionMail(models.AbstractModel):
     """
 
     _name = 'edi.connection.mail'
+    _inherit = 'edi.connection.model'
     _description = "EDI Mail Connection"
 
     @api.model

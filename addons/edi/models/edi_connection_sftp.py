@@ -41,6 +41,7 @@ class EdiConnectionSFTP(models.AbstractModel):
     """
 
     _name = 'edi.connection.sftp'
+    _inherit = 'edi.connection.model'
     _description = "EDI SFTP Connection"
 
     @api.model

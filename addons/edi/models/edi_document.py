@@ -6,6 +6,22 @@ from odoo.tools.translate import _
 _logger = logging.getLogger(__name__)
 
 
+class IrModel(models.Model):
+
+    _inherit = 'ir.model'
+
+    is_edi_document = fields.Boolean(string="EDI Document Model", default=False,
+                                     help="This is an EDI document model")
+
+    def _reflect_model_params(self, model):
+        vals = super(IrModel, self)._reflect_model_params(model)
+        vals['is_edi_document'] = (
+            model._name != 'edi.document.model' and
+            issubclass(type(model), self.pool['edi.document.model'])
+        )
+        return vals
+
+
 class EdiDocumentType(models.Model):
     """EDI document type
 
@@ -32,10 +48,7 @@ class EdiDocumentType(models.Model):
     # Basic fields
     name = fields.Char(string="Name", required=True, index=True)
     model_id = fields.Many2one('ir.model', string="Document Model",
-                               domain=[('model', '!=', 'edi.document.type'),
-                                       '|',
-                                       ('model', '=like', 'edi.document.%'),
-                                       ('model', '=like', '%.edi.document.%')],
+                               domain=[('is_edi_document', '=', True)],
                                required=True, index=True)
     rec_type_ids = fields.Many2many('edi.record.type', string="Record Types")
     rec_type_names = fields.Char(string="Record Type Names",
@@ -375,11 +388,23 @@ class EdiDocument(models.Model):
         return action
 
 
-class EdiUnknownDocument(models.AbstractModel):
+class EdiDocumentModel(models.AbstractModel):
 
-    _name = 'edi.document.unknown'
-    _description = "Unknown Document"
+    _name = 'edi.document.model'
+    _description = "EDI Document Model"
 
     @api.model
     def prepare(self, _doc):
+        pass
+
+
+class EdiDocumentUnknown(models.AbstractModel):
+
+    _name = 'edi.document.unknown'
+    _inherit = 'edi.document.model'
+    _description = "Unknown Document"
+
+    @api.model
+    def prepare(self, doc):
+        super(EdiDocumentUnknown, self).prepare(doc)
         raise UserError(_("Unknown document type"))

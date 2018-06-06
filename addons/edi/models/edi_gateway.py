@@ -97,10 +97,7 @@ class EdiGateway(models.Model):
     # Basic fields
     name = fields.Char(string="Name", required=True, index=True)
     model_id = fields.Many2one('ir.model', string="Connection Model",
-                               domain=['|',
-                                       ('model', '=like', 'edi.connection.%'),
-                                       ('model', '=like',
-                                        '%.edi.connection.%')],
+                               domain=[('is_edi_connection', '=', True)],
                                required=True, index=True)
     can_initiate = fields.Boolean(string="Initiate Connections",
                                   compute='_compute_can_initiate')

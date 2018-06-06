@@ -13,6 +13,7 @@ class EdiConnectionXMLRPC(models.AbstractModel):
     """
 
     _name = 'edi.connection.xmlrpc'
+    _inherit = 'edi.connection.model'
     _description = "EDI XML-RPC Connection"
 
     @api.model

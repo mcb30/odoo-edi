@@ -26,6 +26,7 @@ class EdiConnectionLocal(models.AbstractModel):
     """
 
     _name = 'edi.connection.local'
+    _inherit = 'edi.connection.model'
     _description = "EDI Local Connection"
 
     @api.model
