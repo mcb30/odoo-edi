@@ -1,3 +1,5 @@
+"""EDI SFTP connection"""
+
 from datetime import datetime, timedelta
 import os.path
 import fnmatch

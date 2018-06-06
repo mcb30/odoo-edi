@@ -12,6 +12,7 @@ class SapIDocHeader(sapidoc.model.IDoc):
     """SAP IDoc header parser"""
 
     class ControlRecord(sapidoc.model.Record):
+        """SAP IDoc header control record"""
         IDOCTYP = sapidoc.model.CharacterField(slice(39, 69))
         MESTYP = sapidoc.model.CharacterField(slice(99, 129))
 

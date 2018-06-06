@@ -126,6 +126,7 @@ def p_property_flag(p):
 # Errors
 
 def p_error(p):
+    # pylint: disable=missing-docstring
     if p:
         warn_explicit("Unexpected token: %s" % p.value,
                       SyntaxError, '', p.lineno)

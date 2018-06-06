@@ -1,3 +1,5 @@
+"""EDI Mail connection"""
+
 from datetime import datetime, timedelta
 import fnmatch
 import logging
@@ -8,7 +10,9 @@ _logger = logging.getLogger(__name__)
 
 class DummyConnection(object):
     """Dummy connection object representing connection to mail server"""
+
     def close(self):
+        """Close dummy connection"""
         pass
 
 

@@ -1,3 +1,5 @@
+"""EDI documents"""
+
 import logging
 from odoo import api, fields, models
 from odoo.exceptions import UserError
@@ -7,6 +9,7 @@ _logger = logging.getLogger(__name__)
 
 
 class IrModel(models.Model):
+    """Extend ``ir.model`` to include EDI information"""
 
     _inherit = 'ir.model'
 
@@ -389,16 +392,22 @@ class EdiDocument(models.Model):
 
 
 class EdiDocumentModel(models.AbstractModel):
+    """EDI document model
+
+    This is the abstract base class for all EDI document models.
+    """
 
     _name = 'edi.document.model'
     _description = "EDI Document Model"
 
     @api.model
     def prepare(self, _doc):
+        """Prepare document"""
         pass
 
 
 class EdiDocumentUnknown(models.AbstractModel):
+    """Unknown EDI document model"""
 
     _name = 'edi.document.unknown'
     _inherit = 'edi.document.model'
@@ -406,5 +415,6 @@ class EdiDocumentUnknown(models.AbstractModel):
 
     @api.model
     def prepare(self, doc):
+        """Prepare document"""
         super(EdiDocumentUnknown, self).prepare(doc)
         raise UserError(_("Unknown document type"))

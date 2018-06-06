@@ -1,3 +1,5 @@
+"""EDI records"""
+
 import logging
 from odoo import api, fields, models
 
@@ -5,6 +7,7 @@ _logger = logging.getLogger(__name__)
 
 
 class EdiRecordType(models.Model):
+    """EDI record type"""
 
     _name = 'edi.record.type'
     _description = "EDI Record Type"
@@ -19,6 +22,10 @@ class EdiRecordType(models.Model):
 
 
 class EdiRecord(models.AbstractModel):
+    """EDI record
+
+    This is the abstract base class for all EDI records.
+    """
 
     _name = 'edi.record'
     _description = "EDI Record"

@@ -99,6 +99,8 @@ def t_requirement_REQUIREMENT(t):
     return t
 
 def t_ANY_error(_t):
+    # pylint: disable=missing-docstring
+    #
     # There is no way to reach this, but we define it to avoid a
     # spurious warning.
     pass

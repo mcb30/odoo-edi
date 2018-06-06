@@ -1,3 +1,5 @@
+"""EDI attachment audit log"""
+
 import logging
 from odoo import api, fields, models
 
@@ -5,6 +7,7 @@ _logger = logging.getLogger(__name__)
 
 
 class Message(models.Model):
+    """Extend ``mail.message`` to include EDI attachment audit logs"""
 
     _inherit = 'mail.message'
 
@@ -26,6 +29,7 @@ class Message(models.Model):
 
 
 class EdiAttachmentAudit(models.Model):
+    """EDI attachment audit log"""
 
     _name = 'edi.attachment.audit'
     _description = "EDI Attachment Audit"

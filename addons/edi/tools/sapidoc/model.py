@@ -105,6 +105,11 @@ class Type(Enum):
 
 
 def Node(name, fields):
+    """Construct IDoc abstract syntax tree node
+
+    An IDoc abstract syntax tree node is a ``namedtuple`` in which
+    each field defaults to ``None``.
+    """
     res = namedtuple(name, fields)
     res.__new__.__defaults__ = (None,) * len(res._fields)
     return res

@@ -1,3 +1,5 @@
+"""EDI XML-RPC connection"""
+
 import fnmatch
 import logging
 from odoo import api, models

@@ -1,7 +1,10 @@
+"""EDI connection"""
+
 from odoo import fields, models
 
 
 class IrModel(models.Model):
+    """Extend ``ir.model`` to include ``is_edi_connection`` flag"""
 
     _inherit = 'ir.model'
 
@@ -19,6 +22,10 @@ class IrModel(models.Model):
 
 
 class EdiConnectionModel(models.AbstractModel):
+    """EDI connection model
+
+    This is the abstract base class for all EDI connection models.
+    """
 
     _name = 'edi.connection.model'
     _description = "EDI Connection Model"

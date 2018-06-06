@@ -1,3 +1,5 @@
+"""EDI local filesystem connection"""
+
 from datetime import datetime, timedelta
 import os
 import os.path
@@ -14,7 +16,9 @@ _logger = logging.getLogger(__name__)
 
 class DummyConnection(object):
     """Dummy connection object representing connection to local filesystem"""
+
     def close(self):
+        """Close dummy connection"""
         pass
 
 

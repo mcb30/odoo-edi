@@ -21,6 +21,7 @@ def subtree_walk(subtree):
 
 
 class Model(object):
+    """SAP IDoc document model builder"""
 
     __slots__ = ['tree', 'doc']
 

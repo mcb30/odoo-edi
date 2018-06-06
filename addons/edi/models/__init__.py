@@ -1,3 +1,5 @@
+"""EDI models"""
+
 from . import edi_attachment_audit
 from . import edi_issues
 from . import edi_document
