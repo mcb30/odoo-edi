@@ -54,6 +54,9 @@ class EdiProductRecord(models.AbstractModel):
     description = fields.Char(string="Description", required=True,
                               readonly=True, default="Unknown")
 
+    _sql_constraints = [('doc_name_uniq', 'unique (doc_id, name)',
+                         "Each product may appear at most once per document")]
+
     @api.multi
     def _product_values(self):
         """Construct ``product.product`` field value dictionary
