@@ -98,9 +98,9 @@ class EdiProductDocument(models.AbstractModel):
             raise UserError(_("Missing input attachment"))
 
         # Process documents in batches of product records for efficiency
-        for attachment in doc.input_ids:
-            values = self._record_values(b64decode(attachment.datas))
-            for r, batch in batched(values, self.BATCH_SIZE):
-                _logger.info(_("%s preparing %s %d-%d"), doc.name,
-                             attachment.datas_fname, r[0], r[-1])
-                self._prepare_batch(doc, batch)
+        values = (vals
+                  for attachment in doc.input_ids
+                  for vals in self._record_values(b64decode(attachment.datas)))
+        for r, batch in batched(values, self.BATCH_SIZE):
+            _logger.info(_("%s preparing %d-%d"), doc.name, r[0], r[-1])
+            self._prepare_batch(doc, batch)
