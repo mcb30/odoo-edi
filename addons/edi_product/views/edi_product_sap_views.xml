@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- EDI product SAP IDoc record form view -->
+    <record id="sap_record_form" model="ir.ui.view">
+      <field name="name">edi.product.sap.record.form</field>
+      <field name="model">edi.product.sap.record</field>
+      <field name="inherit_id" ref="record_form"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+	<xpath expr="//group[@name='basic']" position="after">
+	  <group>
+	    <field name="barcode"/>
+	  </group>
+	</xpath>
+      </field>
+    </record>
+
+    <!-- EDI product SAP IDoc record tree view -->
+    <record id="sap_record_tree" model="ir.ui.view">
+      <field name="name">edi.product.sap.record.tree</field>
+      <field name="model">edi.product.sap.record</field>
+      <field name="inherit_id" ref="record_tree"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+	<xpath expr="//tree" position="inside">
+	  <field name="barcode"/>
+	</xpath>
+      </field>
+    </record>
+
+    <!-- EDI product SAP IDoc record action window -->
+    <record id="sap_record_action" model="ir.actions.act_window">
+      <field name="name">SAP MATMAS</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.product.sap.record</field>
+      <field name="view_type">form</field>
+      <field name="view_id" ref="sap_record_tree"/>
+      <field name="search_view_id" ref="record_search"/>
+      <field name="context">{'create': False}</field>
+    </record>
+
+    <!-- EDI product SAP IDoc record menu item -->
+    <menuitem id="sap_record_menu" action="sap_record_action"
+	      parent="edi.sap_menu" sequence="10"/>
+
+    <!-- EDI product SAP IDoc records field -->
+    <record id="sap_document_form" model="ir.ui.view">
+      <field name="name">edi.product.sap.document.form</field>
+      <field name="model">edi.document</field>
+      <field name="inherit_id" ref="edi.document_form"/>
+      <field name="arch" type="xml">
+	<xpath expr="//notebook[@name='records']" position="inside">
+	  <page name="product_sap" string="SAP MATMAS"
+		attrs="{'invisible':['!',('rec_type_names','ilike',
+					  '/edi.product.sap.record/')]}">
+	    <field name="product_sap_ids" readonly="1">
+	      <tree>
+		<field name="name"/>
+		<field name="product_id"/>
+		<field name="description"/>
+		<field name="barcode"/>
+	      </tree>
+	    </field>
+	  </page>
+	</xpath>
+      </field>
+    </record>
+
+  </data>
+</odoo>
