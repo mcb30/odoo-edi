@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- EDI product record type -->
+    <record id="record_type" model="edi.record.type">
+      <field name="name">Product</field>
+      <field name="model_id" ref="model_edi_product_record"/>
+      <field name="sequence">10</field>
+    </record>
+
+  </data>
+</odoo>
