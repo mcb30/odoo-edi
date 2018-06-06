@@ -29,6 +29,12 @@ class Model(object):
         """Construct document model from syntax description"""
         return cls(parser.parse(description, lexer=lexer))
 
+    @classmethod
+    def parse_file(cls, filename):
+        """Construct document model from syntax description file"""
+        with open(filename, 'r') as f:
+            return cls.parse(f.read())
+
     def _record(self, name, base, subtree):
         """Construct record class from abstract syntax subtree"""
         ns = {x.name: x.type(slice(x.character_first - 1, x.character_last))
