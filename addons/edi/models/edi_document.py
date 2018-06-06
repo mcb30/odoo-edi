@@ -220,7 +220,7 @@ class EdiDocument(models.Model):
         """Duplicate record (including input attachments)"""
         self.ensure_one()
         new = super(EdiDocument, self).copy(default)
-        for attachment in self.input_ids:
+        for attachment in self.input_ids.sorted('id'):
             attachment.copy({
                 'res_id': new.id,
                 'datas': attachment.datas,

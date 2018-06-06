@@ -121,7 +121,7 @@ class EdiConnectionSFTP(models.AbstractModel):
         ])
 
         # Send attachments
-        for attachment in docs.mapped('output_ids'):
+        for attachment in docs.mapped('output_ids').sorted('id'):
 
             # Skip files not matching glob pattern
             if not fnmatch.fnmatch(attachment.datas_fname, path.glob):

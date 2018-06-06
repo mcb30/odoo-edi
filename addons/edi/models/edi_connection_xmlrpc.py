@@ -62,7 +62,7 @@ class EdiConnectionXMLRPC(models.AbstractModel):
             docs = docs.filtered(lambda x: x.doc_type_id in path.doc_type_ids)
 
         # Identify output attachments
-        outputs = docs.mapped('output_ids').filtered(
+        outputs = docs.mapped('output_ids').sorted('id').filtered(
             lambda x: fnmatch.fnmatch(x.datas_fname, path.glob)
         )
 

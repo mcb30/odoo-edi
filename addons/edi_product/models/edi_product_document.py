@@ -99,7 +99,7 @@ class EdiProductDocument(models.AbstractModel):
 
         # Process documents in batches of product records for efficiency
         values = (vals
-                  for attachment in doc.input_ids
+                  for attachment in doc.input_ids.sorted('id')
                   for vals in self._record_values(b64decode(attachment.datas)))
         for r, batch in batched(values, self.BATCH_SIZE):
             _logger.info(_("%s preparing %d-%d"), doc.name, r[0], r[-1])

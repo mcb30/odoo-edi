@@ -51,7 +51,7 @@ class EdiAttachmentAudit(models.Model):
                                     'datas_fname': x.datas_fname,
                                     'file_size': x.file_size,
                                     'checksum': x.checksum})
-                            for x in attachments]
+                            for x in attachments.sorted('id', reverse=True)]
             thread.message_post(attachment_ids=[x.id for x in attachments],
                                 edi_attachment_audit_ids=audit_values,
                                 **kwargs)

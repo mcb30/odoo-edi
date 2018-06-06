@@ -62,7 +62,7 @@ class EdiConnectionMail(models.AbstractModel):
         for doc in docs:
 
             # Identify applicable attachments
-            attachments = doc.output_ids.filtered(
+            attachments = doc.output_ids.sorted('id').filtered(
                 lambda x: fnmatch.fnmatch(x.datas_fname, path.glob)
             )
 
