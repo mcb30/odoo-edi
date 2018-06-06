@@ -13,7 +13,7 @@
     <record id="document_type_unknown" model="edi.document.type">
       <field name="name">Unknown</field>
       <field name="model_id" ref="model_edi_document_unknown"/>
-      <field name="sequence">999</field>
+      <field name="sequence" eval="999"/>
     </record>
 
   </data>
