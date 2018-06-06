@@ -1,4 +1,4 @@
-"""Helper tools for EDI"""
+"""Iterator helpers for EDI"""
 
 from itertools import count, zip_longest
 
