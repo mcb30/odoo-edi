@@ -5,7 +5,7 @@ import logging
 from odoo import api, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
-from odoo.addons.edi.tools import batched
+from odoo.addons.edi.tools import batched, Comparator
 
 _logger = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ class EdiProductDocument(models.AbstractModel):
         return ()
 
     @api.model
-    def _prepare_batch(self, doc, batch):
+    def _prepare_batch(self, doc, batch, comparator):
         """Prepare batch of records"""
         Product = self.env['product.product'].with_context(active_test=False)
         Template = self.env['product.template'].with_context(active_test=False)
@@ -76,18 +76,21 @@ class EdiProductDocument(models.AbstractModel):
         templates.mapped('name')
 
         # Create EDI records
-        for values in batch:
+        for record_vals in batch:
 
             # Skip unchanged products
-            product = products_by_key.get(values['name'])
-            if product and not EdiRecord._product_changed(product, values):
-                continue
+            product = products_by_key.get(record_vals['name'])
+            if product:
+                product_vals = EdiRecord._product_values(record_vals)
+                if all(comparator[k](getattr(product, k), v)
+                       for k, v in product_vals.items()):
+                    continue
 
             # Create EDI product record
-            values['doc_id'] = doc.id
+            record_vals['doc_id'] = doc.id
             if product:
-                values['product_id'] = product.id
-            EdiRecord.create(values)
+                record_vals['product_id'] = product.id
+            EdiRecord.create(record_vals)
 
     @api.model
     def prepare(self, doc):
@@ -97,10 +100,15 @@ class EdiProductDocument(models.AbstractModel):
         if not doc.input_ids:
             raise UserError(_("Missing input attachment"))
 
+        # Construct product comparator
+        comparator = Comparator(self.env['product.product'])
+
         # Process documents in batches of product records for efficiency
-        values = (vals
-                  for attachment in doc.input_ids.sorted('id')
-                  for vals in self._record_values(b64decode(attachment.datas)))
-        for r, batch in batched(values, self.BATCH_SIZE):
+        record_vals = (
+            record_vals
+            for attachment in doc.input_ids.sorted('id')
+            for record_vals in self._record_values(b64decode(attachment.datas))
+        )
+        for r, batch in batched(record_vals, self.BATCH_SIZE):
             _logger.info(_("%s preparing %d-%d"), doc.name, r[0], r[-1])
-            self._prepare_batch(doc, batch)
+            self._prepare_batch(doc, batch, comparator)

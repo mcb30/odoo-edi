@@ -22,8 +22,7 @@ class EdiProductRecord(models.AbstractModel):
     ``product.product.weight`` field is defined as a floating point
     number of kilograms.
 
-    Derived models should implement :meth:`~._product_values` and
-    :meth:`~._product_changed`.
+    Derived models should implement :meth:`~._product_values`.
     """
 
     BATCH_SIZE = 1000
@@ -58,7 +57,16 @@ class EdiProductRecord(models.AbstractModel):
                          "Each product may appear at most once per document")]
 
     @api.multi
-    def _product_values(self):
+    def _record_values(self):
+        """Reconstruct record field value dictionary"""
+        self.ensure_one()
+        record_vals = self.copy_data()[0]
+        del record_vals['doc_id']
+        del record_vals['product_id']
+        return record_vals
+
+    @api.model
+    def _product_values(self, record_vals):
         """Construct ``product.product`` field value dictionary
 
         Must return a dictionary that can be passed to
@@ -66,27 +74,12 @@ class EdiProductRecord(models.AbstractModel):
         :meth:`~odoo.models.Model.write` in order to create or update
         a ``product.product`` record.
         """
-        self.ensure_one()
-        values = {
-            self.KEY_FIELD: self.name,
-            'name': self.description,
+        return {
+            self.KEY_FIELD: record_vals['name'],
+            'name': record_vals['description'],
             'active': True,
         }
-        return values
 
-    @api.model
-    def _product_changed(self, product, values):
-        """Check if existing ``product.product`` record should be changed
-
-        Must return a boolean indicating whether or not an existing
-        ``product.product`` record would be changed by this potential
-        EDI product record (as represented by the values dictionary
-        that would be used to create the EDI product record).
-
-        This is used by the EDI product document preparation process
-        to decide whether or not to create an EDI product record.
-        """
-        return product.name != values['description'] or not product.active
 
     @api.multi
     def execute(self):
@@ -102,11 +95,13 @@ class EdiProductRecord(models.AbstractModel):
                                 self.BATCH_SIZE):
             _logger.info(_("%s updating %d-%d"), doc.name, r[0], r[-1])
             for rec in batch:
-                rec.product_id.write(rec._product_values())
+                product_vals = rec._product_values(rec._record_values())
+                rec.product_id.write(product_vals)
 
         # Create new products
         for r, batch in batched(self.filtered(lambda x: not x.product_id),
                                 self.BATCH_SIZE):
             _logger.info(_("%s creating %d-%d"), doc.name, r[0], r[-1])
             for rec in batch:
-                rec.product_id = Product.create(rec._product_values())
+                product_vals = rec._product_values(rec._record_values())
+                rec.product_id = Product.create(product_vals)

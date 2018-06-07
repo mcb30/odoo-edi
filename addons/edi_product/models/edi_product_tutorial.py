@@ -11,7 +11,6 @@ document format comprising a CSV file with a fixed list of columns:
 
 import csv
 from odoo import api, fields, models
-from odoo.tools import float_compare
 
 
 class EdiDocument(models.Model):
@@ -26,8 +25,6 @@ class EdiDocument(models.Model):
 class EdiProductTutorialRecord(models.Model):
     """EDI product tutorial record"""
 
-    ROUNDING = 0.01
-
     _name = 'edi.product.tutorial.record'
     _inherit = 'edi.product.record'
     _description = "Product"
@@ -37,24 +34,15 @@ class EdiProductTutorialRecord(models.Model):
     volume = fields.Integer(string="Volume", required=True, readonly=True,
                             default=0, help="Volume (in cubic centimetres)")
 
-    @api.multi
-    def _product_values(self):
-        values = super()._product_values()
-        values.update({
-            'barcode': self.name,
-            'weight': (self.weight / 1000.0),
-            'volume': (self.volume / 1000000.0),
-        })
-        return values
-
     @api.model
-    def _product_changed(self, product, values):
-        return (super()._product_changed(product, values) or
-                product.barcode != values['name'] or
-                float_compare(product.weight, (values['weight'] / 1000.0),
-                              precision_rounding=self.ROUNDING) != 0 or
-                float_compare(product.volume, (values['volume'] / 1000000.0),
-                              precision_rounding=self.ROUNDING) != 0)
+    def _product_values(self, record_vals):
+        product_vals = super()._product_values(record_vals)
+        product_vals.update({
+            'barcode': record_vals['name'],
+            'weight': (record_vals['weight'] / 1000.0),
+            'volume': (record_vals['volume'] / 1000000.0),
+        })
+        return product_vals
 
 
 class EdiProductTutorialDocument(models.AbstractModel):

@@ -31,8 +31,6 @@ class EdiDocument(models.Model):
 class EdiProductSapRecord(models.Model):
     """EDI product SAP IDoc record"""
 
-    ROUNDING = 0.01
-
     _name = 'edi.product.sap.record'
     _inherit = 'edi.product.record'
     _description = "Product"
@@ -42,19 +40,14 @@ class EdiProductSapRecord(models.Model):
     barcode = fields.Char(string="Barcode", readonly=True,
                           help="EAN11 in SAP IDoc")
 
-    @api.multi
-    def _product_values(self):
-        """Construct ``product.product`` field value dictionary"""
-        values = super()._product_values()
-        if self.barcode is not False:
-            values['barcode'] = self.barcode
-        return values
-
     @api.model
-    def _product_changed(self, product, values):
-        """Check if existing ``product.product`` record should be changed"""
-        return (super()._product_changed(product, values) or
-                ('barcode' in values and product.barcode != values['barcode']))
+    def _product_values(self, record_vals):
+        """Construct ``product.product`` field value dictionary"""
+        product_vals = super()._product_values(record_vals)
+        product_vals.update({
+            'barcode': record_vals['barcode'],
+        })
+        return product_vals
 
 
 class EdiProductSapMatmas01(models.AbstractModel):
@@ -86,12 +79,15 @@ class EdiProductSapMatmas01(models.AbstractModel):
     def _record_values(self, data):
         """Construct EDI product record value dictionaries"""
         idoc = Matmas01(data)
-        for matnr, recs in groupby(idoc.data, key=MaterialNumberGroupKey()):
-            values = {
-                key: getattr(rec, attr) or False
-                for rec in recs
-                for attr, key in self.SAP_FIELD_MAP.items()
-                if hasattr(rec, attr)
+        for matnr, irecs in groupby(idoc.data, key=MaterialNumberGroupKey()):
+            record_vals = {
+                'name': matnr,
+                'description': matnr,
+                'barcode': False
             }
-            values['name'] = matnr
-            yield values
+            for irec in irecs:
+                for attr, key in self.SAP_FIELD_MAP.items():
+                    if hasattr(irec, attr):
+                        value = getattr(irec, attr)
+                        record_vals[key] = value if value is not None else False
+            yield record_vals
