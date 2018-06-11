@@ -81,18 +81,6 @@ class TestEDILocalGateway(TestEDIGateway):
     @classmethod
     def setUpClass(cls):
         super(TestEDILocalGateway, cls).setUpClass()
-        cls.empty_gateway = cls._create_local_gateway()
-        cls.gateway = cls._create_local_gateway()
-        cls._create_local_path(gateway=cls.gateway,
-                               allow_send=False)
-        cls._create_local_path(gateway=cls.gateway,
-                               folder='files/out',
-                               allow_receive=False)
-        cls.gateway_old_files = cls._create_local_gateway()
-        cls._create_local_path(gateway=cls.gateway_old_files,
-                               touch_files=False,
-                               folder='files/old',
-                               age_window=0.01)
 
     def setUp(self):
         super(TestEDILocalGateway, self).setUp()
