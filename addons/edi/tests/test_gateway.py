@@ -91,10 +91,12 @@ class TestEDIGateway(common.BaseEDI):
         # document has two attachments
         self.assertEqual(len(doc.output_ids), 2)
 
-        new_transfer = gateway.do_transfer()
-        self.assertEqual(len(new_transfer), 1)
+        old_transfers = gateway.transfer_ids
+        transfer = gateway.do_transfer()
+        new_transfer = gateway.transfer_ids - old_transfers
+        self.assertEqual(new_transfer, transfer)
         # transfer has one attachment
-        self.assertEqual(len(new_transfer.output_ids), 1)
+        self.assertEqual(len(transfer.output_ids), 1)
 
 
 class TestEDILocalGateway(TestEDIGateway):
