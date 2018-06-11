@@ -1,44 +1,40 @@
-from odoo.tests import common
-import os.path
+import base64
 import fnmatch
+import os.path
+import time
 from pathlib import Path
+
+from odoo.tests import common
+
 
 class BaseEDI(common.SavepointCase):
 
     @classmethod
     def setUpClass(cls):
         super(BaseEDI, cls).setUpClass()
+        cls.document_type_unknown = cls.env.ref('edi.document_type_unknown')
 
     @classmethod
     def tearDownClass(cls):
         super(BaseEDI, cls).tearDownClass()
 
-
-    def assertIsInstantiated(self, recordset, number=1):
-        """ Assert that the recordset is instantiated.
-            Optionally the number of instances in the recordset
-        """
-        # self.assertEqual(len(recordset), number)
-        self.assertTrue(recordset.exists())
-
     @classmethod
     def _create_local_gateway(cls):
         model_id = cls.env.ref('edi.model_edi_connection_local')
         return cls._create_gateway(name='Local Filesystem Test Gateway',
-                                    model_id=model_id.id)
+                                   model_id=model_id.id)
 
     @classmethod
     def _create_gateway(cls, **data):
         EdiGateway = cls.env['edi.gateway']
 
-        gateway = EdiGateway.create(data)
-
-        return gateway
+        return EdiGateway.create(data)
 
     @staticmethod
     def _touch_files(path):
+        """ Touch all the files matching the edi.gateway.path """
         for filename in os.listdir(path.path):
-            # Skip files not matching glob pattern
+            # Skip files not matching pattern
             if not fnmatch.fnmatch(filename, path.glob):
                 continue
 
@@ -60,7 +56,6 @@ class BaseEDI(common.SavepointCase):
         }
         if kwargs:
             data.update(kwargs)
-
         path = cls._create_path(**data)
 
         if touch_files:
@@ -72,7 +67,39 @@ class BaseEDI(common.SavepointCase):
     def _create_path(cls, **data):
         EdiPath = cls.env['edi.gateway.path']
 
-        path = EdiPath.create(data)
+        return EdiPath.create(data)
 
-        return path
+    @classmethod
+    def _create_document(cls, document_type):
+        """ Create a document of type document_type """
+        EDIDocument = cls.env['edi.document']
 
+        return EDIDocument.create({'doc_type_id': document_type.id})
+
+    @classmethod
+    def _create_attachment(cls, doc, file_text, file_name, attach_type='input'):
+        """
+            Create an attachment and related it to a document depending on the
+            attachment type: input or output.
+        """
+        Attachment = cls.env['ir.attachment']
+
+        if attach_type == 'output':
+            res_field = 'output_ids'
+        else:
+            res_field = 'input_ids'
+
+        attachment = Attachment.create({
+            'name': file_name,
+            'datas_fname': file_name,
+            'datas': base64.b64encode(file_text.encode()),
+            'res_model': 'edi.document',
+            'res_field': res_field,
+            'res_id': doc.id,
+        })
+
+        return attachment
+
+    @staticmethod
+    def _generate_file_name(prefix='test_', suffix='.txt'):
+        return "{}{}{}".format(prefix, int(time.time()), suffix)
