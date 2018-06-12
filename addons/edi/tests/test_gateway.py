@@ -32,6 +32,17 @@ class TestEDIGateway(common.BaseEDI):
         self.assertEqual(new_transfer, transfer)
         self.assertEqual(len(transfer.issue_ids), 0)
 
+    def _test_action_transfer_no_path(self, gateway):
+        """ Test action transfer with no path, which means a transfer
+            is created but nothing received and no issues raised
+        """
+
+        old_transfers = gateway.transfer_ids
+        no_issues = gateway.action_transfer()
+        new_transfer = gateway.transfer_ids - old_transfers
+        self.assertEqual(len(new_transfer), 1)
+        self.assertTrue(no_issues)
+
     def _test_do_transfer_receive(self, gateway):
         """ Test do transfer with input path, which means a transfer
             is created and a file is received
@@ -147,3 +158,8 @@ class TestEDILocalGateway(TestEDIGateway):
                                 )
 
         self._test_do_transfer_send(gateway)
+
+    def test06_gateway_action_transfer_no_path(self):
+
+        gateway = self._create_local_gateway()
+        self._test_action_transfer_no_path(gateway)
