@@ -1,3 +1,5 @@
+"""EDI issue tracking"""
+
 import traceback
 import logging
 from odoo import api, fields, models
@@ -10,6 +12,7 @@ EDI_FIELD_MAP = [(field, ('edi_%s' % field))
 
 
 class Project(models.Model):
+    """Extend ``project.project`` to include EDI information"""
 
     _inherit = 'project.project'
 
@@ -17,6 +20,7 @@ class Project(models.Model):
 
 
 class ProjectIssue(models.Model):
+    """Extend ``project.task`` to include EDI information"""
 
     _inherit = 'project.task'
 

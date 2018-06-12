@@ -1,3 +1,5 @@
+"""EDI Mail connection"""
+
 from datetime import datetime, timedelta
 import fnmatch
 import logging
@@ -8,7 +10,9 @@ _logger = logging.getLogger(__name__)
 
 class DummyConnection(object):
     """Dummy connection object representing connection to mail server"""
+
     def close(self):
+        """Close dummy connection"""
         pass
 
 
@@ -62,7 +66,7 @@ class EdiConnectionMail(models.AbstractModel):
         for doc in docs:
 
             # Identify applicable attachments
-            attachments = doc.output_ids.filtered(
+            attachments = doc.output_ids.sorted('id').filtered(
                 lambda x: fnmatch.fnmatch(x.datas_fname, path.glob)
             )
 

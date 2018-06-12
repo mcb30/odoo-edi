@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_edi_product_record,access_edi_product_record,model_edi_product_record,,1,0,0,0
+access_edi_product_sap_record,access_edi_product_sap_record,model_edi_product_sap_record,,1,0,0,0
+access_edi_product_tutorial_record,access_edi_product_tutorial_record,model_edi_product_tutorial_record,,1,0,0,0

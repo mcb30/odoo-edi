@@ -1,5 +1,5 @@
 [MESSAGES CONTROL]
-disable=invalid-name,missing-docstring,no-member,no-self-use,protected-access,too-few-public-methods
+disable=invalid-name,no-member,no-self-use,protected-access,too-few-public-methods
 
 [SIMILARITIES]
 min-similarity-lines=10

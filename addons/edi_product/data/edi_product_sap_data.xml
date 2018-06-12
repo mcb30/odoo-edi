@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- EDI product SAP IDoc record type -->
+    <record id="sap_record_type" model="edi.record.type">
+      <field name="name">SAP MATMAS</field>
+      <field name="model_id" ref="model_edi_product_sap_record"/>
+      <field name="sequence" eval="500"/>
+    </record>
+
+    <!-- EDI product SAP IDoc MATMAS01 document type -->
+    <record id="sap_document_type" model="edi.document.type">
+      <field name="name">SAP MATMAS01</field>
+      <field name="model_id" ref="model_edi_product_sap_document_matmas01"/>
+      <field name="sequence" eval="500"/>
+      <field name="sequence_id" ref="sequence_default"/>
+      <field name="rec_type_ids"
+	     eval="[(6, False, [ref('sap_record_type')])]"/>
+    </record>
+
+  </data>
+</odoo>

@@ -1,3 +1,5 @@
+"""EDI gateway"""
+
 from contextlib import closing
 import base64
 import logging
@@ -23,6 +25,7 @@ class ServerActions(models.Model):
 
     @api.model
     def run_action_edi(self, action, eval_context=None):
+        """Run EDI server action"""
         # pylint: disable=unused-argument
         action.edi_gateway_id.action_transfer()
 

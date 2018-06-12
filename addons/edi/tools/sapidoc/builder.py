@@ -21,6 +21,7 @@ def subtree_walk(subtree):
 
 
 class Model(object):
+    """SAP IDoc document model builder"""
 
     __slots__ = ['tree', 'doc']
 
@@ -28,6 +29,12 @@ class Model(object):
     def parse(cls, description):
         """Construct document model from syntax description"""
         return cls(parser.parse(description, lexer=lexer))
+
+    @classmethod
+    def parse_file(cls, filename):
+        """Construct document model from syntax description file"""
+        with open(filename, 'r') as f:
+            return cls.parse(f.read())
 
     def _record(self, name, base, subtree):
         """Construct record class from abstract syntax subtree"""

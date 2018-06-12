@@ -13,6 +13,14 @@
     <menuitem name="Records" id="record_menu" parent="root_menu"
 	      sequence="20"/>
 
+    <!-- Records SAP submenu -->
+    <menuitem name="SAP" id="sap_menu" parent="record_menu"
+	      sequence="50"/>
+
+    <!-- Records tutorial submenu -->
+    <menuitem name="Tutorial" id="tutorial_menu" parent="record_menu"
+	      sequence="90"/>
+
     <!-- Communications menu -->
     <menuitem name="Communications" id="communication_menu" parent="root_menu"
 	      sequence="30"/>

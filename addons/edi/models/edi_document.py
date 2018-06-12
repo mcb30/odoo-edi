@@ -1,3 +1,5 @@
+"""EDI documents"""
+
 import logging
 from odoo import api, fields, models
 from odoo.exceptions import UserError
@@ -7,6 +9,7 @@ _logger = logging.getLogger(__name__)
 
 
 class IrModel(models.Model):
+    """Extend ``ir.model`` to include EDI information"""
 
     _inherit = 'ir.model'
 
@@ -51,8 +54,6 @@ class EdiDocumentType(models.Model):
                                domain=[('is_edi_document', '=', True)],
                                required=True, index=True)
     rec_type_ids = fields.Many2many('edi.record.type', string="Record Types")
-    rec_type_names = fields.Char(string="Record Type Names",
-                                 compute='_compute_rec_type_names', store=True)
 
     # Autodetection order when detecting a document type based upon
     # the set of input attachments.
@@ -69,28 +70,6 @@ class EdiDocumentType(models.Model):
 
     _sql_constraints = [('model_uniq', 'unique (model_id)',
                          "The document model must be unique")]
-
-    @api.multi
-    @api.depends('rec_type_ids', 'rec_type_ids.model_id',
-                 'rec_type_ids.model_id.model')
-    def _compute_rec_type_names(self):
-        """Compute record type name list
-
-        The record type name list is used by the view definitions to
-        determine whether or not to display particular record-specific
-        pages within the document form view.
-
-        This avoids the need for each record type to define a custom
-        boolean field on ``edi.document.type`` to convey the same
-        information.
-
-        Note that this hack would be entirely unnecessary if the Odoo
-        domain syntax allowed us to express the concept of "visible if
-        ``rec_type_ids`` contains <value>".
-        """
-        for doc_type in self:
-            rec_models = doc_type.mapped('rec_type_ids.model_id.model')
-            doc_type.rec_type_names = '/%s/' % '/'.join(rec_models)
 
     @api.model
     def autocreate(self, inputs):
@@ -186,8 +165,9 @@ class EdiDocument(models.Model):
     project_id = fields.Many2one(related='doc_type_id.project_id')
     issue_ids = fields.One2many(inverse_name='edi_doc_id')
 
-    # Related fields provided solely for use by views
-    rec_type_names = fields.Char(related='doc_type_id.rec_type_names')
+    # Record type names (solely for use by views)
+    rec_type_names = fields.Char(string="Record Type Names",
+                                 compute='_compute_rec_type_names')
 
     @api.depends('input_ids', 'input_ids.res_id')
     def _compute_input_count(self):
@@ -200,6 +180,29 @@ class EdiDocument(models.Model):
         """Compute number of output attachments (for UI display)"""
         for doc in self:
             doc.output_count = len(doc.output_ids)
+
+    @api.multi
+    @api.depends('doc_type_id', 'doc_type_id.rec_type_ids',
+                 'doc_type_id.rec_type_ids.model_id',
+                 'doc_type_id.rec_type_ids.model_id.model')
+    def _compute_rec_type_names(self):
+        """Compute record type name list
+
+        The record type name list is used by the view definitions to
+        determine whether or not to display particular record-specific
+        pages within the document form view.
+
+        This avoids the need for each record type to define a custom
+        boolean field on ``edi.document.type`` to convey the same
+        information.
+
+        Note that this hack would be entirely unnecessary if the Odoo
+        domain syntax allowed us to express the concept of "visible if
+        ``rec_type_ids`` contains <value>".
+        """
+        for doc in self:
+            rec_models = doc.mapped('doc_type_id.rec_type_ids.model_id.model')
+            doc.rec_type_names = '/%s/' % '/'.join(rec_models)
 
     @api.multi
     def _get_state_name(self):
@@ -220,7 +223,7 @@ class EdiDocument(models.Model):
         """Duplicate record (including input attachments)"""
         self.ensure_one()
         new = super(EdiDocument, self).copy(default)
-        for attachment in self.input_ids:
+        for attachment in self.input_ids.sorted('id'):
             attachment.copy({
                 'res_id': new.id,
                 'datas': attachment.datas,
@@ -389,16 +392,22 @@ class EdiDocument(models.Model):
 
 
 class EdiDocumentModel(models.AbstractModel):
+    """EDI document model
+
+    This is the abstract base class for all EDI document models.
+    """
 
     _name = 'edi.document.model'
     _description = "EDI Document Model"
 
     @api.model
     def prepare(self, _doc):
+        """Prepare document"""
         pass
 
 
 class EdiDocumentUnknown(models.AbstractModel):
+    """Unknown EDI document model"""
 
     _name = 'edi.document.unknown'
     _inherit = 'edi.document.model'
@@ -406,5 +415,6 @@ class EdiDocumentUnknown(models.AbstractModel):
 
     @api.model
     def prepare(self, doc):
+        """Prepare document"""
         super(EdiDocumentUnknown, self).prepare(doc)
         raise UserError(_("Unknown document type"))
