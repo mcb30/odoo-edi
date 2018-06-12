@@ -56,3 +56,4 @@ class TestEdiConnectionMail(EdiConnectionCase):
         mail = self.patched_send.call_args[0][0]
         self.assertEqual(mail.email_to, "eve@example.com")
         self.assertEqual(mail.attachment_ids, self.att_save_world)
+        self.assertEqual(1, 0)
