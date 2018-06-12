@@ -77,6 +77,7 @@ class EdiConnectionCase(common.SavepointCase):
         for attachment in attachments:
             self.assertIn(attachment, doc.output_ids)
 
+
 class BaseEDI(common.SavepointCase):
 
     @classmethod
@@ -100,15 +101,19 @@ class BaseEDI(common.SavepointCase):
 
         return EdiGateway.create(data)
 
-    @staticmethod
-    def _touch_files(path):
+    @classmethod
+    def _touch_files(cls, path):
         """ Touch all the files matching the edi.gateway.path """
-        for filename in os.listdir(path.path):
+        cls._touch_files_in_path(path.path, path.glob)
+
+    @staticmethod
+    def _touch_files_in_path(path, glob):
+        for filename in os.listdir(path):
             # Skip files not matching pattern
-            if not fnmatch.fnmatch(filename, path.glob):
+            if not fnmatch.fnmatch(filename, glob):
                 continue
 
-            filepath = os.path.join(path.path, filename)
+            filepath = os.path.join(path, filename)
             Path(filepath).touch()
 
     @classmethod
