@@ -10,7 +10,7 @@ RUN odoo-wrapper --without-demo=all -i project,document,product
 
 # Add EDI modules
 #
-ADD addons /opt/odoo/addons
+ADD addons /opt/odoo-addons
 
 # Module tests
 #
