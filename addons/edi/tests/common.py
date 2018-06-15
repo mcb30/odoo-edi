@@ -178,3 +178,27 @@ class BaseEDI(common.SavepointCase):
     @staticmethod
     def _generate_file_name(prefix='test_', suffix='.txt'):
         return "{}{}{}".format(prefix, int(time.time()), suffix)
+
+    def attach_inputs(self, doc, attachments):
+        """Add input attachments to EDI document"""
+        attachments.write({
+            'res_model': 'edi.document',
+            'res_field': 'input_ids',
+            'res_id': doc.id,
+        })
+        for attachment in attachments:
+            self.assertIn(attachment, doc.input_ids)
+
+    def attach_outputs(self, doc, attachments):
+        """Add output attachments to EDI document"""
+        attachments.write({
+            'res_model': 'edi.document',
+            'res_field': 'output_ids',
+            'res_id': doc.id,
+        })
+        for attachment in attachments:
+            self.assertIn(attachment, doc.output_ids)
+
+    def assertIsSubset(self, dict1, dict2):
+        for key, value in dict1.items():
+            self.assertEqual(value, dict2[key])
