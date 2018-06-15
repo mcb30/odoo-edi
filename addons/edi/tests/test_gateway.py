@@ -68,19 +68,17 @@ class TestEDIGateway(common.BaseEDI):
         """ Test do transfer with input path to an old file,
             which means a transfer is created but nothing received
         """
-
         old_transfers = gateway.transfer_ids
         transfer = gateway.do_transfer(conn=conn)
         new_transfer = gateway.transfer_ids - old_transfers
         self.assertEqual(new_transfer, transfer)
         self.assertEqual(len(transfer.input_ids), 0)
 
-    def _test_do_transfer_send(self, gateway, conn=None):
+    def _test_do_transfer_send(self, gateway, conn=None, expected_outputs=1):
         """ Test do transfer with output path. Create a document
             with two attachments: one matching the pattern and one
             don't.
         """
-
         doc = self._create_document(self.document_type_unknown)
         # bypass prep and exec
         doc.state = 'done'
@@ -106,4 +104,4 @@ class TestEDIGateway(common.BaseEDI):
         new_transfer = gateway.transfer_ids - old_transfers
         self.assertEqual(new_transfer, transfer)
         # transfer has one attachment
-        self.assertEqual(len(transfer.output_ids), 1)
+        self.assertEqual(len(transfer.output_ids), expected_outputs)
