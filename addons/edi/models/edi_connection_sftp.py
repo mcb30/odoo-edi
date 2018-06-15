@@ -84,7 +84,7 @@ class EdiConnectionSFTP(models.AbstractModel):
             filepath = os.path.join(path.path, dirent.filename)
             _logger.info("%s receiving %s", transfer.gateway_id.name,
                          filepath)
-            data = conn.file(filepath, mode='r').read()
+            data = conn.file(filepath, mode='rb').read()
 
             # Create new attachment for received file
             attachment = Attachment.create({
@@ -146,7 +146,7 @@ class EdiConnectionSFTP(models.AbstractModel):
             filepath = os.path.join(path.path, attachment.datas_fname)
             _logger.info("%s sending %s", transfer.gateway_id.name, filepath)
             data = base64.b64decode(attachment.datas)
-            conn.file(temppath, mode='w').write(data)
+            conn.file(temppath, mode='wb').write(data)
 
             # Rename temporary file
             conn.rename(temppath, filepath)

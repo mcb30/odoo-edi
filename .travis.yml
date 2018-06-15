@@ -1,0 +1,10 @@
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - docker build -t odoo-edi-tester .
+
+script:
+  - docker run -i -t --rm odoo-edi-tester

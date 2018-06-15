@@ -50,9 +50,13 @@ class TestEdiConnectionMail(EdiConnectionCase):
 
     def test_basic(self):
         """Send a single output attachment"""
+        # Create output attachment and verify that it is sent
         self.attach_outputs(self.doc_today, self.att_save_world)
         self.gateway.do_transfer()
         self.assertEqual(self.patched_send.call_count, 1)
         mail = self.patched_send.call_args[0][0]
         self.assertEqual(mail.email_to, "eve@example.com")
         self.assertEqual(mail.attachment_ids, self.att_save_world)
+        # Verify that attachment is not resent on a subsequent transfer
+        self.gateway.do_transfer()
+        self.patched_send.assert_called_once()
