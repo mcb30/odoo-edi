@@ -59,4 +59,4 @@ class TestEdiConnectionMail(EdiConnectionCase):
         self.assertEqual(mail.attachment_ids, self.att_save_world)
         # Verify that attachment is not resent on a subsequent transfer
         self.gateway.do_transfer()
-        self.patched_send.assert_called_once()
+        self.assertEqual(self.patched_send.call_count, 1)
