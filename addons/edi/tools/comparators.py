@@ -16,7 +16,6 @@ class Comparator(UserDict):
     Comparator functions are produced on demand and cached within the
     mapping.
     """
-    # pylint: disable=too-many-ancestors
 
     def __init__(self, model):
         super().__init__()
