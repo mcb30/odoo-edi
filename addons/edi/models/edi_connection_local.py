@@ -1,9 +1,7 @@
 """EDI local filesystem connection"""
 
-from contextlib import contextmanager
 from datetime import datetime, timedelta
-import os
-import os.path
+import pathlib
 import fnmatch
 import base64
 import uuid
@@ -26,29 +24,30 @@ class EdiConnectionLocal(models.AbstractModel):
     _inherit = 'edi.connection.model'
     _description = "EDI Local Connection"
 
-    @contextmanager
     @api.model
     def connect(self, _gateway):
         """Connect to local filesystem"""
-        yield
+        # Interestingly, this appears to be the only viably portable
+        # way to construct a Path object for the filesystem root.
+        return pathlib.Path(pathlib.Path().absolute().root)
 
     @api.model
-    def receive_inputs(self, _conn, path, transfer):
+    def receive_inputs(self, conn, path, transfer):
         """Receive input attachments"""
         Attachment = self.env['ir.attachment']
         inputs = Attachment.browse()
+        directory = conn.joinpath(path.path)
 
         # List local directory
         min_date = (datetime.now() - timedelta(hours=path.age_window))
-        for filename in os.listdir(path.path):
+        for filepath in directory.iterdir():
 
             # Skip files not matching glob pattern
-            if not fnmatch.fnmatch(filename, path.glob):
+            if not fnmatch.fnmatch(filepath.name, path.glob):
                 continue
 
             # Get file information
-            filepath = os.path.join(path.path, filename)
-            stat = os.stat(filepath)
+            stat = filepath.stat()
 
             # Skip files outside the age window
             if datetime.fromtimestamp(stat.st_mtime) < min_date:
@@ -58,19 +57,18 @@ class EdiConnectionLocal(models.AbstractModel):
             if Attachment.search([('res_model', '=', 'edi.document'),
                                   ('res_field', '=', 'input_ids'),
                                   ('res_id', '!=', False),
-                                  ('datas_fname', '=', filename),
+                                  ('datas_fname', '=', filepath.name),
                                   ('file_size', '=', stat.st_size)]):
                 continue
 
             # Read file
             _logger.info("%s reading %s", transfer.gateway_id.name, filepath)
-            with open(filepath, mode='rb') as f:
-                data = f.read()
+            data = filepath.read_bytes()
 
             # Create new attachment for received file
             attachment = Attachment.create({
-                'name': filename,
-                'datas_fname': filename,
+                'name': filepath.name,
+                'datas_fname': filepath.name,
                 'datas': base64.b64encode(data),
                 'res_model': 'edi.document',
                 'res_field': 'input_ids',
@@ -87,11 +85,12 @@ class EdiConnectionLocal(models.AbstractModel):
         return inputs
 
     @api.model
-    def send_outputs(self, _conn, path, transfer):
+    def send_outputs(self, conn, path, transfer):
         """Send output attachments"""
         Document = self.env['edi.document']
         Attachment = self.env['ir.attachment']
         outputs = Attachment.browse()
+        directory = conn.joinpath(path.path)
 
         # Get list of output documents
         min_date = (datetime.now() - timedelta(hours=path.age_window))
@@ -108,23 +107,21 @@ class EdiConnectionLocal(models.AbstractModel):
                 continue
 
             # Skip files already existing in local directory
-            filepath = os.path.join(path.path, attachment.datas_fname)
+            filepath = directory.joinpath(attachment.datas_fname)
             try:
-                stat = os.stat(filepath)
+                stat = filepath.stat()
                 if stat.st_size == attachment.file_size:
                     continue
             except OSError:
                 pass
 
             # Write file with temporary filename
-            temppath = os.path.join(path.path, ('.%s~' % uuid.uuid4().hex))
             _logger.info("%s writing %s", transfer.gateway_id.name, filepath)
-            data = base64.b64decode(attachment.datas)
-            with open(temppath, mode='wb') as f:
-                f.write(data)
+            temppath = filepath.with_name('.%s~' % uuid.uuid4().hex)
+            temppath.write_bytes(base64.b64decode(attachment.datas))
 
             # Rename temporary file
-            os.rename(temppath, filepath)
+            temppath.rename(filepath)
 
             # Record output as sent
             outputs += attachment
