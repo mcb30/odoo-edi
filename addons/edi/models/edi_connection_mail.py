@@ -1,19 +1,12 @@
 """EDI Mail connection"""
 
+from contextlib import contextmanager
 from datetime import datetime, timedelta
 import fnmatch
 import logging
 from odoo import api, fields, models
 
 _logger = logging.getLogger(__name__)
-
-
-class DummyConnection(object):
-    """Dummy connection object representing connection to mail server"""
-
-    def close(self):
-        """Close dummy connection"""
-        pass
 
 
 class EdiConnectionMail(models.AbstractModel):
@@ -26,10 +19,11 @@ class EdiConnectionMail(models.AbstractModel):
     _inherit = 'edi.connection.model'
     _description = "EDI Mail Connection"
 
+    @contextmanager
     @api.model
     def connect(self, _gateway):
         """Connect to mail server"""
-        return DummyConnection()
+        yield
 
     @api.model
     def receive_inputs(self, conn, path, transfer):

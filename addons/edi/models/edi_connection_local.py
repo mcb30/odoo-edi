@@ -1,5 +1,6 @@
 """EDI local filesystem connection"""
 
+from contextlib import contextmanager
 from datetime import datetime, timedelta
 import os
 import os.path
@@ -14,14 +15,6 @@ from odoo.tools.translate import _
 _logger = logging.getLogger(__name__)
 
 
-class DummyConnection(object):
-    """Dummy connection object representing connection to local filesystem"""
-
-    def close(self):
-        """Close dummy connection"""
-        pass
-
-
 class EdiConnectionLocal(models.AbstractModel):
     """EDI local filesystem connection
 
@@ -33,10 +26,11 @@ class EdiConnectionLocal(models.AbstractModel):
     _inherit = 'edi.connection.model'
     _description = "EDI Local Connection"
 
+    @contextmanager
     @api.model
     def connect(self, _gateway):
         """Connect to local filesystem"""
-        return DummyConnection()
+        yield
 
     @api.model
     def receive_inputs(self, _conn, path, transfer):

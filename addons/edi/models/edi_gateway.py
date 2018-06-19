@@ -1,6 +1,5 @@
 """EDI gateway"""
 
-from contextlib import closing
 import base64
 import logging
 import paramiko
@@ -301,7 +300,7 @@ class EdiGateway(models.Model):
         Model = self.env[self.model_id.model]
         try:
             # pylint: disable=broad-except
-            with closing(Model.connect(self)) as _conn:
+            with Model.connect(self) as _conn:
                 pass
         except Exception as err:
             self.raise_issue(_("Connection test failed: %s"), err)
@@ -321,7 +320,7 @@ class EdiGateway(models.Model):
             if conn is not None:
                 transfer.do_transfer(conn)
             else:
-                with closing(Model.connect(self)) as auto_conn:
+                with Model.connect(self) as auto_conn:
                     transfer.do_transfer(auto_conn)
         except Exception as err:
             transfer.raise_issue(_("Transfer failed: %s"), err)

@@ -1,5 +1,6 @@
 """EDI SFTP connection"""
 
+from contextlib import closing
 from datetime import datetime, timedelta
 import os.path
 import fnmatch
@@ -52,7 +53,7 @@ class EdiConnectionSFTP(models.AbstractModel):
         conn = SFTPOnlyClient.from_ssh_client(gateway.ssh_connect())
         if gateway.timeout:
             conn.get_channel().settimeout(gateway.timeout)
-        return conn
+        return closing(conn)
 
     @api.model
     def receive_inputs(self, conn, path, transfer):
