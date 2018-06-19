@@ -3,10 +3,10 @@
 import base64
 import pathlib
 from unittest.mock import patch
-from .test_edi_gateway import EdiGatewayCase
+from . import test_edi_gateway
 
 
-class TestEdiConnectionMail(EdiGatewayCase):
+class TestEdiConnectionMail(test_edi_gateway.EdiGatewayCase):
     """EDI Mail connection tests"""
 
     @classmethod
