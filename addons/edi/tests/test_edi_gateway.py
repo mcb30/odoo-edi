@@ -1,6 +1,6 @@
 """EDI gateway tests"""
 
-import contextlib
+from contextlib import contextmanager
 from odoo import fields
 from .common import EdiCase
 
@@ -76,12 +76,16 @@ class EdiGatewayCase(EdiCase):
         # Check for exceptions that have been caught and converted to issues
         self.assertEqual(len(self.gateway.issue_ids), 0)
 
+    @contextmanager
     def patch_paths(self, _path_files):
-        """Patch paths to include specified test files"""
-        # Use contextlib.suppress() to construct a null context manager
-        return contextlib.suppress()
+        """Patch EDI paths to include specified test files
 
-    def assertSent(self, _path_files):
+        This is a context manager; the patch will be removed when the
+        context exits.
+        """
+        yield
+
+    def assertSent(self, _ctx, _path_files):
         """Assert that specified test files were sent"""
         pass
 
@@ -137,12 +141,14 @@ class EdiGatewayCase(EdiCase):
             'execute_date': today,
         })
         attachment = self.create_output_attachment(doc, 'hello_world.txt')
-        transfer = self.gateway.do_transfer()
-        self.assertEqual(len(transfer.input_ids), 0)
-        self.assertEqual(len(transfer.output_ids), 1)
-        self.assertIn(attachment, transfer.output_ids)
-        self.assertSent({self.path_send: ['hello_world.txt']})
-        transfer = self.gateway.do_transfer()
-        self.assertEqual(len(transfer.input_ids), 0)
-        self.assertEqual(len(transfer.output_ids), 0)
-        self.assertSent({})
+        with self.patch_paths({}) as ctx:
+            transfer = self.gateway.do_transfer()
+            self.assertEqual(len(transfer.input_ids), 0)
+            self.assertEqual(len(transfer.output_ids), 1)
+            self.assertIn(attachment, transfer.output_ids)
+            self.assertSent(ctx, {self.path_send: ['hello_world.txt']})
+        with self.patch_paths({self.path_send: ['hello_world.txt']}) as ctx:
+            transfer = self.gateway.do_transfer()
+            self.assertEqual(len(transfer.input_ids), 0)
+            self.assertEqual(len(transfer.output_ids), 0)
+            self.assertSent(ctx, {})

@@ -20,15 +20,22 @@ class TestEdiConnectionMail(test_edi_gateway.EdiGatewayCase):
         cls.gateway.path_ids.write({'allow_receive': False})
         cls.path_send.path = "eve@example.com"
 
-    def setUp(self):
-        super().setUp()
-        Mail = self.env['mail.mail']
-        # Mock mail.mail.send() to avoid actually sending e-mails
-        patcher = patch.object(Mail.__class__, 'send', autospec=True)
-        self.patched_send = patcher.start()
-        self.addCleanup(patcher.stop)
+    def patch_paths(self, _path_files):
+        """Patch EDI paths to include specified test files
 
-    def assertSent(self, path_files):
+        The ``mail.mail.send()`` method is mocked to avoid actually
+        sending any e-mails.
+        """
+        Mail = self.env['mail.mail']
+        return patch.object(Mail.__class__, 'send', autospec=True)
+
+    def assertSent(self, ctx, path_files):
+        """Assert that specified test files were sent
+
+        The expected list of e-mails and attachments is compared
+        against the actual list, obtained by inspecting the mocked
+        ``mail.mail.send()`` method.
+        """
         expected = frozenset(
             (path.path, frozenset((pathlib.PurePath(file).name,
                                    self.files.joinpath(file).read_bytes())
@@ -39,7 +46,6 @@ class TestEdiConnectionMail(test_edi_gateway.EdiGatewayCase):
             (mail.email_to, frozenset((attachment.datas_fname,
                                        base64.b64decode(attachment.datas))
                                       for attachment in mail.attachment_ids))
-            for (mail, *args), kwargs in self.patched_send.call_args_list
+            for (mail, *args), kwargs in ctx.call_args_list
         )
         self.assertEqual(actual, expected)
-        self.patched_send.reset_mock()
