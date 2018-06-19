@@ -1,6 +1,10 @@
 """EDI gateway tests"""
 
+from collections import namedtuple
 from contextlib import contextmanager
+import pathlib
+import shutil
+import tempfile
 from odoo import fields
 from .common import EdiCase
 
@@ -156,3 +160,73 @@ class EdiGatewayCase(EdiCase):
             self.assertEqual(len(transfer.input_ids), 0)
             self.assertEqual(len(transfer.output_ids), 0)
             self.assertSent(ctx, {})
+
+
+class EdiGatewayFileSystemCase(EdiGatewayCase):
+    """Base test case for filesystem-like EDI gateways"""
+
+    Context = namedtuple('EdiGatewayFileSystemCaseContext',
+                         ['temppath', 'subpaths', 'path_files'])
+
+    @property
+    def path_subdirs(self):
+        """Mapping from EDI paths to temporary subdirectories
+
+        By default, the ``edi.gateway.path.path`` attribute is used as
+        the subdirectory name.
+        """
+        return {path: path.path for path in self.gateway.path_ids}
+
+    @contextmanager
+    def patch_paths(self, path_files):
+        """Patch EDI paths to include specified test files
+
+        Create a temporary directory containing subdirectories for
+        each defined path on the EDI gateway, and populate these
+        subdirectories with the specified test files.
+
+        This is a context manager; the temporary directory will be
+        deleted when the context exits.
+        """
+
+        # Duplicate original EDI path -> files mapping for later comparison
+        path_files = {path: list(files) for path, files in path_files.items()}
+
+        # Create and populate temporary directory
+        with tempfile.TemporaryDirectory() as tempdir:
+
+            # Create subdirectory for each defined EDI path
+            temppath = pathlib.Path(tempdir)
+            subpaths = {path: temppath.joinpath(subdir)
+                        for path, subdir in self.path_subdirs.items()}
+            for subpath in subpaths.values():
+                subpath.mkdir(parents=True, exist_ok=True)
+
+            # Copy in specified test files
+            for path, files in path_files.items():
+                for file in files:
+                    src = self.files.joinpath(file)
+                    dst = subpaths[path].joinpath(file)
+                    self.assertFalse(dst.exists())
+                    shutil.copy(src, dst)
+
+            yield self.Context(pathlib.Path(temppath), subpaths, path_files)
+
+    def assertSent(self, ctx, path_files):
+        """Assert that specified test files were sent
+
+        The contents of the temporary directory will be compared
+        against the expected contents.
+        """
+        expected = {
+            path.name: set((file, self.files.joinpath(file).read_bytes())
+                           for file in (set(ctx.path_files.get(path, ())) |
+                                        set(path_files.get(path, ()))))
+            for path in ctx.subpaths
+        }
+        actual = {
+            path.name: set((file.name, file.read_bytes())
+                           for file in subpath.iterdir())
+            for path, subpath in ctx.subpaths.items()
+        }
+        self.assertEqual(actual, expected)
