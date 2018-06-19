@@ -118,12 +118,16 @@ class EdiGatewayCase(EdiCase):
     def test04_transfer_receive(self):
         """Test receiving attachments"""
         with self.patch_paths({self.path_receive: ['hello_world.txt']}):
-            transfer = self.gateway.do_transfer()
+            transfer = self.gateway.with_context({
+                'default_allow_process': False,
+            }).do_transfer()
             self.assertEqual(len(transfer.input_ids), 1)
             self.assertEqual(len(transfer.output_ids), 0)
             self.assertAttachment(transfer.input_ids, 'hello_world.txt')
         with self.patch_paths({self.path_receive: ['hello_world.txt']}):
-            transfer = self.gateway.do_transfer()
+            transfer = self.gateway.with_context({
+                'default_allow_process': False,
+            }).do_transfer()
             self.assertEqual(len(transfer.input_ids), 0)
             self.assertEqual(len(transfer.output_ids), 0)
 
