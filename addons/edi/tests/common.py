@@ -1,9 +1,44 @@
 """EDI tests"""
 
 import base64
+from datetime import datetime
+import os
 import pathlib
 from odoo.modules.module import get_resource_path
 from odoo.tests import common
+
+
+class EdiTestFile(os.PathLike):
+    """An EDI test file
+
+    A test file accessible via the ``self.files`` attribute of any EDI
+    test case.  These are files present within the source tree that
+    are available for use by unit tests.
+
+    Functions that accept test files as parameters will generally
+    accept either a plain string or an ``EdiTestFile`` object.  Use an
+    ``EdiTestFile`` object when additional metadata (e.g. the required
+    file age) must be provided.
+    """
+
+    def __init__(self, file, age=None):
+        self.file = file
+        self.age = age
+
+    def __repr__(self):
+        return '%s(%r)' % (self.__class__.__name__, self.file)
+
+    def __str__(self):
+        return self.file
+
+    def __fspath__(self):
+        return self.file
+
+    @property
+    def mtime(self):
+        """File modification time"""
+        now = datetime.now()
+        return now if self.age is None else now - self.age
 
 
 class EdiCase(common.SavepointCase):

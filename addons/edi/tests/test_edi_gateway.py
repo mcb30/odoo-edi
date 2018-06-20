@@ -2,6 +2,7 @@
 
 from collections import namedtuple
 from contextlib import contextmanager
+import os
 import pathlib
 import shutil
 import tempfile
@@ -209,6 +210,9 @@ class EdiGatewayFileSystemCase(EdiGatewayCase):
                     dst = subpaths[path].joinpath(file)
                     self.assertFalse(dst.exists())
                     shutil.copy(src, dst)
+                    if hasattr(file, 'mtime'):
+                        mtime = file.mtime.timestamp()
+                        os.utime(dst, times=(mtime, mtime))
 
             yield self.Context(pathlib.Path(temppath), subpaths, path_files)
 
