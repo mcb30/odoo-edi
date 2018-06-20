@@ -2,12 +2,13 @@
 
 from collections import namedtuple
 from contextlib import contextmanager
+from datetime import timedelta
 import os
 import pathlib
 import shutil
 import tempfile
 from odoo import fields
-from .common import EdiCase
+from .common import EdiCase, EdiTestFile
 
 
 def skipUnlessCanInitiate(f):
@@ -161,6 +162,25 @@ class EdiGatewayCase(EdiCase):
             self.assertEqual(len(transfer.input_ids), 0)
             self.assertEqual(len(transfer.output_ids), 0)
             self.assertSent(ctx, {})
+
+    @skipUnlessCanInitiate
+    @skipUnlessCanReceive
+    def test06_receive_age_window(self):
+        """Test receive age window"""
+        old_file = EdiTestFile('hello_world.txt', age=timedelta(hours=36))
+        with self.patch_paths({self.path_receive: [old_file]}):
+            self.path_receive.age_window = 24
+            transfer = self.gateway.with_context({
+                'default_allow_process': False,
+            }).do_transfer()
+            self.assertEqual(len(transfer.input_ids), 0)
+        with self.patch_paths({self.path_receive: [old_file]}):
+            self.path_receive.age_window = 48
+            transfer = self.gateway.with_context({
+                'default_allow_process': False,
+            }).do_transfer()
+            self.assertEqual(len(transfer.input_ids), 1)
+            self.assertAttachment(transfer.input_ids, 'hello_world.txt')
 
 
 class EdiGatewayFileSystemCase(EdiGatewayCase):
