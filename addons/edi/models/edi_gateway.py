@@ -105,6 +105,15 @@ class EdiGateway(models.Model):
                                   compute='_compute_can_initiate')
     server = fields.Char(string="Server Address")
     timeout = fields.Float(string="Timeout (in seconds)")
+    safety = fields.Char(
+        string="Safety Catch",
+        help="""Configuration file option required for operation
+
+        If present, this option must have a true value within the
+        local configuration file in order for the gateway to initiate
+        connections.
+        """,
+    )
 
     # Authentication
     username = fields.Char(string="Username")
@@ -322,6 +331,15 @@ class EdiGateway(models.Model):
         Model = self.env[self.model_id.model]
         try:
             # pylint: disable=broad-except
+            if self.safety:
+                section, _sep, key = self.safety.rpartition('.')
+                safety = config.get_misc(section or 'edi', key)
+                if safety is None:
+                    raise UserError(_("Missing configuration option '%s'") %
+                                    self.safety)
+                if not safety:
+                    raise UserError(_("Gateway disabled via configuration "
+                                      "option '%s'") % self.safety)
             if conn is not None:
                 transfer.do_transfer(conn)
             else:
