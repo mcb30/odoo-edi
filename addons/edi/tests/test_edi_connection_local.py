@@ -1,6 +1,7 @@
 """EDI local filesystem connection tests"""
 
 from contextlib import contextmanager
+import pathlib
 from unittest.mock import patch
 from . import test_edi_gateway
 
@@ -28,6 +29,7 @@ class TestEdiConnectionLocal(test_edi_gateway.EdiGatewayFileSystemCase):
         """
         EdiConnectionLocal = self.env['edi.connection.local']
         with super().patch_paths(path_files) as ctx:
+            connect = lambda self, gateway: pathlib.Path(ctx.temppath)
             with patch.object(EdiConnectionLocal.__class__, 'connect',
-                              autospec=True, return_value=ctx.temppath):
+                              autospec=True, side_effect=connect):
                 yield ctx

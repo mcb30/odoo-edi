@@ -234,7 +234,7 @@ class EdiGatewayFileSystemCase(EdiGatewayCase):
                         mtime = file.mtime.timestamp()
                         os.utime(dst, times=(mtime, mtime))
 
-            yield self.Context(pathlib.Path(temppath), subpaths, path_files)
+            yield self.Context(temppath, subpaths, path_files)
 
     def assertSent(self, ctx, path_files):
         """Assert that specified test files were sent
