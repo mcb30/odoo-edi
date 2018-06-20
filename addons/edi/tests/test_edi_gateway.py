@@ -45,7 +45,7 @@ def skipUnlessCanSend(f):
 
 
 class EdiGatewayCase(EdiCase):
-    """Base test case for EDI gateways"""
+    """Abstract base test case for EDI gateways"""
 
     @classmethod
     def setUpClass(cls):
@@ -81,6 +81,71 @@ class EdiGatewayCase(EdiCase):
         super().tearDown()
         # Check for exceptions that have been caught and converted to issues
         self.assertEqual(len(self.gateway.issue_ids), 0)
+
+
+class EdiGatewayCommonCase(EdiGatewayCase):
+    """EDI gateway tests that do not use the connection model"""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        EdiTransfer = cls.env['edi.transfer']
+        EdiDocument = cls.env['edi.document']
+
+        # Create transfer
+        cls.xfer = EdiTransfer.create({
+            'gateway_id': cls.gateway.id,
+        })
+
+        # Create document
+        cls.doc = EdiDocument.create({
+            'name': "Test document",
+            'doc_type_id': cls.doc_type_unknown.id,
+            'transfer_id': cls.xfer.id,
+        })
+
+    def test01_action_view_cron(self):
+        """Test view scheduled jobs"""
+        IrCron = self.env['ir.cron']
+        action = self.gateway.action_view_cron()
+        self.assertEqual(len(IrCron.search(action['domain'])), 0)
+        cron = IrCron.with_context(action['context']).create({
+            'name': "Test cron job",
+        })
+        self.assertIn(cron, self.gateway.cron_ids)
+        self.assertEqual(self.gateway.cron_count, 1)
+        action = self.gateway.action_view_cron()
+        self.assertEqual(len(IrCron.search(action['domain'])), 1)
+
+    def test02_action_view_paths(self):
+        """Test view paths"""
+        EdiPath = self.env['edi.gateway.path']
+        action = self.gateway.action_view_paths()
+        self.assertEqual(len(EdiPath.search(action['domain'])),
+                         len(self.gateway.path_ids))
+        path = EdiPath.with_context(action['context']).create({
+            'name': "Brand new path!",
+            'path': "Middle of nowhere",
+        })
+        self.assertIn(path, self.gateway.path_ids)
+        action = self.gateway.action_view_paths()
+        self.assertIn(path, EdiPath.search(action['domain']))
+
+    def test03_action_view_transfers(self):
+        """Test view transfers"""
+        EdiTransfer = self.env['edi.transfer']
+        action = self.gateway.action_view_transfers()
+        self.assertEqual(EdiTransfer.search(action['domain']), self.xfer)
+
+    def test04_action_view_docs(self):
+        """Test view documents"""
+        EdiDocument = self.env['edi.document']
+        action = self.gateway.action_view_docs()
+        self.assertEqual(EdiDocument.search(action['domain']), self.doc)
+
+
+class EdiGatewayConnectionCase(EdiGatewayCase):
+    """Base test class for EDI gateway connection models"""
 
     @contextmanager
     def patch_paths(self, _path_files):
@@ -183,7 +248,7 @@ class EdiGatewayCase(EdiCase):
             self.assertAttachment(transfer.input_ids, 'hello_world.txt')
 
 
-class EdiGatewayFileSystemCase(EdiGatewayCase):
+class EdiGatewayFileSystemCase(EdiGatewayConnectionCase):
     """Base test case for filesystem-like EDI gateways"""
 
     Context = namedtuple('EdiGatewayFileSystemCaseContext',

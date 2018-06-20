@@ -6,7 +6,7 @@ from unittest.mock import patch
 from . import test_edi_gateway
 
 
-class TestEdiConnectionMail(test_edi_gateway.EdiGatewayCase):
+class TestEdiConnectionMail(test_edi_gateway.EdiGatewayConnectionCase):
     """EDI Mail connection tests"""
 
     @classmethod
