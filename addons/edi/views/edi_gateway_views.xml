@@ -86,6 +86,7 @@
 	      <group name="conn" string="Connection">
 		<field name="model_id"/>
 		<field name="server"/>
+		<field name="safety"/>
 	      </group>
 	      <group name="history" string="History">
 		<field name="project_id"/>

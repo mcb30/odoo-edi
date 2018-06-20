@@ -7,7 +7,9 @@ import os
 import pathlib
 import shutil
 import tempfile
+from unittest.mock import patch
 from odoo import fields
+from odoo.tools import config
 from .common import EdiCase, EdiTestFile
 
 
@@ -246,6 +248,51 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
             }).do_transfer()
             self.assertEqual(len(transfer.input_ids), 1)
             self.assertAttachment(transfer.input_ids, 'hello_world.txt')
+
+    @skipUnlessCanInitiate
+    def test07_safety_catch(self):
+        """Test safety catch"""
+        EdiTransfer = self.env['edi.transfer']
+        self.gateway.path_ids.unlink()
+        with patch.object(config, 'get_misc', autospec=True) as mock_get_misc, \
+             patch.object(EdiTransfer.__class__, 'do_transfer',
+                          autospec=True) as mock_do_transfer:
+
+            # No safety option defined
+            self.gateway.safety = None
+            self.assertTrue(self.gateway.action_transfer())
+            self.assertTrue(mock_do_transfer.called)
+            mock_get_misc.reset_mock()
+            mock_do_transfer.reset_mock()
+
+            # Safety option defined, not present in configuration file
+            with self.assertRaisesIssue(self.gateway):
+                mock_get_misc.return_value = None
+                self.gateway.safety = 'is_production'
+                self.assertFalse(self.gateway.action_transfer())
+                self.assertFalse(mock_do_transfer.called)
+                mock_get_misc.assert_called_once_with('edi', 'is_production')
+                mock_get_misc.reset_mock()
+                mock_do_transfer.reset_mock()
+
+            # Safety option defined, false value in configuration file
+            with self.assertRaisesIssue(self.gateway):
+                mock_get_misc.return_value = False
+                self.gateway.safety = 'customer.allow_edi'
+                self.assertFalse(self.gateway.action_transfer())
+                self.assertFalse(mock_do_transfer.called)
+                mock_get_misc.assert_called_once_with('customer', 'allow_edi')
+                mock_get_misc.reset_mock()
+                mock_do_transfer.reset_mock()
+
+            # Safety option defined, true value in configuration file
+            mock_get_misc.return_value = True
+            self.gateway.safety = 'enabled'
+            self.assertTrue(self.gateway.action_transfer())
+            self.assertTrue(mock_do_transfer.called)
+            mock_get_misc.assert_called_once_with('edi', 'enabled')
+            mock_get_misc.reset_mock()
+            mock_do_transfer.reset_mock()
 
 
 class EdiGatewayFileSystemCase(EdiGatewayConnectionCase):
