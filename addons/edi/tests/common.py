@@ -1,9 +1,12 @@
 """EDI tests"""
 
 import base64
+from contextlib import contextmanager
 from datetime import datetime
 import os
 import pathlib
+from unittest.mock import patch
+from odoo.exceptions import UserError
 from odoo.modules.module import get_resource_path
 from odoo.tests import common
 
@@ -90,3 +93,19 @@ class EdiCase(common.SavepointCase):
         data = self.files.joinpath(filename).read_bytes()
         self.assertEqual(attachment.datas_fname, filename)
         self.assertEqual(base64.b64decode(attachment.datas), data)
+
+    @contextmanager
+    def assertRaisesIssue(self, entity, exception=UserError):
+        """Assert that an issue is raised on the specified entity"""
+        EdiIssues = self.env['edi.issues']
+        with patch.object(
+            EdiIssues.__class__, 'raise_issue', autospec=True,
+            side_effect=EdiIssues.__class__.raise_issue
+        ) as mock_raise_issue:
+            old_issue_ids = entity.issue_ids
+            yield
+            new_issue_ids = entity.issue_ids - old_issue_ids
+            self.assertEqual(len(new_issue_ids), 1)
+            ((_self, _fmt, err), _kwargs) = mock_raise_issue.call_args
+            self.assertIsInstance(err, exception)
+            new_issue_ids.unlink()
