@@ -78,9 +78,9 @@ class EdiGatewayCase(EdiCase):
         })
 
     def tearDown(self):
-        super().tearDown()
         # Check for exceptions that have been caught and converted to issues
         self.assertEqual(len(self.gateway.issue_ids), 0)
+        super().tearDown()
 
 
 class EdiGatewayCommonCase(EdiGatewayCase):
