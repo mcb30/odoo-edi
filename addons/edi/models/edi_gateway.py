@@ -110,8 +110,13 @@ class EdiGateway(models.Model):
     username = fields.Char(string="Username")
     password = fields.Char(string="Password", invisible=True, copy=False)
     config_password = fields.Char(
-        string="Password configuration option",
-        help="Configuration file option holding the password",
+        string="Password (Config)",
+        help="""Configuration file option holding the password
+
+        If present, the password is loaded from this configuration
+        file option.  This allows the password to be hidden from
+        database backups, XML-RPC calls, etc.
+        """,
     )
     ssh_host_key = fields.Binary(string="SSH Host Key")
     ssh_host_key_filename = fields.Char(default=SSH_KNOWN_HOSTS)
