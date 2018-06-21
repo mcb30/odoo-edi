@@ -341,10 +341,10 @@ class EdiGatewayFileSystemCase(EdiGatewayConnectionCase):
                     src = self.files.joinpath(file)
                     dst = subpaths[path].joinpath(file)
                     self.assertFalse(dst.exists())
-                    shutil.copy(src, dst)
+                    shutil.copy(str(src), str(dst))
                     if hasattr(file, 'mtime'):
                         mtime = file.mtime.timestamp()
-                        os.utime(dst, times=(mtime, mtime))
+                        os.utime(str(dst), times=(mtime, mtime))
 
             yield self.Context(temppath, subpaths, path_files)
 

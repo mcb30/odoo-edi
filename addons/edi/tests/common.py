@@ -3,7 +3,6 @@
 import base64
 from contextlib import contextmanager
 from datetime import datetime
-import os
 import pathlib
 from unittest.mock import patch
 from odoo.exceptions import UserError
@@ -11,7 +10,7 @@ from odoo.modules.module import get_resource_path
 from odoo.tests import common
 
 
-class EdiTestFile(os.PathLike):
+class EdiTestFile(pathlib.PurePosixPath):
     """An EDI test file
 
     A test file accessible via the ``self.files`` attribute of any EDI
@@ -24,18 +23,11 @@ class EdiTestFile(os.PathLike):
     file age) must be provided.
     """
 
-    def __init__(self, file, age=None):
-        self.file = file
-        self.age = age
-
-    def __repr__(self):
-        return '%s(%r)' % (self.__class__.__name__, self.file)
-
-    def __str__(self):
-        return self.file
-
-    def __fspath__(self):
-        return self.file
+    def __new__(cls, *args, age=None, **kwargs):
+        # pylint: disable=arguments-differ
+        path = super().__new__(cls, *args, **kwargs)
+        path.age = age
+        return path
 
     @property
     def mtime(self):
