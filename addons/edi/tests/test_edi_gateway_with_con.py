@@ -7,9 +7,7 @@ import os
 import pathlib
 import shutil
 import tempfile
-from unittest.mock import patch
 from odoo import fields
-from odoo.tools import config
 from .common import EdiCase, EdiTestFile
 
 
@@ -22,6 +20,7 @@ def skipUnlessCanInitiate(f):
         else:
             self.skipTest("Gateway cannot initiate connections")
     return wrapper
+
 
 def skipUnlessCanDoTransfer(f):
     """Skip test case unless gateway is capable of initiating connections"""
@@ -136,7 +135,7 @@ class EdiGatewayCommonCase(EdiGatewayCase):
         EdiPath = self.env['edi.gateway.path']
         action = self.gateway.action_view_paths()
         self.assertEqual(len(EdiPath.search(action['domain'])),
-                         self.gateway.path_count)
+                         len(self.gateway.path_ids))
         path = EdiPath.with_context(action['context']).create({
             'name': "Brand new path!",
             'path': "Middle of nowhere",
@@ -150,16 +149,12 @@ class EdiGatewayCommonCase(EdiGatewayCase):
         EdiTransfer = self.env['edi.transfer']
         action = self.gateway.action_view_transfers()
         self.assertEqual(EdiTransfer.search(action['domain']), self.xfer)
-        self.assertEqual(len(EdiTransfer.search(action['domain'])),
-                         self.gateway.transfer_count)
 
     def test04_action_view_docs(self):
         """Test view documents"""
         EdiDocument = self.env['edi.document']
         action = self.gateway.action_view_docs()
         self.assertEqual(EdiDocument.search(action['domain']), self.doc)
-        self.assertEqual(len(EdiDocument.search(action['domain'])),
-                         self.gateway.doc_count)
 
 
 class EdiGatewayConnectionCase(EdiGatewayCase):
@@ -207,12 +202,16 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
     def test04_transfer_receive(self):
         """Test receiving attachments"""
         with self.patch_paths({self.path_receive: ['hello_world.txt']}):
+            print("$"*10)
+            print(self.conn)
             transfer = self.gateway.with_context({
                 'default_allow_process': False,
             }).do_transfer(conn=self.conn)
             self.assertEqual(len(transfer.input_ids), 1)
             self.assertEqual(len(transfer.output_ids), 0)
             self.assertAttachment(transfer.input_ids, 'hello_world.txt')
+        print("#"*20)
+        print(len(transfer.input_ids))
         with self.patch_paths({self.path_receive: ['hello_world.txt']}):
             transfer = self.gateway.with_context({
                 'default_allow_process': False,
@@ -220,7 +219,7 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
             self.assertEqual(len(transfer.input_ids), 0)
             self.assertEqual(len(transfer.output_ids), 0)
 
-    @skipUnlessCanInitiate
+    @skipUnlessCanDoTransfer
     @skipUnlessCanSend
     def test05_transfer_send(self):
         """Test sending attachments"""
@@ -234,14 +233,16 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
             'execute_date': today,
         })
         attachment = self.create_output_attachment(doc, 'hello_world.txt')
+        print("conn before send: ")
+        print(self.conn)
         with self.patch_paths({}) as ctx:
-            transfer = self.gateway.do_transfer()
+            transfer = self.gateway.do_transfer(conn=self.conn)
             self.assertEqual(len(transfer.input_ids), 0)
             self.assertEqual(len(transfer.output_ids), 1)
             self.assertIn(attachment, transfer.output_ids)
             self.assertSent(ctx, {self.path_send: ['hello_world.txt']})
         with self.patch_paths({self.path_send: ['hello_world.txt']}) as ctx:
-            transfer = self.gateway.do_transfer()
+            transfer = self.gateway.do_transfer(conn=self.conn)
             self.assertEqual(len(transfer.input_ids), 0)
             self.assertEqual(len(transfer.output_ids), 0)
             self.assertSent(ctx, {})
@@ -327,7 +328,6 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
             self.assertEqual(len(transfer.output_ids), 0)
             self.assertAttachment(transfer.input_ids, 'hello_world.txt')
 
-
 class EdiGatewayFileSystemCase(EdiGatewayConnectionCase):
     """Base test case for filesystem-like EDI gateways"""
 
@@ -371,8 +371,8 @@ class EdiGatewayFileSystemCase(EdiGatewayConnectionCase):
             # Copy in specified test files
             for path, files in path_files.items():
                 for file in files:
-                    src = self.files.joinpath(file)
-                    dst = subpaths[path].joinpath(file)
+                    src = self.files.joinpath(str(file))
+                    dst = subpaths[path].joinpath(str(file))
                     self.assertFalse(dst.exists())
                     shutil.copy(str(src), str(dst))
                     if hasattr(file, 'mtime'):
