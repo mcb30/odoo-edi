@@ -380,6 +380,19 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
             self.assertEqual(len(transfer.output_ids), 0)
             self.assertAttachment(transfer.input_ids, 'hello_world.txt')
 
+    @skipUnlessCanInitiate
+    def test09_action_test_fail(self):
+        """Test the ability to test the connection"""
+        Model = self.env[self.gateway.model_id.model]
+        with patch.object(Model.__class__, 'connect', autospec=True,
+                          side_effect=Exception):
+            with self.assertRaisesIssue(self.gateway, exception=Exception):
+                old_messages = self.gateway.message_ids
+                self.gateway.action_test()
+                new_messages = self.gateway.message_ids - old_messages
+                # two new messages: one for the error and one for its traceback
+                self.assertEqual(len(new_messages), 2)
+
 
 class EdiGatewayFileSystemCase(EdiGatewayConnectionCase):
     """Base test case for filesystem-like EDI gateways"""
