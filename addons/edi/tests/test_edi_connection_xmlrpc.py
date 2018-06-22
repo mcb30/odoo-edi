@@ -1,11 +1,8 @@
 """EDI xmlrpc connection tests"""
 
 from contextlib import contextmanager
-import pathlib
-from unittest.mock import patch
 from . import test_edi_gateway
-from base64 import b64encode, b64decode
-import os
+from base64 import b64encode
 from xmlrpc.client import Binary
 
 
