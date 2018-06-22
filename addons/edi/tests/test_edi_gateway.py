@@ -294,6 +294,23 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
             mock_get_misc.reset_mock()
             mock_do_transfer.reset_mock()
 
+    @skipUnlessCanInitiate
+    @skipUnlessCanReceive
+    def test08_transfer_receive_processing(self):
+        """Test receiving attachments and processing"""
+        EdiDocumentType = self.env['edi.document.type']
+        IrModel = self.env['ir.model']
+        doc_type = EdiDocumentType.create({
+            'name': "Test EDI document",
+            'model_id': IrModel._get_id('edi.document.model'),
+        })
+        self.path_receive.doc_type_ids = [doc_type.id]
+        with self.patch_paths({self.path_receive: ['hello_world.txt']}):
+            transfer = self.gateway.do_transfer()
+            self.assertEqual(len(transfer.input_ids), 1)
+            self.assertEqual(len(transfer.output_ids), 0)
+            self.assertAttachment(transfer.input_ids, 'hello_world.txt')
+
 
 class EdiGatewayFileSystemCase(EdiGatewayConnectionCase):
     """Base test case for filesystem-like EDI gateways"""
