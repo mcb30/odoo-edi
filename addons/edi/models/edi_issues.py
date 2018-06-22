@@ -20,7 +20,7 @@ class Project(models.Model):
     use_edi_fields = fields.Boolean(string="Use EDI Fields", default=False)
 
 
-class ProjectIssue(models.Model):
+class ProjectTask(models.Model):
     """Extend ``project.task`` to include EDI information"""
 
     _inherit = 'project.task'
