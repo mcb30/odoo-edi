@@ -26,6 +26,16 @@ def skipUnlessCanInitiate(f):
             self.skipTest("Gateway cannot initiate connections")
     return wrapper
 
+def skipUnlessCanDoTransfer(f):
+    """Skip test case unless gateway is capable of initiating connections"""
+    def wrapper(self, *args, **kwargs):
+        # pylint: disable=missing-docstring
+        if self.gateway.can_initiate or self.conn:
+            f(self, *args, **kwargs)
+        else:
+            self.skipTest("Gateway cannot initiate connections")
+    return wrapper
+
 
 def skipUnlessCanReceive(f):
     """Skip test case unless gateway is capable of receiving"""
@@ -119,6 +129,9 @@ class EdiGatewayCase(EdiCase):
             'allow_send': True,
             'doc_type_ids': [(6, 0, cls.doc_type_unknown.ids)],
         })
+
+
+        cls.conn = None
 
         # Dummy SSH server class
         cls.SSHServer = DummySSHServer
@@ -239,12 +252,12 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
         new_messages = self.gateway.message_ids - old_messages
         self.assertEqual(len(new_messages), 1)
 
-    @skipUnlessCanInitiate
+    @skipUnlessCanDoTransfer
     def test02_transfer_no_paths(self):
         """Test transfer (with no paths defined)"""
         self.gateway.path_ids.unlink()
         old_transfers = self.gateway.transfer_ids
-        transfer = self.gateway.do_transfer()
+        transfer = self.gateway.do_transfer(conn=self.conn)
         new_transfers = self.gateway.transfer_ids - old_transfers
         self.assertIn(transfer, new_transfers)
         self.assertEqual(len(new_transfers), 1)
@@ -255,21 +268,21 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
         self.gateway.path_ids.unlink()
         self.assertTrue(self.gateway.action_transfer())
 
-    @skipUnlessCanInitiate
+    @skipUnlessCanDoTransfer
     @skipUnlessCanReceive
     def test04_transfer_receive(self):
         """Test receiving attachments"""
         with self.patch_paths({self.path_receive: ['hello_world.txt']}):
             transfer = self.gateway.with_context({
                 'default_allow_process': False,
-            }).do_transfer()
+            }).do_transfer(conn=self.conn)
             self.assertEqual(len(transfer.input_ids), 1)
             self.assertEqual(len(transfer.output_ids), 0)
             self.assertAttachment(transfer.input_ids, 'hello_world.txt')
         with self.patch_paths({self.path_receive: ['hello_world.txt']}):
             transfer = self.gateway.with_context({
                 'default_allow_process': False,
-            }).do_transfer()
+            }).do_transfer(conn=self.conn)
             self.assertEqual(len(transfer.input_ids), 0)
             self.assertEqual(len(transfer.output_ids), 0)
 
