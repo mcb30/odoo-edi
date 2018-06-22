@@ -150,16 +150,14 @@ class EdiGatewayCommonCase(EdiGatewayCase):
         EdiTransfer = self.env['edi.transfer']
         action = self.gateway.action_view_transfers()
         self.assertEqual(EdiTransfer.search(action['domain']), self.xfer)
-        self.assertEqual(len(EdiTransfer.search(action['domain'])),
-                         self.gateway.transfer_count)
+        self.assertEqual(self.gateway.transfer_count, 1)
 
     def test04_action_view_docs(self):
         """Test view documents"""
         EdiDocument = self.env['edi.document']
         action = self.gateway.action_view_docs()
         self.assertEqual(EdiDocument.search(action['domain']), self.doc)
-        self.assertEqual(len(EdiDocument.search(action['domain'])),
-                         self.gateway.doc_count)
+        self.assertEqual(self.gateway.doc_count, 1)
 
 
 class EdiGatewayConnectionCase(EdiGatewayCase):
@@ -326,6 +324,19 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
             self.assertEqual(len(transfer.input_ids), 1)
             self.assertEqual(len(transfer.output_ids), 0)
             self.assertAttachment(transfer.input_ids, 'hello_world.txt')
+
+    @skipUnlessCanInitiate
+    def test09_action_test_fail(self):
+        """Test the ability to test the connection"""
+        Model = self.env[self.gateway.model_id.model]
+        with patch.object(Model.__class__, 'connect', autospec=True,
+                          side_effect=Exception):
+            with self.assertRaisesIssue(self.gateway, exception=Exception):
+                old_messages = self.gateway.message_ids
+                self.gateway.action_test()
+                new_messages = self.gateway.message_ids - old_messages
+                # two new messages: one for the error and one for its traceback
+                self.assertEqual(len(new_messages), 2)
 
 
 class EdiGatewayFileSystemCase(EdiGatewayConnectionCase):
