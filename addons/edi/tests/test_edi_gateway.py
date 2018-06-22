@@ -179,7 +179,7 @@ class EdiGatewayCommonCase(EdiGatewayCase):
         EdiPath = self.env['edi.gateway.path']
         action = self.gateway.action_view_paths()
         self.assertEqual(len(EdiPath.search(action['domain'])),
-                         len(self.gateway.path_ids))
+                         self.gateway.path_count)
         path = EdiPath.with_context(action['context']).create({
             'name': "Brand new path!",
             'path': "Middle of nowhere",
@@ -193,12 +193,16 @@ class EdiGatewayCommonCase(EdiGatewayCase):
         EdiTransfer = self.env['edi.transfer']
         action = self.gateway.action_view_transfers()
         self.assertEqual(EdiTransfer.search(action['domain']), self.xfer)
+        self.assertEqual(len(EdiTransfer.search(action['domain'])),
+                         self.gateway.transfer_count)
 
     def test04_action_view_docs(self):
         """Test view documents"""
         EdiDocument = self.env['edi.document']
         action = self.gateway.action_view_docs()
         self.assertEqual(EdiDocument.search(action['domain']), self.doc)
+        self.assertEqual(len(EdiDocument.search(action['domain'])),
+                         self.gateway.doc_count)
 
     def test05_ssh_connect(self):
         """Test connect to SSH server"""
