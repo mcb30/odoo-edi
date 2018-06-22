@@ -35,6 +35,17 @@ class EdiConnectionXMLRPC(models.AbstractModel):
             if not fnmatch.fnmatch(f['name'], path.glob):
                 continue
 
+            # Skip files already successfully attached to a document
+            domain = [('res_model', '=', 'edi.document'),
+                      ('res_field', '=', 'input_ids'),
+                      ('res_id', '!=', False),
+                      ('datas_fname', '=', f['name']),
+                      ]
+            if f['size']:
+                domain.append(('file_size', '=', f['size']))
+            if Attachment.search(domain):
+                continue
+
             # Create new attachment for input file
             attachment = Attachment.create({
                 'name': f['name'],
