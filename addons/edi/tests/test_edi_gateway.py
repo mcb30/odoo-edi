@@ -5,9 +5,12 @@ from contextlib import contextmanager
 from datetime import timedelta
 import os
 import pathlib
+import socket
 import shutil
 import tempfile
+import threading
 from unittest.mock import patch
+import paramiko
 from odoo import fields
 from odoo.tools import config
 from .common import EdiCase, EdiTestFile
@@ -44,6 +47,27 @@ def skipUnlessCanSend(f):
         else:
             self.skipTest("Gateway has no send paths")
     return wrapper
+
+
+class DummySSHServer(paramiko.ServerInterface):
+    """Dummy SSH server"""
+
+    DEFAULT_USERNAME = 'user'
+    DEFAULT_PASSWORD = 'pass'
+
+    def __init__(self, username=DEFAULT_USERNAME, password=DEFAULT_PASSWORD):
+        self.username = username
+        self.password = password
+
+    def check_auth_password(self, username, password):
+        """Check username and password"""
+        if username == self.username and password == self.password:
+            return paramiko.AUTH_SUCCESSFUL
+        return paramiko.AUTH_FAILED
+
+    def check_channel_request(self, kind, chanid):
+        """Allow any channel to be opened"""
+        return paramiko.OPEN_SUCCEEDED
 
 
 class EdiGatewayCase(EdiCase):
@@ -83,6 +107,28 @@ class EdiGatewayCase(EdiCase):
         # Check for exceptions that have been caught and converted to issues
         self.assertEqual(len(self.gateway.issue_ids), 0)
         super().tearDown()
+
+    @contextmanager
+    def patch_ssh(self, keyfile='ssh_host_key', **kwargs):
+        """Patch SSH connections to a dummy SSH server"""
+        keypath = self.files.joinpath(keyfile)
+        (sock, server_sock) = socket.socketpair()
+        server = paramiko.Transport(server_sock)
+        server.add_server_key(paramiko.RSAKey.from_private_key_file(keypath))
+        server.start_server(server=DummySSHServer(**kwargs),
+                            event=threading.Event())
+        connect = paramiko.SSHClient.connect
+        with patch.object(
+            # pylint: disable=unnecessary-lambda
+            paramiko.SSHClient, 'connect', autospec=True,
+            side_effect=lambda *args, **kwargs: connect(*args, sock=sock,
+                                                        **kwargs),
+        ):
+            try:
+                yield server
+            finally:
+                server.close()
+                sock.close()
 
 
 class EdiGatewayCommonCase(EdiGatewayCase):
@@ -144,6 +190,17 @@ class EdiGatewayCommonCase(EdiGatewayCase):
         EdiDocument = self.env['edi.document']
         action = self.gateway.action_view_docs()
         self.assertEqual(EdiDocument.search(action['domain']), self.doc)
+
+    def test05_ssh_connect(self):
+        """Test connect to SSH server"""
+        self.gateway.server = 'dummy'
+        self.gateway.username = 'user'
+        self.gateway.password = 'pass'
+        with self.patch_ssh():
+            ssh = self.gateway.ssh_connect()
+            ssh.close()
+        self.assertEqual(self.gateway.ssh_host_fingerprint,
+                         'e3:32:6e:5c:ee:47:58:2d:bb:f1:d0:3b:0e:c4:55:a0')
 
 
 class EdiGatewayConnectionCase(EdiGatewayCase):
