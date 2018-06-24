@@ -55,9 +55,26 @@ class DummySSHServer(paramiko.ServerInterface):
     DEFAULT_USERNAME = 'user'
     DEFAULT_PASSWORD = 'pass'
 
-    def __init__(self, username=DEFAULT_USERNAME, password=DEFAULT_PASSWORD):
+    def __init__(self, host_key, username=DEFAULT_USERNAME,
+                 password=DEFAULT_PASSWORD):
+        self.host_key = host_key
         self.username = username
         self.password = password
+
+    def connect(self, *args, orig_connect=paramiko.SSHClient.connect, **kwargs):
+        """Connect to dummy SSH server"""
+        (client_sock, server_sock) = socket.socketpair()
+        self.create_transport(server_sock)
+        return orig_connect(*args, sock=client_sock, **kwargs)
+
+    def create_transport(self, sock):
+        """Create transport for dummy SSH server"""
+        transport = paramiko.Transport(sock)
+        transport.add_server_key(
+            paramiko.RSAKey.from_private_key_file(self.host_key)
+        )
+        transport.start_server(server=self, event=threading.Event())
+        return transport
 
     def check_auth_password(self, username, password):
         """Check username and password"""
@@ -103,32 +120,24 @@ class EdiGatewayCase(EdiCase):
             'doc_type_ids': [(6, 0, cls.doc_type_unknown.ids)],
         })
 
+        # Dummy SSH server class
+        cls.SSHServer = DummySSHServer
+
+    def setUp(self):
+        super().setUp()
+        # Create dummy SSH server
+        self.ssh_server = self.SSHServer(self.files.joinpath('ssh_host_key'))
+        patch_ssh_connect = patch.object(paramiko.SSHClient, 'connect',
+                                         autospec=True,
+                                         side_effect=self.ssh_server.connect)
+        patch_ssh_connect.start()
+        self.addCleanup(patch_ssh_connect.stop)
+
     def tearDown(self):
         # Check for exceptions that have been caught and converted to issues
         self.assertEqual(len(self.gateway.issue_ids), 0)
         super().tearDown()
-
-    @contextmanager
-    def patch_ssh(self, keyfile='ssh_host_key', **kwargs):
-        """Patch SSH connections to a dummy SSH server"""
-        keypath = self.files.joinpath(keyfile)
-        (sock, server_sock) = socket.socketpair()
-        server = paramiko.Transport(server_sock)
-        server.add_server_key(paramiko.RSAKey.from_private_key_file(keypath))
-        server.start_server(server=DummySSHServer(**kwargs),
-                            event=threading.Event())
-        connect = paramiko.SSHClient.connect
-        with patch.object(
-            # pylint: disable=unnecessary-lambda
-            paramiko.SSHClient, 'connect', autospec=True,
-            side_effect=lambda *args, **kwargs: connect(*args, sock=sock,
-                                                        **kwargs),
-        ):
-            try:
-                yield server
-            finally:
-                server.close()
-                sock.close()
+        del self.ssh_server
 
 
 class EdiGatewayCommonCase(EdiGatewayCase):
@@ -196,9 +205,8 @@ class EdiGatewayCommonCase(EdiGatewayCase):
         self.gateway.server = 'dummy'
         self.gateway.username = 'user'
         self.gateway.password = 'pass'
-        with self.patch_ssh():
-            ssh = self.gateway.ssh_connect()
-            ssh.close()
+        ssh = self.gateway.ssh_connect()
+        ssh.close()
         self.assertEqual(self.gateway.ssh_host_fingerprint,
                          'e3:32:6e:5c:ee:47:58:2d:bb:f1:d0:3b:0e:c4:55:a0')
 
