@@ -37,3 +37,18 @@ class TestEdiConnectionXmlrpc(test_edi_gateway.EdiGatewayConnectionCase):
                      for path, files in path_files.items()}
         yield
         self.conn = None
+
+    def test00_xmlrpc_transfer(self):
+        """Test xmlrpc transfer"""
+
+        file = "hello_world.txt"
+        receive_data = [
+            {'name': file,
+             'data': Binary(b64encode(self.files.joinpath(file).read_bytes())),
+             'size': self.files.joinpath(file).stat().st_size}
+        ]
+
+        res = self.gateway.xmlrpc_transfer(receive=receive_data)
+        self.assertEqual(len(res['docs']), 1)
+        self.assertEqual(len(res['errors']), 1)
+        self.gateway.issue_ids.unlink()
