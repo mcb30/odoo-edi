@@ -71,7 +71,7 @@ class DummySSHServer(paramiko.ServerInterface):
         """Create transport for dummy SSH server"""
         transport = paramiko.Transport(sock)
         transport.add_server_key(
-            paramiko.RSAKey.from_private_key_file(self.host_key)
+            paramiko.RSAKey.from_private_key_file(str(self.host_key))
         )
         transport.start_server(server=self, event=threading.Event())
         return transport
