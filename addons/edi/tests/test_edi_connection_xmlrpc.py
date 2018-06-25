@@ -38,9 +38,8 @@ class TestEdiConnectionXmlrpc(test_edi_gateway.EdiGatewayConnectionCase):
         yield
         self.conn = None
 
-    def test00_xmlrpc_transfer(self):
+    def _test001_xmlrpc_transfer(self):
         """Test xmlrpc transfer"""
-
         file = "hello_world.txt"
         receive_data = [
             {'name': file,
@@ -52,3 +51,26 @@ class TestEdiConnectionXmlrpc(test_edi_gateway.EdiGatewayConnectionCase):
         self.assertEqual(len(res['docs']), 1)
         self.assertEqual(len(res['errors']), 1)
         self.gateway.issue_ids.unlink()
+
+    def test002_send_ouputs(self):
+        """Test send outputs"""
+        EdiTransfer = self.env['edi.transfer']
+        EdiDocument = self.env['edi.document']
+
+        # Create transfer
+        self.xfer = EdiTransfer.create({
+            'gateway_id': self.gateway.id,
+        })
+
+        # Create document
+        self.doc = EdiDocument.create({
+            'name': "Test document",
+            'doc_type_id': self.doc_type_unknown.id,
+            'transfer_id': self.xfer.id,
+            'state': 'done',
+        })
+        self.create_output_attachment(self.doc, 'hello_world.txt')
+        self.xfer.send_outputs(self.conn)
+        self.assertEqual(len(self.conn[self.path_send.path]), 1)
+        self.assertEqual(len(self.xfer.output_ids), 1)
+        self.assertAttachment(self.xfer.output_ids, "hello_world.txt")
