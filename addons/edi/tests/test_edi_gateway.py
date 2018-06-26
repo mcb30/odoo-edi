@@ -8,6 +8,7 @@ import pathlib
 import socket
 import shutil
 import tempfile
+from time import sleep
 import threading
 from unittest.mock import patch
 import paramiko
@@ -60,6 +61,20 @@ class DummySSHServer(paramiko.ServerInterface):
         self.host_key = host_key
         self.username = username
         self.password = password
+
+    def close(self, ssh, *args, orig_close=paramiko.SSHClient.close, **kwargs):
+        """Wrapper for ``paramiko.SSHClient.close``
+
+        This method can be used as a mock side-effect for
+        ``paramiko.SSHClient.close`` to ensure that all channels have
+        been closed down cleanly prior to closing the underlying
+        socket.  This is not strictly necessary, but avoids spurious
+        "Socket exception: Connection reset by peer" error messages
+        from the server transport.
+        """
+        while ssh.get_transport()._channels:
+            sleep(0)
+        orig_close(ssh, *args, **kwargs)
 
     def connect(self, ssh, *args, orig_connect=paramiko.SSHClient.connect,
                 **kwargs):
@@ -138,6 +153,11 @@ class EdiGatewayCase(EdiCase):
                                          side_effect=self.ssh_server.connect)
         patch_ssh_connect.start()
         self.addCleanup(patch_ssh_connect.stop)
+        patch_ssh_close = patch.object(paramiko.SSHClient, 'close',
+                                       autospec=True,
+                                       side_effect=self.ssh_server.close)
+        patch_ssh_close.start()
+        self.addCleanup(patch_ssh_close.stop)
 
     def tearDown(self):
         # Check for exceptions that have been caught and converted to issues
