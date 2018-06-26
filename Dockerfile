@@ -2,7 +2,7 @@ FROM unipartdigital/odoo-tester
 
 # Packages
 #
-RUN dnf install -y python3-paramiko ; dnf clean all
+RUN dnf install -y python3-paramiko python3-ply ; dnf clean all
 
 # Prerequisite module installation (without tests)
 #

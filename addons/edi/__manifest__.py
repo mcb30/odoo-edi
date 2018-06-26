@@ -24,7 +24,7 @@ Key Features
     """,
     'version': '0.1',
     'depends': ['project', 'document'],
-    'external_dependencies': {'python': ['paramiko']},
+    'external_dependencies': {'python': ['paramiko', 'ply']},
     'author': "Michael Brown <mbrown@fensystems.co.uk>",
     'category': "Extra Tools",
     'data': [
