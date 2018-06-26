@@ -61,11 +61,17 @@ class DummySSHServer(paramiko.ServerInterface):
         self.username = username
         self.password = password
 
-    def connect(self, *args, orig_connect=paramiko.SSHClient.connect, **kwargs):
-        """Connect to dummy SSH server"""
+    def connect(self, ssh, *args, orig_connect=paramiko.SSHClient.connect,
+                **kwargs):
+        """Wrapper for ``paramiko.SSHClient.connect``
+
+        This method can be used as a mock side-effect for
+        ``paramiko.SSHClient.connect`` to divert connection attempts
+        to the dummy SSH server.
+        """
         (client_sock, server_sock) = socket.socketpair()
         self.create_transport(server_sock)
-        return orig_connect(*args, sock=client_sock, **kwargs)
+        return orig_connect(ssh, *args, sock=client_sock, **kwargs)
 
     def create_transport(self, sock):
         """Create transport for dummy SSH server"""
