@@ -17,7 +17,7 @@ class Field(object):
 
     def __init__(self, chars):
         self.chars = chars
-        self.len = (self.chars.stop - self.chars.start + 1)
+        self.len = (self.chars.stop - self.chars.start)
 
     def __get__(self, record, owner):
         """Get field value from containing record"""
@@ -29,7 +29,7 @@ class Field(object):
 
     def __set__(self, record, value):
         """Set field value in containing record"""
-        record[self.chars] = value.ljust(self.len)
+        record[self.chars] = value.ljust(self.len).encode()
 
 
 class CharacterField(Field):
