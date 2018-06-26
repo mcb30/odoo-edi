@@ -1,6 +1,7 @@
 """SAP IDoc tests"""
 
 import base64
+from collections import namedtuple
 from ..tools import sap_idoc_type, SapIDoc
 from ..tools.sapidoc.model import CharacterField
 from .common import EdiCase
@@ -22,6 +23,7 @@ class TestSapIDoc(EdiCase):
 
     def test02_parser(self):
         """Test IDoc parsing"""
+        # pylint: disable=eval-used
         Matmas01 = SapIDoc('edi', 'tests', 'files', 'matmas01.txt')
         idoc = Matmas01(base64.b64decode(self.chocolate.datas))
         self.assertIsInstance(idoc.data[0].__class__.SEGNAM, CharacterField)
@@ -40,3 +42,7 @@ class TestSapIDoc(EdiCase):
         self.assertIn("EAN11='5055365625417'", repr(idoc))
         self.assertIn("DOCNUM='0000000000198012'", repr(idoc))
         self.assertIn("DOCNUM='0000000000198012'", str(idoc))
+        rep = eval(repr(idoc.data[0]), {
+            'MATMAS01': namedtuple('MATMAS01', ['E2MARAM009'])(dict),
+        })
+        self.assertEqual(rep['ERSDA'], '20180605')
