@@ -427,6 +427,52 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
                 # two new messages: one for the error and one for its traceback
                 self.assertEqual(len(new_messages), 2)
 
+    @skipUnlessCanInitiate
+    @skipUnlessCanReceive
+    def test10_transfer_receive_glob(self):
+        """Test filtering receive path by glob"""
+        with self.patch_paths({self.path_receive: ['hello_world.txt']}):
+            self.path_receive.glob = '*.csv'
+            transfer = self.gateway.with_context({
+                'default_allow_process': False,
+            }).do_transfer()
+            self.assertEqual(len(transfer.input_ids), 0)
+            self.assertEqual(len(transfer.output_ids), 0)
+            self.path_receive.glob = '*.txt'
+            transfer = self.gateway.with_context({
+                'default_allow_process': False,
+            }).do_transfer()
+            self.assertEqual(len(transfer.input_ids), 1)
+            self.assertEqual(len(transfer.output_ids), 0)
+            self.assertAttachment(transfer.input_ids, 'hello_world.txt')
+
+    @skipUnlessCanInitiate
+    @skipUnlessCanSend
+    def test11_transfer_send_glob(self):
+        """Test filtering send path by glob"""
+        EdiDocument = self.env['edi.document']
+        today = fields.Datetime.now()
+        doc = EdiDocument.create({
+            'name': "Greeting",
+            'doc_type_id': self.doc_type_unknown.id,
+            'state': 'done',
+            'prepare_date': today,
+            'execute_date': today,
+        })
+        attachment = self.create_output_attachment(doc, 'hello_world.txt')
+        with self.patch_paths({self.path_send: []}) as ctx:
+            self.path_send.glob = '*.csv'
+            transfer = self.gateway.do_transfer()
+            self.assertEqual(len(transfer.input_ids), 0)
+            self.assertEqual(len(transfer.output_ids), 0)
+            self.assertSent(ctx, {})
+            self.path_send.glob = '*.txt'
+            transfer = self.gateway.do_transfer()
+            self.assertEqual(len(transfer.input_ids), 0)
+            self.assertEqual(len(transfer.output_ids), 1)
+            self.assertIn(attachment, transfer.output_ids)
+            self.assertSent(ctx, {self.path_send: ['hello_world.txt']})
+
 
 class EdiGatewayFileSystemCase(EdiGatewayConnectionCase):
     """Base test case for filesystem-like EDI gateways"""
