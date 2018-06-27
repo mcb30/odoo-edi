@@ -46,6 +46,13 @@ class EdiCase(common.SavepointCase):
         cls.doc_type_unknown = cls.env.ref('edi.document_type_unknown')
         cls.files = pathlib.Path(get_resource_path('edi', 'tests', 'files'))
 
+        # Delete any document types corresponding to non-existent
+        # models, to avoid failures in edi.document.type.autocreate()
+        EdiDocumentType = cls.env['edi.document.type']
+        EdiDocumentType.search([]).filtered(
+            lambda x: x.model_id.model not in cls.env
+        ).unlink()
+
     @classmethod
     def create_attachment(cls, filename):
         """Create attachment"""
