@@ -2,7 +2,6 @@
 
 import traceback
 import logging
-import threading
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 
@@ -115,8 +114,7 @@ class EdiIssue(models.AbstractModel):
 
         # Add traceback if applicable
         trace = ''.join(tbe.format())
-        if not getattr(threading.currentThread(), 'testing', False):
-            _logger.error(trace)
+        _logger.error(trace)
         if not isinstance(err, UserError):
             issue.message_post(body=trace, content_subtype='plaintext')
             for thread in threads:

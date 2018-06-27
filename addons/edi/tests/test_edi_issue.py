@@ -1,7 +1,9 @@
 """EDI issue tests"""
 
+from unittest.mock import patch
 from odoo.exceptions import UserError, ValidationError
 from .common import EdiCase
+from ..models import edi_issues
 
 
 class TestEdiIssue(EdiCase):
@@ -21,8 +23,9 @@ class TestEdiIssue(EdiCase):
 
     def test01_action_close_issues(self):
         """Test action close issues"""
-        issue = self.doc.raise_issue("Test issue: %s",
-                                     UserError("Test close issues"))
+        with patch.object(edi_issues._logger, 'error', autospec=True):
+            issue = self.doc.raise_issue("Test issue: %s",
+                                         UserError("Test close issues"))
         self.assertIn(issue, self.doc.issue_ids)
         self.doc.action_close_issues()
         self.assertEqual(len(self.doc.issue_ids), 0)
@@ -40,6 +43,7 @@ class TestEdiIssue(EdiCase):
 
     def test03_raise_issue_non_usererror(self):
         """Test issue raised non UserError"""
-        issue = self.doc.raise_issue("Test issue: %s",
-                                     ValidationError("Test non UserError"))
+        with patch.object(edi_issues._logger, 'error', autospec=True):
+            issue = self.doc.raise_issue("Test issue: %s",
+                                         ValidationError("Test non UserError"))
         self.assertIn(issue, self.doc.issue_ids)

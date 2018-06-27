@@ -8,6 +8,7 @@ from unittest.mock import patch
 from odoo.exceptions import UserError
 from odoo.modules.module import get_resource_path
 from odoo.tests import common
+from ..models import edi_issues
 
 
 class EdiTestFile(pathlib.PurePosixPath):
@@ -90,14 +91,37 @@ class EdiCase(common.SavepointCase):
     def assertRaisesIssue(self, entity, exception=UserError):
         """Assert that an issue is raised on the specified entity"""
         EdiIssues = self.env['edi.issues']
+        old_issue_ids = entity.issue_ids
         with patch.object(
+            edi_issues._logger, 'error', autospec=True
+        ), patch.object(
             EdiIssues.__class__, 'raise_issue', autospec=True,
             side_effect=EdiIssues.__class__.raise_issue
         ) as mock_raise_issue:
-            old_issue_ids = entity.issue_ids
             yield
-            new_issue_ids = entity.issue_ids - old_issue_ids
+        new_issue_ids = entity.issue_ids - old_issue_ids
+
+        # Fail if no issue was ever raised
+        self.assertTrue(mock_raise_issue.called)
+
+        # Retrieve all exceptions passed to raise_issue(), and
+        # identify the one that we wish to blame for any test
+        # failures.  If any unexpected exceptions occurred then we
+        # blame the first of those; otherwise we arbitrarily blame the
+        # first exception.  This is something of a heuristic, but
+        # should handle most cases correctly.
+        errors = [err for ((_self, _fmt, err), _kwargs) in
+                  mock_raise_issue.call_args_list]
+        scapegoat = sorted(errors, key=lambda x: isinstance(x, exception))[0]
+
+        # Fail if more than one issue was raised, or if an unexpected
+        # issue was raised.
+        try:
             self.assertEqual(len(new_issue_ids), 1)
-            ((_self, _fmt, err), _kwargs) = mock_raise_issue.call_args
-            self.assertIsInstance(err, exception)
-            new_issue_ids.unlink()
+            self.assertEqual(len(errors), 1)
+            self.assertIsInstance(errors[0], exception)
+        except AssertionError as assertion:
+            raise assertion from scapegoat
+
+        # Delete the raised issue
+        new_issue_ids.unlink()
