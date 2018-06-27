@@ -14,6 +14,7 @@ from unittest.mock import patch
 import paramiko
 from odoo import fields
 from odoo.tools import config
+from ..models import edi_gateway
 from .common import EdiCase, EdiTestFile
 
 
@@ -235,8 +236,11 @@ class EdiGatewayCommonCase(EdiGatewayCase):
         self.gateway.server = 'dummy'
         self.gateway.username = 'user'
         self.gateway.password = 'pass'
-        ssh = self.gateway.ssh_connect()
-        ssh.close()
+        with patch.object(edi_gateway._logger, 'warning',
+                          autospec=True) as mock_log_warning:
+            ssh = self.gateway.ssh_connect()
+            ssh.close()
+        self.assertTrue(mock_log_warning.called)
         self.assertEqual(self.gateway.ssh_host_fingerprint,
                          'e3:32:6e:5c:ee:47:58:2d:bb:f1:d0:3b:0e:c4:55:a0')
 
