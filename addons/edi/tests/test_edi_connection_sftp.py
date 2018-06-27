@@ -56,6 +56,10 @@ class DummySSHServer(test_edi_gateway.DummySSHServer):
 class TestEdiConnectionSFTP(test_edi_gateway.EdiGatewayFileSystemCase):
     """EDI SFTP connection tests"""
 
+    can_initiate = True
+    can_receive = True
+    can_send = True
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()

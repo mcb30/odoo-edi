@@ -9,6 +9,9 @@ from . import test_edi_gateway
 class TestEdiConnectionMail(test_edi_gateway.EdiGatewayConnectionCase):
     """EDI Mail connection tests"""
 
+    can_initiate = True
+    can_send = True
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -17,7 +20,6 @@ class TestEdiConnectionMail(test_edi_gateway.EdiGatewayConnectionCase):
             'name': "Test mail gateway",
             'model_id': IrModel._get_id('edi.connection.mail'),
         })
-        cls.gateway.path_ids.write({'allow_receive': False})
         cls.path_send.path = "eve@example.com"
 
     def patch_paths(self, _path_files):

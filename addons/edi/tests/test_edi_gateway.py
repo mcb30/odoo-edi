@@ -22,7 +22,7 @@ def skipUnlessCanInitiate(f):
     """Skip test case unless gateway is capable of initiating connections"""
     def wrapper(self, *args, **kwargs):
         # pylint: disable=missing-docstring
-        if self.gateway.can_initiate:
+        if self.can_initiate:
             f(self, *args, **kwargs)
         else:
             self.skipTest("Gateway cannot initiate connections")
@@ -33,7 +33,7 @@ def skipUnlessCanReceive(f):
     """Skip test case unless gateway is capable of receiving"""
     def wrapper(self, *args, **kwargs):
         # pylint: disable=missing-docstring
-        if self.gateway.path_ids.filtered(lambda x: x.allow_receive):
+        if self.can_receive:
             f(self, *args, **kwargs)
         else:
             self.skipTest("Gateway has no receive paths")
@@ -44,7 +44,7 @@ def skipUnlessCanSend(f):
     """Skip test case unless gateway is capable of sending"""
     def wrapper(self, *args, **kwargs):
         # pylint: disable=missing-docstring
-        if self.gateway.path_ids.filtered(lambda x: x.allow_send):
+        if self.can_send:
             f(self, *args, **kwargs)
         else:
             self.skipTest("Gateway has no send paths")
@@ -111,6 +111,10 @@ class DummySSHServer(paramiko.ServerInterface):
 
 class EdiGatewayCase(EdiCase):
     """Abstract base test case for EDI gateways"""
+
+    can_initiate = False
+    can_receive = False
+    can_send = False
 
     @classmethod
     def setUpClass(cls):

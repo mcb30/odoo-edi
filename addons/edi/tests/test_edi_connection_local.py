@@ -9,6 +9,10 @@ from . import test_edi_gateway
 class TestEdiConnectionLocal(test_edi_gateway.EdiGatewayFileSystemCase):
     """EDI local filesystem connection tests"""
 
+    can_initiate = True
+    can_receive = True
+    can_send = True
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
