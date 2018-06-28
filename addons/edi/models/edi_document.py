@@ -137,7 +137,7 @@ class EdiDocument(models.Model):
                              default='draft', copy=False,
                              track_visibility='onchange')
     doc_type_id = fields.Many2one('edi.document.type', string="Document Type",
-                                  required=True, readonly=True)
+                                  required=True, readonly=True, index=True)
     prepare_date = fields.Datetime(string="Prepared on", readonly=True,
                                    copy=False)
     execute_date = fields.Datetime(string="Executed on", readonly=True,
@@ -146,10 +146,11 @@ class EdiDocument(models.Model):
 
     # Communications
     transfer_id = fields.Many2one('edi.transfer', string="Transfer",
-                                  readonly=True, copy=False)
+                                  readonly=True, copy=False, index=True)
     gateway_id = fields.Many2one('edi.gateway',
                                  related='transfer_id.gateway_id',
-                                 readonly=True, store=True, copy=False)
+                                 readonly=True, store=True, copy=False,
+                                 index=True)
 
     # Attachments (e.g. CSV files)
     input_ids = fields.One2many('ir.attachment', 'res_id',
