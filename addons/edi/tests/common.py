@@ -54,37 +54,40 @@ class EdiCase(common.SavepointCase):
         ).unlink()
 
     @classmethod
-    def create_attachment(cls, filename):
-        """Create attachment"""
+    def create_attachment(cls, *filenames):
+        """Create attachment(s)"""
         IrAttachment = cls.env['ir.attachment']
-        path = cls.files.joinpath(filename)
-        return IrAttachment.create({
-            'name': path.name,
-            'datas_fname': path.name,
-            'datas': base64.b64encode(path.read_bytes()),
-        })
+        attachments = IrAttachment.browse()
+        for filename in filenames:
+            path = cls.files.joinpath(filename)
+            attachments += IrAttachment.create({
+                'name': path.name,
+                'datas_fname': path.name,
+                'datas': base64.b64encode(path.read_bytes()),
+            })
+        return attachments
 
     @classmethod
-    def create_input_attachment(cls, doc, filename):
-        """Create input attachment"""
-        attachment = cls.create_attachment(filename)
-        attachment.write({
+    def create_input_attachment(cls, doc, *filenames):
+        """Create input attachment(s)"""
+        attachments = cls.create_attachment(*filenames)
+        attachments.write({
             'res_model': 'edi.document',
             'res_field': 'input_ids',
             'res_id': doc.id,
         })
-        return attachment
+        return attachments
 
     @classmethod
-    def create_output_attachment(cls, doc, filename):
-        """Create output attachment"""
-        attachment = cls.create_attachment(filename)
-        attachment.write({
+    def create_output_attachment(cls, doc, *filenames):
+        """Create output attachment(s)"""
+        attachments = cls.create_attachment(*filenames)
+        attachments.write({
             'res_model': 'edi.document',
             'res_field': 'output_ids',
             'res_id': doc.id,
         })
-        return attachment
+        return attachments
 
     def assertAttachment(self, attachment, filename=None):
         """Assert that attachment content is as expected"""
