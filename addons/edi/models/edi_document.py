@@ -75,6 +75,10 @@ class EdiDocumentType(models.Model):
     def autocreate(self, inputs):
         """Autocreate documents based on input attachments"""
         Document = self.env['edi.document']
+        inputs.write({
+            'res_model': 'edi.document',
+            'res_field': 'input_ids',
+        })
         docs = Document.browse()
         for doc_type in self or self.search([]):
             Model = self.env[doc_type.model_id.model]
