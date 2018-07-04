@@ -37,6 +37,8 @@ class EdiTestFile(pathlib.PurePosixPath):
         return now if self.age is None else now - self.age
 
 
+@common.at_install(False)
+@common.post_install(True)
 class EdiCase(common.SavepointCase):
     """Base test case for EDI models"""
 
