@@ -11,6 +11,7 @@
       <field name="arch" type="xml">
 	<xpath expr="//group[@name='basic']" position="after">
 	  <group>
+	    <field name="uom_id"/>
 	    <field name="weight"/>
 	    <field name="volume"/>
 	  </group>
@@ -26,6 +27,7 @@
       <field name="mode">primary</field>
       <field name="arch" type="xml">
 	<xpath expr="//tree" position="inside">
+	  <field name="uom_id"/>
 	  <field name="weight"/>
 	  <field name="volume"/>
 	</xpath>
@@ -62,6 +64,7 @@
 		<field name="name"/>
 		<field name="product_id"/>
 		<field name="description"/>
+		<field name="uom_id"/>
 		<field name="weight"/>
 		<field name="volume"/>
 	      </tree>

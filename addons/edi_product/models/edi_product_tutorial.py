@@ -29,6 +29,8 @@ class EdiProductTutorialRecord(models.Model):
     _inherit = 'edi.product.record'
     _description = "Product"
 
+    uom_id = fields.Many2one('product.uom', string="Unit of Measure",
+                             required=True, readonly=True)
     weight = fields.Integer(string="Weight", required=True, readonly=True,
                             help="Weight (in grams)")
     volume = fields.Integer(string="Volume", required=True, readonly=True,
@@ -39,6 +41,7 @@ class EdiProductTutorialRecord(models.Model):
         product_vals = super()._product_values(record_vals)
         product_vals.update({
             'barcode': record_vals['name'],
+            'uom_id': record_vals['uom_id'],
             'weight': (record_vals['weight'] / 1000.0),
             'volume': (record_vals['volume'] / 1000000.0),
         })
@@ -54,10 +57,15 @@ class EdiProductTutorialDocument(models.AbstractModel):
 
     @api.model
     def _record_values(self, data):
+        ProductUom = self.env['product.uom']
+        uoms = ProductUom.search([], order='id')
+        uom_by_name = {x.name: x for x in uoms}
+
         reader = csv.reader(data.decode().splitlines())
         return ({
             'name': name,
             'description': description,
+            'uom_id': uom_by_name.get(unit).id if unit else uoms[0].id,
             'weight': int(weight) if weight else 0,
             'volume': int(volume) if volume else 0,
-        } for name, description, weight, volume in reader)
+        } for name, description, unit, weight, volume in reader)

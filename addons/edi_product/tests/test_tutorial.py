@@ -12,6 +12,9 @@ class TestTutorial(EdiProductCase):
         cls.doc_type_tutorial = cls.env.ref(
             'edi_product.tutorial_document_type'
         )
+        cls.units = cls.env.ref('product.product_uom_unit')
+        cls.dozens = cls.env.ref('product.product_uom_dozen')
+        cls.dozens.name = "Dozen(s)"
 
     @classmethod
     def create_tutorial(cls, filename):
@@ -31,6 +34,7 @@ class TestTutorial(EdiProductCase):
         products = doc.mapped('product_tutorial_ids.product_id')
         self.assertEqual(len(products), 3)
         products_by_code = {x.default_code: x for x in products}
+        self.assertEqual(products_by_code['9780552146166'].uom_id, self.dozens)
         self.assertEqual(products_by_code['9780552145428'].name, "Hogfather")
 
     def test02_identical(self):
@@ -50,5 +54,7 @@ class TestTutorial(EdiProductCase):
         doc2 = self.create_tutorial('books02.csv')
         self.assertTrue(doc2.action_execute())
         self.assertEqual(len(doc2.product_tutorial_ids), 1)
-        self.assertEqual(doc2.product_tutorial_ids.product_id.name,
-                         "The Fifth Elephant")
+        product = doc2.product_tutorial_ids.product_id
+        self.assertEqual(product.barcode, '9780552146166')
+        self.assertEqual(product.uom_id, self.units)
+        self.assertEqual(product.name, "The Fifth Elephant")
