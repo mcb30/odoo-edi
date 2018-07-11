@@ -30,9 +30,9 @@ class EdiProductTutorialRecord(models.Model):
     _description = "Product"
 
     weight = fields.Integer(string="Weight", required=True, readonly=True,
-                            default=0, help="Weight (in grams)")
+                            help="Weight (in grams)")
     volume = fields.Integer(string="Volume", required=True, readonly=True,
-                            default=0, help="Volume (in cubic centimetres)")
+                            help="Volume (in cubic centimetres)")
 
     @api.model
     def _product_values(self, record_vals):
