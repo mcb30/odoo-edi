@@ -4,9 +4,10 @@ import base64
 from contextlib import contextmanager
 from datetime import datetime
 import pathlib
+import sys
 from unittest.mock import patch
 from odoo.exceptions import UserError
-from odoo.modules.module import get_resource_path
+from odoo.modules.module import get_resource_from_path, get_resource_path
 from odoo.tests import common
 from ..models import edi_issues
 
@@ -46,7 +47,12 @@ class EdiCase(common.SavepointCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.doc_type_unknown = cls.env.ref('edi.document_type_unknown')
-        cls.files = pathlib.Path(get_resource_path('edi', 'tests', 'files'))
+
+        # Locate test file directory corresponding to the class (which
+        # may be a derived class in a different module).
+        module_file = sys.modules[cls.__module__].__file__
+        module = get_resource_from_path(module_file)[0]
+        cls.files = pathlib.Path(get_resource_path(module, 'tests', 'files'))
 
         # Delete any document types corresponding to non-existent
         # models, to avoid failures in edi.document.type.autocreate()
