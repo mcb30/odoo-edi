@@ -1,11 +1,6 @@
 """EDI product documents"""
 
-import logging
 from odoo import api, models
-from odoo.tools.translate import _
-from odoo.addons.edi.tools import batched, Comparator
-
-_logger = logging.getLogger(__name__)
 
 
 class EdiProductDocument(models.AbstractModel):
@@ -25,19 +20,12 @@ class EdiProductDocument(models.AbstractModel):
     result in a new or modified ``product.product`` record will be
     automatically elided from the document.
 
-    Derived models should implement :meth:`~.product_record_values`.
-    """
-
-    BATCH_SIZE = 1000
-    """Batch size for processing EDI product records
-
-    This is used to obtain a sensible balance between the number of
-    database queries to the ``product.product`` table and the number
-    of records returned in each query.
+    Derived models should implement either :meth:`~.prepare` or
+    :meth:`~.product_record_values`.
     """
 
     _name = 'edi.product.document'
-    _inherit = 'edi.document.model'
+    _inherit = 'edi.document.sync'
     _description = "Products"
 
     @api.model
@@ -50,58 +38,17 @@ class EdiProductDocument(models.AbstractModel):
         """Construct EDI product record value dictionaries
 
         Must return an iterable of dictionaries, each of which could
-        passed to :meth:`~odoo.models.Model.create` or
-        :meth:`~odoo.models.Model.write` in order to create or update
+        passed to :meth:`~odoo.models.Model.create` in order to create
         an EDI product record.
         """
         return ()
 
     @api.model
-    def _prepare_batch(self, doc, batch, comparator):
-        """Prepare batch of records"""
-        Product = self.env['product.product'].with_context(active_test=False)
-        Template = self.env['product.template'].with_context(active_test=False)
-        EdiRecord = self.product_record_model(doc)
-
-        # Look up existing products
-        key = EdiRecord.KEY_FIELD
-        products = Product.search([(key, 'in', [x['name'] for x in batch])])
-        products_by_key = {getattr(x, key): x for x in products}
-
-        # Cache product templates to minimise database lookups
-        templates = Template.browse(products.mapped('product_tmpl_id.id'))
-        templates.mapped('name')
-
-        # Create EDI records
-        for record_vals in batch:
-
-            # Skip unchanged products
-            product = products_by_key.get(record_vals['name'])
-            if product:
-                product_vals = EdiRecord.target_values(record_vals)
-                if all(comparator[k](getattr(product, k), v)
-                       for k, v in product_vals.items()):
-                    continue
-
-            # Create EDI product record
-            record_vals['doc_id'] = doc.id
-            if product:
-                record_vals['product_id'] = product.id
-            EdiRecord.create(record_vals)
-
-    @api.model
     def prepare(self, doc):
         """Prepare document"""
-
-        # Construct product comparator
-        comparator = Comparator(self.env['product.product'])
-
-        # Process documents in batches of product records for efficiency
-        record_vals = (
+        super().prepare(doc)
+        self.product_record_model(doc).prepare(doc, (
             record_vals
             for data in doc.inputs()
             for record_vals in self.product_record_values(data)
-        )
-        for r, batch in batched(record_vals, self.BATCH_SIZE):
-            _logger.info(_("%s preparing %d-%d"), doc.name, r[0], r[-1])
-            self._prepare_batch(doc, batch, comparator)
+        ))

@@ -1,11 +1,6 @@
 """EDI product records"""
 
-import logging
 from odoo import api, fields, models
-from odoo.tools.translate import _
-from odoo.addons.edi.tools import batched
-
-_logger = logging.getLogger(__name__)
 
 
 class EdiProductRecord(models.Model):
@@ -25,20 +20,12 @@ class EdiProductRecord(models.Model):
     Derived models should implement :meth:`~.target_values`.
     """
 
-    KEY_FIELD = 'default_code'
-    """Lookup key field
-
-    This specifies the field of ``product.product`` that is used to
-    identify the existing product (if any) corresponding to an EDI
-    product record.  Defaults to ``product.product.default_code``.
-
-    The lookup value will be taken from the ``name`` field of the EDI
-    product record.
-    """
-
     _name = 'edi.product.record'
-    _inherit = 'edi.record'
+    _inherit = 'edi.record.sync'
     _description = "Product"
+
+    _edi_sync_target = 'product_id'
+    _edi_sync_via = 'default_code'
 
     product_id = fields.Many2one('product.product', string="Product",
                                  required=False, readonly=True, index=True,
@@ -46,55 +33,24 @@ class EdiProductRecord(models.Model):
     description = fields.Char(string="Description", required=True,
                               readonly=True, default="Unknown")
 
-    _sql_constraints = [('doc_name_uniq', 'unique (doc_id, name)',
-                         "Each product may appear at most once per document")]
-
-    @api.multi
-    def _record_values(self):
-        """Reconstruct record field value dictionary"""
-        self.ensure_one()
-        record_vals = self.copy_data()[0]
-        del record_vals['doc_id']
-        del record_vals['product_id']
-        return record_vals
+    @api.model
+    def targets_by_key(self, vlist):
+        """Construct lookup cache of target records indexed by key field"""
+        products_by_key = super().targets_by_key(vlist)
+        # Cache product templates to minimise subsequent database lookups
+        Product = self[self._edi_sync_target].with_context(active_test=False)
+        Template = Product.product_tmpl_id
+        products = Product.browse(x.id for x in products_by_key.values())
+        templates = Template.browse(products.mapped('product_tmpl_id.id'))
+        templates.mapped('name')
+        return products_by_key
 
     @api.model
     def target_values(self, record_vals):
-        """Construct ``product.product`` field value dictionary
-
-        Must return a dictionary that can be passed to
-        :meth:`~odoo.models.Model.create` or
-        :meth:`~odoo.models.Model.write` in order to create or update
-        a ``product.product`` record.
-        """
-        return {
-            self.KEY_FIELD: record_vals['name'],
+        """Construct ``product.product`` field value dictionary"""
+        product_vals = super().target_values(record_vals)
+        product_vals.update({
             'name': record_vals['description'],
             'active': True,
-        }
-
-
-    @api.multi
-    def execute(self):
-        """Execute product records"""
-        super().execute()
-        Product = self.env['product.product'].with_context(
-            tracking_disable=True,
-        )
-        doc = self.mapped('doc_id')
-
-        # Update existing products
-        for r, batch in batched(self.filtered(lambda x: x.product_id),
-                                self.BATCH_SIZE):
-            _logger.info(_("%s updating %d-%d"), doc.name, r[0], r[-1])
-            for rec in batch:
-                product_vals = rec.target_values(rec._record_values())
-                rec.product_id.write(product_vals)
-
-        # Create new products
-        for r, batch in batched(self.filtered(lambda x: not x.product_id),
-                                self.BATCH_SIZE):
-            _logger.info(_("%s creating %d-%d"), doc.name, r[0], r[-1])
-            for rec in batch:
-                product_vals = rec.target_values(rec._record_values())
-                rec.product_id = Product.create(product_vals)
+        })
+        return product_vals
