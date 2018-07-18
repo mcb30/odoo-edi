@@ -8,7 +8,7 @@ from odoo.addons.edi.tools import batched
 _logger = logging.getLogger(__name__)
 
 
-class EdiProductRecord(models.AbstractModel):
+class EdiProductRecord(models.Model):
     """EDI product record
 
     This is the base model for EDI product records.  Each row

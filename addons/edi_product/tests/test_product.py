@@ -9,12 +9,17 @@ class TestProduct(EdiProductCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        EdiRecordType = cls.env['edi.record.type']
         EdiDocumentType = cls.env['edi.document.type']
         IrModel = cls.env['ir.model']
+        cls.rec_type_product = EdiRecordType.create({
+            'name': "Dummy product record",
+            'model_id': IrModel._get_id('edi.product.record'),
+        })
         cls.doc_type_product = EdiDocumentType.create({
             'name': "Dummy product document",
             'model_id': IrModel._get_id('edi.product.document'),
-            'rec_type_ids': [6, 0, IrModel._get_id('edi.product.record')],
+            'rec_type_ids': [(6, 0, [cls.rec_type_product.id])],
         })
 
     def test01_empty(self):
