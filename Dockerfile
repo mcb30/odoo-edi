@@ -6,7 +6,7 @@ RUN dnf install -y python3-paramiko python3-ply ; dnf clean all
 
 # Prerequisite module installation (without tests)
 #
-RUN odoo-wrapper --without-demo=all -i project,document,product
+RUN odoo-wrapper --without-demo=all -i project,document,product,stock
 
 # Add EDI modules
 #
@@ -14,4 +14,4 @@ ADD addons /opt/odoo-addons
 
 # Module tests
 #
-CMD ["--test-enable", "-i", "edi,edi_product"]
+CMD ["--test-enable", "-i", "edi,edi_product,edi_stock"]
