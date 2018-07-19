@@ -76,7 +76,7 @@ class EdiProductSapMatmas01(models.AbstractModel):
         return [attachments] if attachments else []
 
     @api.model
-    def _record_values(self, data):
+    def product_record_values(self, data):
         """Construct EDI product record value dictionaries"""
         idoc = Matmas01(data)
         for matnr, irecs in groupby(idoc.data, key=MaterialNumberGroupKey()):

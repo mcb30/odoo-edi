@@ -56,7 +56,7 @@ class EdiProductTutorialDocument(models.AbstractModel):
     _description = "Tutorial product CSV file"
 
     @api.model
-    def _record_values(self, data):
+    def product_record_values(self, data):
         ProductUom = self.env['product.uom']
         uoms = ProductUom.search([], order='id')
         uom_by_name = {x.name: x for x in uoms}

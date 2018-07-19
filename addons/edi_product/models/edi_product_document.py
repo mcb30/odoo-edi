@@ -27,7 +27,7 @@ class EdiProductDocument(models.AbstractModel):
     result in a new or modified ``product.product`` record will be
     automatically elided from the document.
 
-    Derived models should implement :meth:`~._record_values`.
+    Derived models should implement :meth:`~.product_record_values`.
     """
 
     BATCH_SIZE = 1000
@@ -49,7 +49,7 @@ class EdiProductDocument(models.AbstractModel):
         return self.env[rec_type_id.model_id.model]
 
     @api.model
-    def _record_values(self, _data):
+    def product_record_values(self, _data):
         """Construct EDI product record value dictionaries
 
         Must return an iterable of dictionaries, each of which could
@@ -107,7 +107,9 @@ class EdiProductDocument(models.AbstractModel):
         record_vals = (
             record_vals
             for attachment in doc.input_ids.sorted('id')
-            for record_vals in self._record_values(b64decode(attachment.datas))
+            for record_vals in self.product_record_values(
+                    b64decode(attachment.datas)
+            )
         )
         for r, batch in batched(record_vals, self.BATCH_SIZE):
             _logger.info(_("%s preparing %d-%d"), doc.name, r[0], r[-1])
