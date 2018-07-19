@@ -1,9 +1,7 @@
 """EDI product documents"""
 
-from base64 import b64decode
 import logging
 from odoo import api, models
-from odoo.exceptions import UserError
 from odoo.tools.translate import _
 from odoo.addons.edi.tools import batched, Comparator
 
@@ -96,20 +94,14 @@ class EdiProductDocument(models.AbstractModel):
     def prepare(self, doc):
         """Prepare document"""
 
-        # Sanity check
-        if not doc.input_ids:
-            raise UserError(_("Missing input attachment"))
-
         # Construct product comparator
         comparator = Comparator(self.env['product.product'])
 
         # Process documents in batches of product records for efficiency
         record_vals = (
             record_vals
-            for attachment in doc.input_ids.sorted('id')
-            for record_vals in self.product_record_values(
-                    b64decode(attachment.datas)
-            )
+            for data in doc.inputs()
+            for record_vals in self.product_record_values(data)
         )
         for r, batch in batched(record_vals, self.BATCH_SIZE):
             _logger.info(_("%s preparing %d-%d"), doc.name, r[0], r[-1])

@@ -1,5 +1,6 @@
 """EDI documents"""
 
+from base64 import b64decode
 import logging
 from odoo import api, fields, models
 from odoo.exceptions import UserError
@@ -241,6 +242,14 @@ class EdiDocument(models.Model):
         for doc in self:
             # Obtain a database row-level exclusive lock by writing the record
             doc.state = doc.state
+
+    @api.multi
+    def inputs(self):
+        """Iterate over decoded input attachments"""
+        self.ensure_one()
+        if not self.input_ids:
+            raise UserError(_("Missing input attachment"))
+        return (b64decode(x.datas) for x in self.input_ids.sorted('id'))
 
     @api.multi
     def execute_records(self):
