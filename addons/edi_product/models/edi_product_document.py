@@ -41,10 +41,9 @@ class EdiProductDocument(models.AbstractModel):
     _description = "Products"
 
     @api.model
-    def _record_model(self, doc):
-        """Get corresponding EDI product record model"""
-        rec_type_id = doc.doc_type_id.rec_type_ids.ensure_one()
-        return self.env[rec_type_id.model_id.model]
+    def product_record_model(self, doc, supermodel='edi.product.record'):
+        """Get EDI product record model class"""
+        return self.record_model(doc, supermodel=supermodel)
 
     @api.model
     def product_record_values(self, _data):
@@ -62,7 +61,7 @@ class EdiProductDocument(models.AbstractModel):
         """Prepare batch of records"""
         Product = self.env['product.product'].with_context(active_test=False)
         Template = self.env['product.template'].with_context(active_test=False)
-        EdiRecord = self._record_model(doc)
+        EdiRecord = self.product_record_model(doc)
 
         # Look up existing products
         key = EdiRecord.KEY_FIELD

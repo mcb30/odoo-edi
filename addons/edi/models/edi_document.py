@@ -415,6 +415,26 @@ class EdiDocumentModel(models.AbstractModel):
     _description = "EDI Document Model"
 
     @api.model
+    def record_models(self, doc, supermodel='edi.record'):
+        """Get EDI record model classes"""
+        doc.ensure_one()
+        SuperModel = self.env[supermodel]
+        return [
+            self.env[x]
+            for x in doc.doc_type_id.rec_type_ids.mapped('model_id.model')
+            if issubclass(type(self.env[x]), type(SuperModel))
+        ]
+
+    @api.model
+    def record_model(self, doc, supermodel='edi.record'):
+        """Get EDI record model class"""
+        Models = self.record_models(doc, supermodel=supermodel)
+        if len(Models) != 1:
+            raise ValueError(_("Expected singleton record model: %s") %
+                             ','.join(x._name for x in Models))
+        return Models[0]
+
+    @api.model
     def prepare(self, _doc):
         """Prepare document"""
         pass
