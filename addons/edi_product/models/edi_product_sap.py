@@ -41,9 +41,9 @@ class EdiProductSapRecord(models.Model):
                           help="EAN11 in SAP IDoc")
 
     @api.model
-    def _product_values(self, record_vals):
+    def target_values(self, record_vals):
         """Construct ``product.product`` field value dictionary"""
-        product_vals = super()._product_values(record_vals)
+        product_vals = super().target_values(record_vals)
         product_vals.update({
             'barcode': record_vals['barcode'],
         })

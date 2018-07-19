@@ -22,7 +22,7 @@ class EdiProductRecord(models.Model):
     ``product.product.weight`` field is defined as a floating point
     number of kilograms.
 
-    Derived models should implement :meth:`~._product_values`.
+    Derived models should implement :meth:`~.target_values`.
     """
 
     BATCH_SIZE = 1000
@@ -66,7 +66,7 @@ class EdiProductRecord(models.Model):
         return record_vals
 
     @api.model
-    def _product_values(self, record_vals):
+    def target_values(self, record_vals):
         """Construct ``product.product`` field value dictionary
 
         Must return a dictionary that can be passed to
@@ -95,7 +95,7 @@ class EdiProductRecord(models.Model):
                                 self.BATCH_SIZE):
             _logger.info(_("%s updating %d-%d"), doc.name, r[0], r[-1])
             for rec in batch:
-                product_vals = rec._product_values(rec._record_values())
+                product_vals = rec.target_values(rec._record_values())
                 rec.product_id.write(product_vals)
 
         # Create new products
@@ -103,5 +103,5 @@ class EdiProductRecord(models.Model):
                                 self.BATCH_SIZE):
             _logger.info(_("%s creating %d-%d"), doc.name, r[0], r[-1])
             for rec in batch:
-                product_vals = rec._product_values(rec._record_values())
+                product_vals = rec.target_values(rec._record_values())
                 rec.product_id = Product.create(product_vals)

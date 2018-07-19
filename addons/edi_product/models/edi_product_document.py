@@ -81,7 +81,7 @@ class EdiProductDocument(models.AbstractModel):
             # Skip unchanged products
             product = products_by_key.get(record_vals['name'])
             if product:
-                product_vals = EdiRecord._product_values(record_vals)
+                product_vals = EdiRecord.target_values(record_vals)
                 if all(comparator[k](getattr(product, k), v)
                        for k, v in product_vals.items()):
                     continue
