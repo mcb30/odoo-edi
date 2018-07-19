@@ -25,13 +25,6 @@ class EdiProductRecord(models.Model):
     Derived models should implement :meth:`~.target_values`.
     """
 
-    BATCH_SIZE = 1000
-    """Batch size for creating or updating products
-
-    This is used primarily to restrict the number of log messages
-    produced during document execution.
-    """
-
     KEY_FIELD = 'default_code'
     """Lookup key field
 
