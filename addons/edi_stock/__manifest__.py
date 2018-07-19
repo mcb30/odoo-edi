@@ -20,6 +20,8 @@ Key Features
     'data': [
         'security/ir.model.access.csv',
         'views/edi_orderpoint_views.xml',
+        'views/edi_orderpoint_tutorial_views.xml',
         'data/edi_orderpoint_data.xml',
+        'data/edi_orderpoint_tutorial_data.xml',
     ],
 }
