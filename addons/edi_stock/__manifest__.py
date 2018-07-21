@@ -23,8 +23,10 @@ Key Features
         'views/edi_orderpoint_tutorial_views.xml',
         'views/edi_move_request_views.xml',
         'views/edi_pick_request_views.xml',
+        'views/edi_pick_request_tutorial_views.xml',
         'data/edi_orderpoint_data.xml',
         'data/edi_orderpoint_tutorial_data.xml',
         'data/edi_pick_request_data.xml',
+        'data/edi_pick_request_tutorial_data.xml',
     ],
 }

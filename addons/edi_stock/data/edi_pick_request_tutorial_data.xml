@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- EDI stock transfer request tutorial record type -->
+    <record id="pick_request_tutorial_record_type" model="edi.record.type">
+      <field name="name">Stock Transfer Request Tutorial</field>
+      <field name="model_id" ref="model_edi_pick_request_tutorial_record"/>
+      <field name="sequence" eval="400"/>
+    </record>
+
+    <!-- EDI stock move request tutorial record type -->
+    <record id="move_request_tutorial_record_type" model="edi.record.type">
+      <field name="name">Stock Move Request Tutorial</field>
+      <field name="model_id" ref="model_edi_move_request_tutorial_record"/>
+      <field name="sequence" eval="410"/>
+    </record>
+
+    <!-- EDI stock transfer request tutorial document type -->
+    <record id="pick_request_tutorial_document_type" model="edi.document.type">
+      <field name="name">Stock Transfer Request Tutorial</field>
+      <field name="model_id" ref="model_edi_pick_request_tutorial_document"/>
+      <field name="sequence" eval="400"/>
+      <field name="sequence_id" ref="pick_request_sequence_default"/>
+      <field name="rec_type_ids"
+	     eval="[(6, False, [ref('pick_request_tutorial_record_type'),
+				ref('move_request_tutorial_record_type')])]"/>
+    </record>
+
+    <!-- EDI stock transfer request tutorial XML-RPC gateway path -->
+    <record id="pick_request_tutorial_path_xmlrpc" model="edi.gateway.path">
+      <field name="name">Stock Transfer Request Tutorial</field>
+      <field name="sequence" eval="400"/>
+      <field name="gateway_id" ref="edi.gateway_xmlrpc"/>
+      <field name="path">tutorial/pick/request</field>
+      <field name="doc_type_ids"
+	     eval="[(6, False, [ref('pick_request_tutorial_document_type')])]"/>
+    </record>
+
+  </data>
+</odoo>
