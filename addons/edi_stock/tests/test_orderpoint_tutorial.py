@@ -10,7 +10,7 @@ class TestTutorial(EdiOrderpointCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.doc_type_tutorial = cls.env.ref(
-            'edi_stock.tutorial_document_type'
+            'edi_stock.orderpoint_tutorial_document_type'
         )
 
     @classmethod

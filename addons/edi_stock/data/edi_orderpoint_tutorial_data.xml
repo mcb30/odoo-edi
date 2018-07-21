@@ -3,30 +3,30 @@
   <data>
 
     <!-- EDI orderpoint tutorial record type -->
-    <record id="tutorial_record_type" model="edi.record.type">
+    <record id="orderpoint_tutorial_record_type" model="edi.record.type">
       <field name="name">Minimum Inventory Rule Tutorial</field>
       <field name="model_id" ref="model_edi_orderpoint_tutorial_record"/>
       <field name="sequence" eval="900"/>
     </record>
 
     <!-- EDI orderpoint tutorial document type -->
-    <record id="tutorial_document_type" model="edi.document.type">
+    <record id="orderpoint_tutorial_document_type" model="edi.document.type">
       <field name="name">Minimum Inventory Rule Tutorial</field>
       <field name="model_id" ref="model_edi_orderpoint_tutorial_document"/>
       <field name="sequence" eval="900"/>
-      <field name="sequence_id" ref="sequence_default"/>
+      <field name="sequence_id" ref="orderpoint_sequence_default"/>
       <field name="rec_type_ids"
-	     eval="[(6, False, [ref('tutorial_record_type')])]"/>
+	     eval="[(6, False, [ref('orderpoint_tutorial_record_type')])]"/>
     </record>
 
     <!-- EDI orderpoint tutorial XML-RPC gateway path -->
-    <record id="tutorial_path_xmlrpc" model="edi.gateway.path">
+    <record id="orderpoint_tutorial_path_xmlrpc" model="edi.gateway.path">
       <field name="name">Minimum Inventory Rule Tutorial</field>
       <field name="sequence" eval="900"/>
       <field name="gateway_id" ref="edi.gateway_xmlrpc"/>
       <field name="path">tutorial/orderpoint</field>
       <field name="doc_type_ids"
-	     eval="[(6, False, [ref('tutorial_document_type')])]"/>
+	     eval="[(6, False, [ref('orderpoint_tutorial_document_type')])]"/>
     </record>
 
   </data>

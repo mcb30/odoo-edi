@@ -3,14 +3,14 @@
   <data>
 
     <!-- Create "EDI Minimum Inventory Rule Document" sequence -->
-    <record id="sequence_default" model="ir.sequence">
+    <record id="orderpoint_sequence_default" model="ir.sequence">
       <field name="name">EDI Minimum Inventory Rule Document</field>
       <field name="prefix">ORD</field>
       <field name="padding" eval="5"/>
     </record>
 
     <!-- EDI orderpoint record type -->
-    <record id="record_type" model="edi.record.type">
+    <record id="orderpoint_record_type" model="edi.record.type">
       <field name="name">Minimum Inventory Rule</field>
       <field name="model_id" ref="model_edi_orderpoint_record"/>
       <field name="sequence">50</field>
