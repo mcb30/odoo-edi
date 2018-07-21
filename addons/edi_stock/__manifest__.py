@@ -21,7 +21,10 @@ Key Features
         'security/ir.model.access.csv',
         'views/edi_orderpoint_views.xml',
         'views/edi_orderpoint_tutorial_views.xml',
+        'views/edi_move_request_views.xml',
+        'views/edi_pick_request_views.xml',
         'data/edi_orderpoint_data.xml',
         'data/edi_orderpoint_tutorial_data.xml',
+        'data/edi_pick_request_data.xml',
     ],
 }

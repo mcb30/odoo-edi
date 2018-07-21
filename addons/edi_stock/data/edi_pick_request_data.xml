@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- Create "EDI Stock Transfer Request Document" sequence -->
+    <record id="pick_request_sequence_default" model="ir.sequence">
+      <field name="name">EDI Stock Transfer Request Document</field>
+      <field name="prefix">REQ</field>
+      <field name="padding" eval="5"/>
+    </record>
+
+    <!-- EDI stock transfer request record type -->
+    <record id="pick_request_record_type" model="edi.record.type">
+      <field name="name">Stock Transfer Request</field>
+      <field name="model_id" ref="model_edi_pick_request_record"/>
+      <field name="sequence">40</field>
+    </record>
+
+    <!-- EDI stock move request record type -->
+    <record id="move_request_record_type" model="edi.record.type">
+      <field name="name">Stock Move Request</field>
+      <field name="model_id" ref="model_edi_move_request_record"/>
+      <field name="sequence">45</field>
+    </record>
+
+  </data>
+</odoo>
