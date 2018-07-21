@@ -3,10 +3,10 @@
   <data>
 
     <!-- EDI orderpoint tutorial record form view -->
-    <record id="tutorial_record_form" model="ir.ui.view">
+    <record id="orderpoint_tutorial_record_form" model="ir.ui.view">
       <field name="name">edi.orderpoint.tutorial.record.form</field>
       <field name="model">edi.orderpoint.tutorial.record</field>
-      <field name="inherit_id" ref="record_form"/>
+      <field name="inherit_id" ref="orderpoint_record_form"/>
       <field name="mode">primary</field>
       <field name="arch" type="xml">
 	<xpath expr="//group[@name='detail']" position="inside">
@@ -16,10 +16,10 @@
     </record>
 
     <!-- EDI orderpoint tutorial record tree view -->
-    <record id="tutorial_record_tree" model="ir.ui.view">
+    <record id="orderpoint_tutorial_record_tree" model="ir.ui.view">
       <field name="name">edi.orderpoint.tutorial.record.tree</field>
       <field name="model">edi.orderpoint.tutorial.record</field>
-      <field name="inherit_id" ref="record_tree"/>
+      <field name="inherit_id" ref="orderpoint_record_tree"/>
       <field name="mode">primary</field>
       <field name="arch" type="xml">
 	<xpath expr="//tree" position="inside">
@@ -29,22 +29,24 @@
     </record>
 
     <!-- EDI orderpoint tutorial record action window -->
-    <record id="tutorial_record_action" model="ir.actions.act_window">
+    <record id="orderpoint_tutorial_record_action"
+	    model="ir.actions.act_window">
       <field name="name">Minimum Inventory Rules</field>
       <field name="type">ir.actions.act_window</field>
       <field name="res_model">edi.orderpoint.tutorial.record</field>
       <field name="view_type">form</field>
-      <field name="view_id" ref="tutorial_record_tree"/>
-      <field name="search_view_id" ref="record_search"/>
+      <field name="view_id" ref="orderpoint_tutorial_record_tree"/>
+      <field name="search_view_id" ref="orderpoint_record_search"/>
       <field name="context">{'create': False}</field>
     </record>
 
     <!-- EDI orderpoint tutorial record menu item -->
-    <menuitem id="tutorial_record_menu" action="tutorial_record_action"
+    <menuitem id="orderpoint_tutorial_record_menu"
+	      action="orderpoint_tutorial_record_action"
 	      parent="edi.tutorial_menu" sequence="50"/>
 
     <!-- EDI orderpoint tutorial records field -->
-    <record id="tutorial_document_form" model="ir.ui.view">
+    <record id="orderpoint_tutorial_document_form" model="ir.ui.view">
       <field name="name">edi.orderpoint.tutorial.document.form</field>
       <field name="model">edi.document</field>
       <field name="inherit_id" ref="edi.document_form"/>

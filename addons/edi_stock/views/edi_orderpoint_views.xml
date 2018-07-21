@@ -3,7 +3,7 @@
   <data>
 
     <!-- EDI orderpoint record form view -->
-    <record id="record_form" model="ir.ui.view">
+    <record id="orderpoint_record_form" model="ir.ui.view">
       <field name="name">edi.orderpoint.record.form</field>
       <field name="model">edi.orderpoint.record</field>
       <field name="arch" type="xml">
@@ -35,7 +35,7 @@
     </record>
 
     <!-- EDI orderpoint record tree view -->
-    <record id="record_tree" model="ir.ui.view">
+    <record id="orderpoint_record_tree" model="ir.ui.view">
       <field name="name">edi.orderpoint.record.tree</field>
       <field name="model">edi.orderpoint.record</field>
       <field name="arch" type="xml">
@@ -54,7 +54,7 @@
     </record>
 
     <!-- EDI orderpoint record search filter -->
-    <record id="record_search" model="ir.ui.view">
+    <record id="orderpoint_record_search" model="ir.ui.view">
       <field name="name">edi.orderpoint.record.search</field>
       <field name="model">edi.orderpoint.record</field>
       <field name="arch" type="xml">
@@ -84,13 +84,13 @@
     </record>
 
     <!-- EDI orderpoint record action window -->
-    <record id="record_action" model="ir.actions.act_window">
+    <record id="orderpoint_record_action" model="ir.actions.act_window">
       <field name="name">Minimum Inventory Rules</field>
       <field name="type">ir.actions.act_window</field>
       <field name="res_model">edi.orderpoint.record</field>
       <field name="view_type">form</field>
-      <field name="view_id" ref="record_tree"/>
-      <field name="search_view_id" ref="record_search"/>
+      <field name="view_id" ref="orderpoint_record_tree"/>
+      <field name="search_view_id" ref="orderpoint_record_search"/>
       <field name="context">{'create': False}</field>
     </record>
 
