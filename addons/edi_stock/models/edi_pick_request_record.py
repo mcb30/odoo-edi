@@ -15,6 +15,8 @@ class EdiPickRequestRecord(models.Model):
     ``stock.picking`` model.  For example: the source document may
     define a priority level which could be converted to a stock
     transfer due date based on some hardcoded business rules.
+
+    Derived models should implement :meth:`~.pick_values`.
     """
 
     _name = 'edi.pick.request.record'
@@ -30,15 +32,22 @@ class EdiPickRequestRecord(models.Model):
                          "Each name may appear at most once per document")]
 
     @api.multi
+    def pick_values(self):
+        """Construct ``stock.picking`` value dictionary"""
+        self.ensure_one()
+        pick_type = self.pick_type_id
+        return {
+            'origin': self.name,
+            'picking_type_id': pick_type.id,
+            'location_id': pick_type.default_location_src_id.id,
+            'location_dest_id': pick_type.default_location_dest_id.id,
+        }
+
+    @api.multi
     def execute(self):
         """Execute records"""
         super().execute()
         Picking = self.env['stock.picking']
         for rec in self:
-            pick_type = rec.pick_type_id
-            rec.pick_id = Picking.create({
-                'origin': rec.name,
-                'picking_type_id': pick_type.id,
-                'location_id': pick_type.default_location_src_id.id,
-                'location_dest_id': pick_type.default_location_dest_id.id,
-            })
+            pick_vals = rec.pick_values()
+            rec.pick_id = Picking.create(pick_vals)
