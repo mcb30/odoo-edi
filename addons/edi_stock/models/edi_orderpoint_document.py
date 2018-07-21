@@ -51,6 +51,6 @@ class EdiOrderpointDocument(models.AbstractModel):
         super().prepare(doc)
         self.orderpoint_record_model(doc).prepare(doc, (
             record_vals
-            for data in doc.inputs()
+            for _fname, data in doc.inputs()
             for record_vals in self.orderpoint_record_values(data)
         ))

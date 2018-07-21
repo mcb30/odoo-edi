@@ -49,6 +49,6 @@ class EdiProductDocument(models.AbstractModel):
         super().prepare(doc)
         self.product_record_model(doc).prepare(doc, (
             record_vals
-            for data in doc.inputs()
+            for _fname, data in doc.inputs()
             for record_vals in self.product_record_values(data)
         ))

@@ -249,7 +249,8 @@ class EdiDocument(models.Model):
         self.ensure_one()
         if not self.input_ids:
             raise UserError(_("Missing input attachment"))
-        return (b64decode(x.datas) for x in self.input_ids.sorted('id'))
+        return ((x.datas_fname, b64decode(x.datas))
+                for x in self.input_ids.sorted('id'))
 
     @api.multi
     def execute_records(self):
