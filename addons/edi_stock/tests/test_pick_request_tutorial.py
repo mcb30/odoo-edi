@@ -36,3 +36,24 @@ class TestTutorial(EdiPickRequestCase):
         self.assertEqual(moves_by_code['BANANA'].location_dest_id,
                          self.loc_customers)
         self.assertEqual(moves_by_code['BANANA'].product_uom_qty, 2)
+
+    def test02_no_match(self):
+        """Filename with no matched picking type"""
+        doc = self.create_tutorial('out01.csv')
+        self.pick_type_out.sequence_id.prefix = 'WH/NOTOUT/'
+        with self.assertRaisesIssue(doc):
+            self.assertFalse(doc.action_prepare())
+        self.pick_type_out.sequence_id.prefix = 'OUT'
+        self.assertTrue(doc.action_prepare())
+
+    def test03_multi_match(self):
+        """Filename with multiple matched picking types"""
+        doc = self.create_tutorial('out01.csv')
+        self.pick_type_in.sequence_id.prefix = 'ALSO/OUT/'
+        with self.assertRaisesIssue(doc):
+            self.assertFalse(doc.action_prepare())
+        self.pick_type_out.sequence_id.prefix = 'NOTOUT/'
+        self.assertTrue(doc.action_prepare())
+        pick_types = doc.mapped('pick_request_tutorial_ids.pick_type_id')
+        self.assertEqual(len(pick_types), 1)
+        self.assertEqual(pick_types, self.pick_type_in)

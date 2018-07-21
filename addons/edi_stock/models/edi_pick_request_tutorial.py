@@ -76,10 +76,10 @@ class EdiPickRequestTutorialDocument(models.AbstractModel):
             r'%s[\W\d_]' % next(x for x in reversed(prefix.split('/')) if x),
             flags=re.IGNORECASE
         )
-        return {
-            prefix_test(x.sequence_id.prefix): x
+        return [
+            (prefix_test(x.sequence_id.prefix), x)
             for x in PickingType.search([]) if x.sequence_id.prefix
-        }
+        ]
 
     @api.model
     def prepare(self, doc):
@@ -94,7 +94,7 @@ class EdiPickRequestTutorialDocument(models.AbstractModel):
         for fname, data in doc.inputs():
 
             # Look up picking type based on filename
-            pick_type = PickingType.union(*(v for k, v in pick_type_map.items()
+            pick_type = PickingType.union(*(v for k, v in pick_type_map
                                             if k.match(fname)))
             if not pick_type:
                 raise UserError(_("\"%s\" matches no picking types") % fname)
