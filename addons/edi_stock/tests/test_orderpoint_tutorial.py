@@ -14,15 +14,9 @@ class TestTutorial(EdiOrderpointCase):
         )
 
     @classmethod
-    def create_tutorial(cls, filename):
-        """Create product tutorial document"""
-        EdiDocument = cls.env['edi.document']
-        doc = EdiDocument.create({
-            'name': "Orderpoint tutorial test",
-            'doc_type_id': cls.doc_type_tutorial.id,
-        })
-        cls.create_input_attachment(doc, filename)
-        return doc
+    def create_tutorial(cls, *filenames):
+        """Create orderpoint tutorial document"""
+        return cls.create_input_document(cls.doc_type_tutorial, *filenames)
 
     def test01_basic(self):
         """Basic document execution"""

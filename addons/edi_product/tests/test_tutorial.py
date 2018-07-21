@@ -17,15 +17,9 @@ class TestTutorial(EdiProductCase):
         cls.dozens.name = "Dozen(s)"
 
     @classmethod
-    def create_tutorial(cls, filename):
+    def create_tutorial(cls, *filenames):
         """Create product tutorial document"""
-        EdiDocument = cls.env['edi.document']
-        doc = EdiDocument.create({
-            'name': "Tutorial test",
-            'doc_type_id': cls.doc_type_tutorial.id,
-        })
-        cls.create_input_attachment(doc, filename)
-        return doc
+        return cls.create_input_document(cls.doc_type_tutorial, *filenames)
 
     def test01_basic(self):
         """Basic document execution"""
