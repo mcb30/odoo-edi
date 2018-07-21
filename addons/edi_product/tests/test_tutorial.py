@@ -30,6 +30,10 @@ class TestTutorial(EdiProductCase):
         products_by_code = {x.default_code: x for x in products}
         self.assertEqual(products_by_code['9780552146166'].uom_id, self.dozens)
         self.assertEqual(products_by_code['9780552145428'].name, "Hogfather")
+        doc = self.create_tutorial('fruit01.csv')
+        self.assertTrue(doc.action_execute())
+        products = doc.mapped('product_tutorial_ids.product_id')
+        self.assertEqual(len(products), 3)
 
     def test02_identical(self):
         """Document and subsequent identical document"""
