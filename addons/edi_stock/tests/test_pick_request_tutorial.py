@@ -23,6 +23,7 @@ class TestTutorial(EdiPickRequestCase):
         doc = self.create_tutorial('out01.csv')
         self.assertTrue(doc.action_execute())
         pick = doc.mapped('pick_request_tutorial_ids.pick_id')
+        self.assertEqual(doc.pick_ids, pick)
         self.assertEqual(len(pick), 1)
         self.assertEqual(pick.origin, 'out01')
         self.assertEqual(pick.picking_type_id, self.pick_type_out)

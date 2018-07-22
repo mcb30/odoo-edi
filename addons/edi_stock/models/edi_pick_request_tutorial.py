@@ -35,6 +35,14 @@ class EdiDocument(models.Model):
         string="Stock Move Requests",
     )
 
+    @api.multi
+    @api.depends('pick_request_tutorial_ids',
+                 'pick_request_tutorial_ids.pick_id')
+    def _compute_pick_ids(self):
+        super()._compute_pick_ids()
+        for doc in self:
+            doc.pick_ids += self.mapped('pick_request_tutorial_ids.pick_id')
+
 
 class EdiPickRequestTutorialRecord(models.Model):
     """EDI stock transfer request tutorial record"""
