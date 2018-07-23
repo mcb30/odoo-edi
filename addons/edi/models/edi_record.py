@@ -89,9 +89,9 @@ class EdiRecord(models.AbstractModel):
                              required=True, readonly=True, index=True,
                              ondelete='cascade')
 
-    @api.model_cr
-    def init(self):
-        super().init()
+    @api.model
+    def _setup_complete(self):
+        super()._setup_complete()
         # Construct EDI relationship list
         cls = type(self)
         cls._edi_relates = []
