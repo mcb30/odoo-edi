@@ -94,5 +94,32 @@
       <field name="context">{'create': False}</field>
     </record>
 
+    <!-- EDI orderpoint records field -->
+    <record id="orderpoint_document_form" model="ir.ui.view">
+      <field name="name">edi.orderpoint.document.form</field>
+      <field name="model">edi.document</field>
+      <field name="inherit_id" ref="edi.document_form"/>
+      <field name="arch" type="xml">
+	<xpath expr="//notebook[@name='records']" position="inside">
+	  <page name="orderpoint" string="Minimum Inventory Rules"
+		attrs="{'invisible':['!',('rec_type_names','ilike',
+		       '/edi.orderpoint.record/')]}">
+	    <field name="orderpoint_ids" readonly="1">
+	      <tree>
+		<field name="name"/>
+		<field name="orderpoint_id"/>
+		<field name="product_key"/>
+		<field name="product_id"/>
+		<field name="location_key"/>
+		<field name="location_id"/>
+		<field name="product_min_qty"/>
+		<field name="product_max_qty"/>
+	      </tree>
+	    </field>
+	  </page>
+	</xpath>
+      </field>
+    </record>
+
   </data>
 </odoo>

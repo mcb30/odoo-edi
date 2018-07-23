@@ -3,6 +3,15 @@
 from odoo import api, fields, models
 
 
+class EdiDocument(models.Model):
+    """Extend ``edi.document`` to include EDI minimum inventory rule records"""
+
+    _inherit = 'edi.document'
+
+    orderpoint_ids = fields.One2many('edi.orderpoint.record', 'doc_id',
+                                     string="Minimum Inventory Rules")
+
+
 class EdiOrderpointRecord(models.Model):
     """EDI minimum inventory rule record
 
