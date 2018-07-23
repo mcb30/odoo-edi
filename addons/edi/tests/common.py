@@ -6,6 +6,7 @@ from datetime import datetime
 import pathlib
 import sys
 from unittest.mock import patch
+from psycopg2 import DatabaseError
 from odoo.exceptions import UserError
 from odoo.modules.module import get_resource_from_path, get_resource_path
 from odoo.tools import mute_logger
@@ -122,6 +123,8 @@ class EdiCase(common.SavepointCase):
         EdiIssues = self.env['edi.issues']
         old_issue_ids = entity.issue_ids
         mute = ['odoo.addons.edi.models.edi_issues']
+        if issubclass(exception, DatabaseError):
+            mute.append('odoo.sql_db')
         with mute_logger(*mute), patch.object(
             EdiIssues.__class__, 'raise_issue', autospec=True,
             side_effect=EdiIssues.__class__.raise_issue
