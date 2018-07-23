@@ -327,9 +327,12 @@ class EdiDocument(models.Model):
         self.ensure_one()
         # Lock document
         self.lock_for_action()
-        # Check document state
+        # Automatically prepare document if needed
         if self.state == 'draft':
-            self.action_prepare()
+            prepared = self.action_prepare()
+            if not prepared:
+                return False
+        # Check document state
         if self.state != 'prep':
             raise UserError(_("Cannot execute a %s document") %
                             self._get_state_name())
