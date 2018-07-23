@@ -8,8 +8,8 @@ import sys
 from unittest.mock import patch
 from odoo.exceptions import UserError
 from odoo.modules.module import get_resource_from_path, get_resource_path
+from odoo.tools import mute_logger
 from odoo.tests import common
-from ..models import edi_issues
 
 
 class EdiTestFile(pathlib.PurePosixPath):
@@ -121,9 +121,8 @@ class EdiCase(common.SavepointCase):
         """Assert that an issue is raised on the specified entity"""
         EdiIssues = self.env['edi.issues']
         old_issue_ids = entity.issue_ids
-        with patch.object(
-            edi_issues._logger, 'error', autospec=True
-        ), patch.object(
+        mute = ['odoo.addons.edi.models.edi_issues']
+        with mute_logger(*mute), patch.object(
             EdiIssues.__class__, 'raise_issue', autospec=True,
             side_effect=EdiIssues.__class__.raise_issue
         ) as mock_raise_issue:
