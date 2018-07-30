@@ -34,7 +34,7 @@ class EdiMoveRequestRecord(models.Model):
     move_id = fields.Many2one('stock.move', "Move", required=False,
                               readonly=True, index=True)
     product_key = fields.Char(string="Product Key", required=True,
-                              readonly=True,
+                              readonly=True, index=True,
                               edi_relates='product_id.default_code')
     product_id = fields.Many2one('product.product', string="Product",
                                  required=False, readonly=True, index=True)

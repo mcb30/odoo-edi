@@ -40,12 +40,13 @@ class EdiOrderpointRecord(models.Model):
                                     required=False, readonly=True, index=True,
                                     auto_join=True)
     product_key = fields.Char(string="Product Key", required=True,
-                              readonly=True,
+                              readonly=True, index=True,
                               edi_relates='product_id.default_code')
     product_id = fields.Many2one('product.product', string="Product",
                                  required=False, readonly=True, index=True)
     location_key = fields.Char(string="Location Key", required=True,
-                               readonly=True, edi_relates='location_id.name')
+                               readonly=True, index=True,
+                               edi_relates='location_id.name')
     location_id = fields.Many2one('stock.location', string="Location",
                                   required=False, readonly=True, index=True)
     product_min_qty = fields.Float(string="Minimum Quantity", required=True,
