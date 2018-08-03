@@ -41,7 +41,7 @@ class EdiDocument(models.Model):
     def _compute_pick_ids(self):
         super()._compute_pick_ids()
         for doc in self:
-            doc.pick_ids += self.mapped('pick_request_tutorial_ids.pick_id')
+            doc.pick_ids += doc.mapped('pick_request_tutorial_ids.pick_id')
 
 
 class EdiPickRequestTutorialRecord(models.Model):
