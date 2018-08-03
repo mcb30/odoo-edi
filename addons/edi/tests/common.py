@@ -88,13 +88,19 @@ class EdiCase(common.SavepointCase):
         return attachments
 
     @classmethod
-    def create_input_document(cls, doc_type, *filenames):
-        """Create input document with attachment(s)"""
+    def create_document(cls, doc_type):
+        """Create document"""
         EdiDocument = cls.env['edi.document']
         doc = EdiDocument.create({
             'name': "Test %s" % doc_type.name,
             'doc_type_id': doc_type.id,
         })
+        return doc
+
+    @classmethod
+    def create_input_document(cls, doc_type, *filenames):
+        """Create input document with attachment(s)"""
+        doc = cls.create_document(doc_type)
         cls.create_input_attachment(doc, *filenames)
         return doc
 
