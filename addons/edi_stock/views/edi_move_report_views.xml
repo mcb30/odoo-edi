@@ -36,8 +36,8 @@
       <field name="model">edi.move.report.record</field>
       <field name="arch" type="xml">
 	<tree string="Stock Move Reports" default_order="doc_id desc, id">
-	  <field name="name"/>
 	  <field name="doc_id"/>
+	  <field name="name"/>
 	  <field name="move_ids" widget="many2many_tags"/>
 	  <field name="product_id"/>
 	  <field name="qty"/>

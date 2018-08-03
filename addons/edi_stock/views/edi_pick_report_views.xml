@@ -32,8 +32,8 @@
       <field name="model">edi.pick.report.record</field>
       <field name="arch" type="xml">
 	<tree string="Stock Transfer Reports" default_order="doc_id desc, id">
-	  <field name="name"/>
 	  <field name="doc_id"/>
+	  <field name="name"/>
 	  <field name="pick_id"/>
 	</tree>
       </field>
