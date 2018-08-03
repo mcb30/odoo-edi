@@ -61,3 +61,37 @@ class EdiPickCase(EdiCase):
         cls.pick_type_out.sequence_id.prefix = 'WH/OUT/'
         cls.pick_type_out.default_location_src_id = cls.loc_stock
         cls.pick_type_out.default_location_dest_id = cls.loc_customers
+
+    @classmethod
+    def create_pick(cls, pick_type):
+        """Create stock transfer"""
+        Picking = cls.env['stock.picking']
+        pick = Picking.create({
+            'picking_type_id': pick_type.id,
+            'location_id': pick_type.default_location_src_id.id,
+            'location_dest_id': pick_type.default_location_dest_id.id,
+        })
+        return pick
+
+    def complete_pick(self, pick):
+        """Complete stock transfer"""
+        pick.action_confirm()
+        for move in pick.move_lines:
+            move.quantity_done = move.product_uom_qty
+        pick.action_done()
+        self.assertEqual(pick.state, 'done')
+
+    @classmethod
+    def create_move(cls, pick, product, qty):
+        """Create stock move"""
+        Move = cls.env['stock.move']
+        move = Move.create({
+            'name': product.default_code,
+            'picking_id': pick.id,
+            'location_id': pick.location_id.id,
+            'location_dest_id': pick.location_dest_id.id,
+            'product_id': product.id,
+            'product_uom': product.uom_id.id,
+            'product_uom_qty': qty,
+        })
+        return move
