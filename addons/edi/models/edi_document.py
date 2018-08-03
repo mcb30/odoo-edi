@@ -344,12 +344,7 @@ class EdiDocument(models.Model):
         try:
             # pylint: disable=broad-except
             with self.env.cr.savepoint():
-                if hasattr(DocModel, 'execute'):
-                    # Use custom document execution method, if applicable
-                    DocModel.execute(self)
-                else:
-                    # Otherwise, execute all records
-                    self.execute_records()
+                DocModel.execute(self)
         except Exception as err:
             self.raise_issue(_("Execution failed: %s"), err)
             return False
@@ -442,6 +437,11 @@ class EdiDocumentModel(models.AbstractModel):
     def prepare(self, _doc):
         """Prepare document"""
         pass
+
+    @api.model
+    def execute(self, doc):
+        """Execute document"""
+        doc.execute_records()
 
 
 class EdiDocumentUnknown(models.AbstractModel):
