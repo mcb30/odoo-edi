@@ -3,6 +3,15 @@
 from odoo import api, fields, models
 
 
+class EdiDocumentType(models.Model):
+    """Extend ``edi.document.type`` to include associated operation types"""
+
+    _inherit = 'edi.document.type'
+
+    pick_type_ids = fields.Many2many('stock.picking.type',
+                                     string="Stock Transfer Types")
+
+
 class EdiDocument(models.Model):
     """Extend ``edi.document`` to include stock transfers
 
