@@ -4,6 +4,7 @@ import base64
 from contextlib import contextmanager
 from datetime import datetime
 import pathlib
+import re
 import sys
 from unittest.mock import patch
 from psycopg2 import DatabaseError
@@ -115,12 +116,15 @@ class EdiCase(common.SavepointCase):
         })
         return attachments
 
-    def assertAttachment(self, attachment, filename=None):
-        """Assert that attachment content is as expected"""
+    def assertAttachment(self, attachment, filename=None, pattern=None):
+        """Assert that attachment filename and content is as expected"""
         if filename is None:
             filename = attachment.datas_fname
         data = self.files.joinpath(filename).read_bytes()
-        self.assertEqual(attachment.datas_fname, filename)
+        if pattern is None:
+            self.assertEqual(attachment.datas_fname, filename)
+        else:
+            self.assertTrue(re.match(pattern, attachment.datas_fname))
         self.assertEqual(base64.b64decode(attachment.datas), data)
 
     @contextmanager
