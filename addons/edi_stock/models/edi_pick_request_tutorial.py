@@ -70,23 +70,23 @@ class EdiPickRequestTutorialDocument(models.AbstractModel):
     _description = "Tutorial stock transfer request CSV file"""
 
     @api.model
-    def pick_types_map(self):
+    def pick_types_map(self, doc):
         """Construct a mapping from filenames to picking types
 
         Construct a mapping from input filenames to picking types,
-        using the sequence prefix defined for each picking type.
+        using the sequence prefix defined for each associated picking
+        type.
 
         For example: the filename "OUT_TEST.CSV" will be mapped to the
         picking type with sequence prefix "WH/OUT/".
         """
-        PickingType = self.env['stock.picking.type']
         prefix_test = lambda prefix: re.compile(
             r'%s[\W\d_]' % next(x for x in reversed(prefix.split('/')) if x),
             flags=re.IGNORECASE
         )
         return [
             (prefix_test(x.sequence_id.prefix), x)
-            for x in PickingType.search([]) if x.sequence_id.prefix
+            for x in doc.doc_type_id.pick_type_ids if x.sequence_id.prefix
         ]
 
     @api.model
@@ -96,7 +96,7 @@ class EdiPickRequestTutorialDocument(models.AbstractModel):
         EdiPickRequestRecord = self.pick_request_record_model(doc)
         EdiMoveRequestRecord = self.move_request_record_model(doc)
         PickingType = self.env['stock.picking.type']
-        pick_type_map = self.pick_types_map()
+        pick_type_map = self.pick_types_map(doc)
 
         # Create picking for each input attachment
         for fname, data in doc.inputs():

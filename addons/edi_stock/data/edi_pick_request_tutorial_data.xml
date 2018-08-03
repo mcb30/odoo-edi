@@ -25,6 +25,9 @@
       <field name="rec_type_ids"
 	     eval="[(6, False, [ref('pick_request_tutorial_record_type'),
 				ref('move_request_tutorial_record_type')])]"/>
+      <field name="pick_type_ids"
+	     eval="[(6, False, [ref('stock.picking_type_in'),
+				ref('stock.picking_type_out')])]"/>
     </record>
 
     <!-- EDI stock transfer request tutorial XML-RPC gateway path -->
