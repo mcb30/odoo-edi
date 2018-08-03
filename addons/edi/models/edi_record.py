@@ -6,7 +6,6 @@ from operator import itemgetter
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
-from ..tools import batched
 
 _logger = logging.getLogger(__name__)
 
@@ -118,7 +117,7 @@ class EdiRecord(models.AbstractModel):
 
             # Process records in batches to minimise database lookups
             keygetter = itemgetter(rel.key)
-            for r, batch in batched(missing, self.BATCH_SIZE):
+            for r, batch in missing.batched(self.BATCH_SIZE):
                 _logger.info(_("%s recording %s.%s %d-%d"),
                              doc.name, self._name, rel.target, r[0], r[-1])
 
@@ -131,7 +130,7 @@ class EdiRecord(models.AbstractModel):
 
                 # Update target fields
                 for key, recs in ((k, Record.union(*v)) for k, v in
-                                  groupby(sorted(batch, key=keygetter),
+                                  groupby(batch.sorted(key=keygetter),
                                           key=keygetter)):
                     target = targets_by_key.get(key)
                     if target:

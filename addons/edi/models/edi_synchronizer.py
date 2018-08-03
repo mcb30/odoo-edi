@@ -172,8 +172,8 @@ class EdiSyncRecord(models.AbstractModel):
         Target = self.browse()[target].with_context(tracking_disable=True)
 
         # Update existing target records
-        for r, batch in batched(self.filtered(lambda x: x[target]),
-                                self.BATCH_SIZE):
+        existing = self.filtered(lambda x: x[target])
+        for r, batch in existing.batched(self.BATCH_SIZE):
             _logger.info(_("%s updating %s %d-%d"),
                          doc.name, Target._name, r[0], r[-1])
             for rec in batch:
@@ -181,8 +181,8 @@ class EdiSyncRecord(models.AbstractModel):
                 rec[target].write(target_vals)
 
         # Create new target records
-        for r, batch in batched(self.filtered(lambda x: not x[target]),
-                                self.BATCH_SIZE):
+        new = self.filtered(lambda x: not x[target])
+        for r, batch in new.batched(self.BATCH_SIZE):
             _logger.info(_("%s creating %s %d-%d"),
                          doc.name, Target._name, r[0], r[-1])
             for rec in batch:

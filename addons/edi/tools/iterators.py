@@ -2,11 +2,11 @@
 
 from itertools import islice, repeat, takewhile
 
-def sliced(iterable, size=1):
+def sliced(iterable, size=1, concat=list):
     """Iterate over iterable in slices of a specified size"""
     iterator = iter(iterable)
     return takewhile(lambda x: x,
-                     (list(islice(iterator, size)) for x in repeat(None)))
+                     (concat(islice(iterator, size)) for x in repeat(None)))
 
 def ranged(iterable, start=0):
     """Add range indicators to an iterable"""

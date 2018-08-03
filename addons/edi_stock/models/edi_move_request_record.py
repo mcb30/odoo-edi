@@ -5,7 +5,6 @@ from itertools import groupby
 from odoo import api, fields, models
 from odoo.addons import decimal_precision as dp
 from odoo.tools.translate import _
-from odoo.addons.edi.tools import batched
 
 _logger = logging.getLogger(__name__)
 
@@ -68,7 +67,7 @@ class EdiMoveRequestRecord(models.Model):
         doc = self.mapped('doc_id')
 
         # Process records in batches for efficiency
-        for r, batch in batched(self, self.BATCH_SIZE):
+        for r, batch in self.batched(self.BATCH_SIZE):
 
             _logger.info(_("%s executing %s %d-%d"),
                          doc.name, self._name, r[0], r[-1])
