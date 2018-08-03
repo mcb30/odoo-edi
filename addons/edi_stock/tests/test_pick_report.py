@@ -68,3 +68,21 @@ class TestPickReport(EdiPickCase):
                                    for x in move_reports}
         self.assertEqual(move_reports_by_product['APPLE'].qty, 5)
         self.assertEqual(move_reports_by_product['BANANA'].qty, 7)
+
+    def test03_duplicate(self):
+        """Test attempt to create duplicate pick report"""
+        EdiDocument = self.env['edi.document']
+        self.complete_pick(self.pick_in)
+        doc1 = EdiDocument.create({
+            'name': "Dummy stock transfer report test 1",
+            'doc_type_id': self.doc_type_pick_report.id,
+        })
+        doc2 = EdiDocument.create({
+            'name': "Dummy stock transfer report test 2",
+            'doc_type_id': self.doc_type_pick_report.id,
+        })
+        self.assertTrue(doc1.action_prepare())
+        self.assertTrue(doc2.action_prepare())
+        self.assertTrue(doc1.action_execute())
+        with self.assertRaisesIssue(doc2):
+            doc2.action_execute()
