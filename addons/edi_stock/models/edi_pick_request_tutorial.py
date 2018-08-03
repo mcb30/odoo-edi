@@ -45,7 +45,11 @@ class EdiDocument(models.Model):
 
 
 class EdiPickRequestTutorialRecord(models.Model):
-    """EDI stock transfer request tutorial record"""
+    """EDI stock transfer request tutorial record
+
+    This subclass may be omitted if no extra functionality is required
+    beyond that provided by the base ``edi.pick.request.record``.
+    """
 
     _name = 'edi.pick.request.tutorial.record'
     _inherit = 'edi.pick.request.record'
@@ -53,7 +57,11 @@ class EdiPickRequestTutorialRecord(models.Model):
 
 
 class EdiMoveRequestTutorialRecord(models.Model):
-    """EDI stock move request tutorial record"""
+    """EDI stock move request tutorial record
+
+    This subclass may be omitted if no extra functionality is required
+    beyond that required by the base ``edi.move.request.record``.
+    """
 
     _name = 'edi.move.request.tutorial.record'
     _inherit = 'edi.move.request.record'
