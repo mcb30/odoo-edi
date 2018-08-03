@@ -14,7 +14,6 @@ for the picking types.  For example: a picking type with a prefix
 
 import csv
 import io
-from itertools import groupby
 from odoo import api, fields, models
 
 
@@ -80,22 +79,11 @@ class EdiPickReportTutorialDocument(models.AbstractModel):
         assigned a reporting name based on the order within the stock
         transfer.
         """
-        Move = self.env['stock.move']
-        by_pick = lambda x: x.picking_id.id
-        by_product = lambda x: x.product_id.id
         return (
-            Move.union(*product_moves).with_context(
-                default_name='%04d' % index
-            )
-            for _pick, pick_moves in (
-                (k, Move.union(*v)) for k, v in groupby(
-                    moves.sorted(key=by_pick), key=by_pick
-                )
-            )
-            for index, (_product, product_moves) in enumerate(
-                (k, Move.union(*v)) for k, v in groupby(
-                    pick_moves.sorted(key=by_product), key=by_product
-                )
+            product_moves.with_context(default_name='%04d' % index)
+            for _pick_id, pick_moves in moves.groupby(lambda x: x.picking_id.id)
+            for index, (_product_id, product_moves) in enumerate(
+                pick_moves.groupby(lambda x: x.product_id.id)
             )
         )
 
@@ -110,7 +98,7 @@ class EdiPickReportTutorialDocument(models.AbstractModel):
         pick_reports = EdiPickReportRecord.search([('doc_id', '=', doc.id)])
         move_reports = EdiMoveReportRecord.search([('doc_id', '=', doc.id)])
         by_pick = lambda x: x.move_ids.mapped('picking_id')
-        for pick, recs in groupby(move_reports, key=by_pick):
+        for pick, recs in move_reports.groupby(by_pick, sort=False):
             # pylint: disable=cell-var-from-loop
 
             # Get corresponding pick report record

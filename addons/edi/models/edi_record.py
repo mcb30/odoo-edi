@@ -1,7 +1,6 @@
 """EDI records"""
 
 import logging
-from itertools import groupby
 from operator import itemgetter
 from odoo import api, fields, models
 from odoo.exceptions import UserError
@@ -129,9 +128,7 @@ class EdiRecord(models.AbstractModel):
                 targets_by_key = {x[rel.via]: x for x in targets}
 
                 # Update target fields
-                for key, recs in ((k, Record.union(*v)) for k, v in
-                                  groupby(batch.sorted(key=keygetter),
-                                          key=keygetter)):
+                for key, recs in batch.groupby(keygetter):
                     target = targets_by_key.get(key)
                     if target:
                         recs.write({rel.target: target.id})

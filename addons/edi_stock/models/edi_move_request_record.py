@@ -1,7 +1,6 @@
 """EDI stock move request records"""
 
 import logging
-from itertools import groupby
 from odoo import api, fields, models
 from odoo.addons import decimal_precision as dp
 from odoo.tools.translate import _
@@ -88,7 +87,5 @@ class EdiMoveRequestRecord(models.Model):
 
         # Associate moves to pickings.  Do this as a bulk operation to
         # avoid triggering updates on the picking for each new move.
-        for pick, moves in ((k, Move.union(*(x.move_id for x in v)))
-                            for k, v in groupby(self.sorted('pick_id'),
-                                                key=lambda x: x.pick_id)):
-            moves.write({'picking_id': pick.id})
+        for pick_id, recs in self.groupby(lambda x: x.pick_id.id):
+            recs.mapped('move_id').write({'picking_id': pick_id})

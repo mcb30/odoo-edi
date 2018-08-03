@@ -1,5 +1,7 @@
 """Base model enhancements"""
 
+import itertools
+from operator import itemgetter
 from odoo import models
 from .. import tools
 
@@ -24,3 +26,16 @@ def sliced(self, size=models.PREFETCH_MAX):
 def batched(self, size=models.PREFETCH_MAX):
     """Return the recordset ``self`` split into batches of a specified size"""
     return tools.ranged(self.sliced(size=size))
+
+@add_if_not_exists(models.BaseModel)
+def groupby(self, key=None, sort=True):
+    """Return the recordset ``self`` grouped by ``key``"""
+    recs = self
+    if sort:
+        recs = recs.sorted(key=key)
+    if key is None:
+        return recs
+    if isinstance(key, str):
+        key = itemgetter(key)
+    return ((k, self.browse(x.id for x in v))
+            for k, v in itertools.groupby(recs, key=key))
