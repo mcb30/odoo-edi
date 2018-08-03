@@ -81,8 +81,8 @@ class EdiPickReportTutorialDocument(models.AbstractModel):
         transfer.
         """
         Move = self.env['stock.move']
-        by_pick = lambda x: x.picking_id
-        by_product = lambda x: x.product_id
+        by_pick = lambda x: x.picking_id.id
+        by_product = lambda x: x.product_id.id
         return (
             Move.union(*product_moves).with_context(
                 default_name='%04d' % index

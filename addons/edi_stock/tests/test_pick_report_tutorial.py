@@ -41,10 +41,9 @@ class TestTutorial(EdiPickCase):
         doc = self.create_tutorial()
         self.assertTrue(doc.action_execute())
         self.assertEqual(len(doc.output_ids), 2)
-        self.assertAttachment(doc.output_ids[0], 'in01.csv',
-                              pattern=r'IN\d+\.csv')
-        self.assertAttachment(doc.output_ids[1], 'in02.csv',
-                              pattern=r'IN\d+\.csv')
+        (in01, in02) = doc.output_ids.sorted('id')
+        self.assertAttachment(in01, 'in01.csv', pattern=r'IN\d+\.csv')
+        self.assertAttachment(in02, 'in02.csv', pattern=r'IN\d+\.csv')
 
     def test03_multiple(self):
         """Multiple reports"""
