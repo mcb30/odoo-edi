@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- EDI stock transfer report tutorial record form view -->
+    <record id="pick_report_tutorial_record_form" model="ir.ui.view">
+      <field name="name">edi.pick.report.tutorial.record.form</field>
+      <field name="model">edi.pick.report.tutorial.record</field>
+      <field name="inherit_id" ref="pick_report_record_form"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+	<xpath expr="//group[@name='basic']" position="inside"/>
+      </field>
+    </record>
+
+    <!-- EDI stock move report tutorial record form view -->
+    <record id="move_report_tutorial_record_form" model="ir.ui.view">
+      <field name="name">edi.move.report.tutorial.record.form</field>
+      <field name="model">edi.move.report.tutorial.record</field>
+      <field name="inherit_id" ref="move_report_record_form"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+	<xpath expr="//group[@name='basic']" position="inside"/>
+      </field>
+    </record>
+
+    <!-- EDI stock transfer report tutorial record tree view -->
+    <record id="pick_report_tutorial_record_tree" model="ir.ui.view">
+      <field name="name">edi.pick.report.tutorial.record.tree</field>
+      <field name="model">edi.pick.report.tutorial.record</field>
+      <field name="inherit_id" ref="pick_report_record_tree"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+	<xpath expr="//tree" position="inside"/>
+      </field>
+    </record>
+
+    <!-- EDI stock move report tutorial record tree view -->
+    <record id="move_report_tutorial_record_tree" model="ir.ui.view">
+      <field name="name">edi.move.report.tutorial.record.tree</field>
+      <field name="model">edi.move.report.tutorial.record</field>
+      <field name="inherit_id" ref="move_report_record_tree"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+	<xpath expr="//tree" position="inside"/>
+      </field>
+    </record>
+
+    <!-- EDI stock transfer report tutorial record action window -->
+    <record id="pick_report_tutorial_record_action"
+	    model="ir.actions.act_window">
+      <field name="name">Stock Transfer Reports</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.pick.report.tutorial.record</field>
+      <field name="view_type">form</field>
+      <field name="view_id" ref="pick_report_tutorial_record_tree"/>
+      <field name="search_view_id" ref="pick_report_record_search"/>
+      <field name="context">{'create': False}</field>
+    </record>
+
+    <!-- EDI stock move report tutorial record action window -->
+    <record id="move_report_tutorial_record_action"
+	    model="ir.actions.act_window">
+      <field name="name">Stock Move Reports</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.move.report.tutorial.record</field>
+      <field name="view_type">form</field>
+      <field name="view_id" ref="move_report_tutorial_record_tree"/>
+      <field name="search_view_id" ref="move_report_record_search"/>
+      <field name="context">{'create': False}</field>
+    </record>
+
+    <!-- EDI stock transfer report tutorial record menu item -->
+    <menuitem id="pick_report_tutorial_record_menu"
+	      action="pick_report_tutorial_record_action"
+	      parent="edi.tutorial_menu" sequence="50"/>
+
+    <!-- EDI stock transfer report tutorial record menu item -->
+    <menuitem id="move_report_tutorial_record_menu"
+	      action="move_report_tutorial_record_action"
+	      parent="edi.tutorial_menu" sequence="55"/>
+
+    <!-- EDI stock transfer report tutorial records field -->
+    <record id="pick_report_tutorial_document_form" model="ir.ui.view">
+      <field name="name">edi.pick.report.tutorial.document.form</field>
+      <field name="model">edi.document</field>
+      <field name="inherit_id" ref="edi.document_form"/>
+      <field name="arch" type="xml">
+	<xpath expr="//notebook[@name='records']" position="inside">
+	  <page name="pick_report_tutorial" string="Stock Transfers"
+		attrs="{'invisible':['!',('rec_type_names','ilike',
+		       '/edi.pick.report.tutorial.record/')]}">
+	    <field name="pick_report_tutorial_ids" readonly="1">
+	      <tree>
+		<field name="name"/>
+		<field name="pick_id"/>
+	      </tree>
+	    </field>
+	  </page>
+	  <page name="move_report_tutorial" string="Stock Moves"
+		attrs="{'invisible':['!',('rec_type_names','ilike',
+		       '/edi.move.report.tutorial.record/')]}">
+	    <field name="move_report_tutorial_ids" readonly="1">
+	      <tree>
+		<field name="name"/>
+		<field name="move_ids" widget="many2many_tags"/>
+		<field name="product_id"/>
+		<field name="qty"/>
+	      </tree>
+	    </field>
+	  </page>
+	</xpath>
+      </field>
+    </record>
+
+  </data>
+</odoo>
