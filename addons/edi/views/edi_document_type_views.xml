@@ -24,6 +24,7 @@
 	      <group name="issues" string="Issues">
 		<field name="project_id"/>
 	      </group>
+	      <group name="extras" string="Extras"/>
 	    </group>
 	  </sheet>
 	</form>

@@ -2,6 +2,18 @@
 <odoo>
   <data>
 
+    <!-- EDI document type associated picking types field -->
+    <record id="pick_document_type_form" model="ir.ui.view">
+      <field name="name">edi.pick.document.type.form</field>
+      <field name="model">edi.document.type</field>
+      <field name="inherit_id" ref="edi.document_type_form"/>
+      <field name="arch" type="xml">
+	<xpath expr="//group[@name='extras']" position="inside">
+	  <field name="pick_type_ids" widget="many2many_tags"/>
+	</xpath>
+      </field>
+    </record>
+
     <!-- EDI stock transfer document associated pickings field -->
     <record id="pick_document_form" model="ir.ui.view">
       <field name="name">edi.pick.document.form</field>
