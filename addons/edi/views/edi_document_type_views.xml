@@ -53,6 +53,7 @@
 	<search string="Search EDI Document Type">
 	  <field name="name"/>
 	  <field name="model_id"/>
+	  <field name="rec_type_ids"/>
 	</search>
       </field>
     </record>
