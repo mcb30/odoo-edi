@@ -1,6 +1,6 @@
 """EDI documents"""
 
-from base64 import b64decode
+from base64 import b64decode, b64encode
 import logging
 from odoo import api, fields, models
 from odoo.exceptions import UserError
@@ -251,6 +251,21 @@ class EdiDocument(models.Model):
             raise UserError(_("Missing input attachment"))
         return ((x.datas_fname, b64decode(x.datas))
                 for x in self.input_ids.sorted('id'))
+
+    @api.multi
+    def output(self, name, data):
+        """Create output attachment"""
+        self.ensure_one()
+        Attachment = self.env['ir.attachment']
+        attachment = Attachment.create({
+            'name': name,
+            'datas_fname': name,
+            'datas': b64encode(data),
+            'res_model': 'edi.document',
+            'res_field': 'output_ids',
+            'res_id': self.id,
+        })
+        return attachment
 
     @api.multi
     def execute_records(self):
