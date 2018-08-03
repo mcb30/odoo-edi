@@ -1,9 +1,9 @@
 """EDI stock transfer request tests"""
 
-from .common import EdiPickRequestCase
+from .common import EdiPickCase
 
 
-class TestPickRequest(EdiPickRequestCase):
+class TestPickRequest(EdiPickCase):
     """EDI stock transfer request tests"""
 
     @classmethod

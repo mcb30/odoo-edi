@@ -1,9 +1,9 @@
 """EDI stock transfer request tutorial tests"""
 
-from .common import EdiPickRequestCase
+from .common import EdiPickCase
 
 
-class TestTutorial(EdiPickRequestCase):
+class TestTutorial(EdiPickCase):
     """EDI stock transfer request tutorial tests"""
 
     @classmethod

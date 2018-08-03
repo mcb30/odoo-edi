@@ -29,7 +29,7 @@ class EdiOrderpointCase(EdiCase):
         })
 
 
-class EdiPickRequestCase(EdiCase):
+class EdiPickCase(EdiCase):
     """Base test case for EDI stock transfer request models"""
 
     @classmethod
