@@ -173,6 +173,16 @@ class EdiSyncRecord(models.AbstractModel):
         target = self._edi_sync_target
         Target = self.browse()[target].with_context(tracking_disable=True)
 
+        # Identify any missing existing target records
+        new = self.filtered(lambda x: not x[target])
+        for r, batch in new.batched(self.BATCH_SIZE):
+            _logger.info(_("%s rechecking %s %d-%d"),
+                         doc.name, Target._name, r[0], r[-1])
+            targets_by_key = self.targets_by_key(batch)
+            for rec in batch:
+                if rec.name in targets_by_key:
+                    rec[target] = targets_by_key[rec.name]
+
         # Update existing target records
         existing = self.filtered(lambda x: x[target])
         for r, batch in existing.batched(self.BATCH_SIZE):
