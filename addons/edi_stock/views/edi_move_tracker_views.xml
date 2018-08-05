@@ -75,5 +75,94 @@
     <menuitem id="move_tracker_menu" action="move_tracker_action"
 	      parent="stock.menu_warehouse_report" sequence="900"/>
 
+    <!-- EDI move tracker record form view -->
+    <record id="move_tracker_record_form" model="ir.ui.view">
+      <field name="name">edi.move.tracker.record.form</field>
+      <field name="model">edi.move.tracker.record</field>
+      <field name="arch" type="xml">
+	<form string="Stock Tracker">
+	  <sheet>
+	    <div class="oe_title">
+	      <label for="name" class="oe_edit_only"/>
+	      <h1>
+		<field name="name"/>
+	      </h1>
+	    </div>
+	    <group>
+	      <group name="basic">
+		<field name="doc_id"/>
+		<field name="tracker_id"/>
+	      </group>
+	    </group>
+	  </sheet>
+	</form>
+      </field>
+    </record>
+
+    <!-- EDI move tracker record tree view -->
+    <record id="move_tracker_record_tree" model="ir.ui.view">
+      <field name="name">edi.move.tracker.record.tree</field>
+      <field name="model">edi.move.tracker.record</field>
+      <field name="arch" type="xml">
+	<tree string="Stock Trackers" default_order="doc_id desc, id">
+	  <field name="doc_id"/>
+	  <field name="name"/>
+	  <field name="tracker_id"/>
+	</tree>
+      </field>
+    </record>
+
+    <!-- EDI move tracker record search filter -->
+    <record id="move_tracker_record_search" model="ir.ui.view">
+      <field name="name">edi.move.tracker.record.search</field>
+      <field name="model">edi.move.tracker.record</field>
+      <field name="arch" type="xml">
+	<search string="Search Stock Tracker">
+	  <field name="name" string="Stock Tracker"
+		 filter_domain="[('name','ilike',self)]"/>
+	  <field name="doc_id"/>
+	  <field name="tracker_id"/>
+	  <group>
+	    <filter string="Document" name="by_doc_id" domain="[]"
+		    context="{'group_by':'doc_id'}"/>
+	    <filter string="Stock Tracker" name="by_tracker_id"
+		    domain="[]" context="{'group_by':'tracker_id'}"/>
+	  </group>
+	</search>
+      </field>
+    </record>
+
+    <!-- EDI move tracker record action window -->
+    <record id="move_tracker_record_action" model="ir.actions.act_window">
+      <field name="name">Stock Trackers</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.move.tracker.record</field>
+      <field name="view_type">form</field>
+      <field name="view_id" ref="move_tracker_record_tree"/>
+      <field name="search_view_id" ref="move_tracker_record_search"/>
+      <field name="context">{'create': False}</field>
+    </record>
+
+    <!-- EDI move tracker records field -->
+    <record id="move_tracker_document_form" model="ir.ui.view">
+      <field name="name">edi.move.tracker.document.form</field>
+      <field name="model">edi.document</field>
+      <field name="inherit_id" ref="edi.document_form"/>
+      <field name="arch" type="xml">
+	<xpath expr="//notebook[@name='records']" position="inside">
+	  <page name="move_tracker" string="Stock Trackers"
+		attrs="{'invisible':['!',('rec_type_names','ilike',
+		       '/edi.move.tracker.record/')]}">
+	    <field name="move_tracker_ids" readonly="1">
+	      <tree>
+		<field name="name"/>
+		<field name="tracker_id"/>
+	      </tree>
+	    </field>
+	  </page>
+	</xpath>
+      </field>
+    </record>
+
   </data>
 </odoo>

@@ -31,6 +31,7 @@ Key Features
         'views/edi_pick_request_tutorial_views.xml',
         'data/edi_orderpoint_data.xml',
         'data/edi_orderpoint_tutorial_data.xml',
+        'data/edi_move_tracker_data.xml',
         'data/edi_pick_report_data.xml',
         'data/edi_pick_report_tutorial_data.xml',
         'data/edi_pick_request_data.xml',
