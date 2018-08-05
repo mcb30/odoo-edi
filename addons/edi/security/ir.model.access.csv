@@ -1,9 +1,9 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_edi_attachment_audit,access_edi_attachment_audit,model_edi_attachment_audit,,1,0,0,0
-access_edi_document_type,access_edi_document_type,model_edi_document_type,,1,0,0,0
 access_edi_document,access_edi_document,model_edi_document,,1,0,0,0
+access_edi_document_type,access_edi_document_type,model_edi_document_type,,1,0,0,0
 access_edi_gateway,access_edi_gateway,model_edi_gateway,,1,0,0,0
 access_edi_gateway_path,access_edi_gateway_path,model_edi_gateway_path,,1,0,0,0
-access_edi_transfer,access_edi_transfer,model_edi_transfer,,1,0,0,0
-access_edi_record_type,access_edi_record_type,model_edi_record_type,,1,0,0,0
 access_edi_record,access_edi_record,model_edi_record,,1,0,0,0
+access_edi_record_type,access_edi_record_type,model_edi_record_type,,1,0,0,0
+access_edi_transfer,access_edi_transfer,model_edi_transfer,,1,0,0,0
