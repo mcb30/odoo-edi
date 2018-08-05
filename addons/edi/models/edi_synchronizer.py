@@ -73,7 +73,9 @@ class EdiSyncRecord(models.AbstractModel):
     @api.model
     def targets_by_key(self, vlist):
         """Construct lookup cache of target records indexed by key field"""
-        Target = self[self._edi_sync_target].with_context(active_test=False)
+        Target = self.browse()[self._edi_sync_target].with_context(
+            active_test=False
+        )
         key = self._edi_sync_via
         targets = Target.search([(key, 'in', [x['name'] for x in vlist])])
         return {x[key]: x for x in targets}
@@ -128,7 +130,7 @@ class EdiSyncRecord(models.AbstractModel):
         """
 
         # Construct comparator for target model
-        comparator = Comparator(self[self._edi_sync_target])
+        comparator = Comparator(self.browse()[self._edi_sync_target])
 
         # Process records in batches for efficiency
         for r, vbatch in batched(vlist, self.BATCH_SIZE):

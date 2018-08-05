@@ -157,7 +157,7 @@ class EdiRecord(models.AbstractModel):
                 continue
 
             # Search for target records by key
-            targets = self[rel.target].search(
+            targets = self.browse()[rel.target].search(
                 [(rel.via, 'in', list(set(x[rel.key] for x in missing)))]
             )
             targets_by_key = {x[rel.via]: x for x in targets}

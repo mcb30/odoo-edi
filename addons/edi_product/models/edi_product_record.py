@@ -38,7 +38,9 @@ class EdiProductRecord(models.Model):
         """Construct lookup cache of target records indexed by key field"""
         products_by_key = super().targets_by_key(vlist)
         # Cache product templates to minimise subsequent database lookups
-        Product = self[self._edi_sync_target].with_context(active_test=False)
+        Product = self.browse()[self._edi_sync_target].with_context(
+            active_test=False
+        )
         Template = Product.product_tmpl_id
         products = Product.browse([x.id for x in products_by_key.values()])
         templates = Template.browse(products.mapped('product_tmpl_id.id'))
