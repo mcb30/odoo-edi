@@ -70,12 +70,13 @@
       <field name="context">{'create': False}</field>
     </record>
 
-    <!-- EDI stock transfer request tutorial record menu item -->
+    <!-- EDI stock transfer request tutorial record menu items -->
+    <menuitem id="move_tracker_tutorial_record_menu"
+	      action="move_tracker_record_action"
+	      parent="edi.tutorial_menu" sequence="30"/>
     <menuitem id="pick_request_tutorial_record_menu"
 	      action="pick_request_tutorial_record_action"
 	      parent="edi.tutorial_menu" sequence="40"/>
-
-    <!-- EDI stock transfer request tutorial record menu item -->
     <menuitem id="move_request_tutorial_record_menu"
 	      action="move_request_tutorial_record_action"
 	      parent="edi.tutorial_menu" sequence="45"/>
@@ -106,6 +107,7 @@
 		<field name="name"/>
 		<field name="pick_request_id"/>
 		<field name="pick_id"/>
+		<field name="tracker_id"/>
 		<field name="move_id"/>
 		<field name="product_key"/>
 		<field name="product_id"/>

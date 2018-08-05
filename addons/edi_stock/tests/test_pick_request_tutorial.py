@@ -37,6 +37,9 @@ class TestTutorial(EdiPickCase):
         self.assertEqual(moves_by_code['BANANA'].location_dest_id,
                          self.loc_customers)
         self.assertEqual(moves_by_code['BANANA'].product_uom_qty, 2)
+        tracker = moves.mapped('edi_tracker_id')
+        self.assertEqual(len(tracker), 1)
+        self.assertEqual(tracker.name, 'out01')
 
     def test02_no_match(self):
         """Filename with no matched picking type"""

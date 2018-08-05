@@ -23,7 +23,8 @@
       <field name="sequence" eval="400"/>
       <field name="sequence_id" ref="pick_request_sequence_default"/>
       <field name="rec_type_ids"
-	     eval="[(6, False, [ref('pick_request_tutorial_record_type'),
+	     eval="[(6, False, [ref('move_tracker_record_type'),
+				ref('pick_request_tutorial_record_type'),
 				ref('move_request_tutorial_record_type')])]"/>
       <field name="pick_type_ids"
 	     eval="[(6, False, [ref('stock.picking_type_in'),

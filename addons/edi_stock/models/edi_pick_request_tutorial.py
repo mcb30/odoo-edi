@@ -74,7 +74,7 @@ class EdiPickRequestTutorialDocument(models.AbstractModel):
     """EDI stock transfer request tutorial document model"""
 
     _name = 'edi.pick.request.tutorial.document'
-    _inherit = 'edi.pick.request.document'
+    _inherit = ['edi.move.tracker.document', 'edi.pick.request.document']
     _description = "Tutorial stock transfer request CSV file"""
 
     @api.model
@@ -100,9 +100,11 @@ class EdiPickRequestTutorialDocument(models.AbstractModel):
     @api.model
     def prepare(self, doc):
         """Prepare document"""
+        # pylint: disable=too-many-locals
         super().prepare(doc)
         EdiPickRequestRecord = self.pick_request_record_model(doc)
         EdiMoveRequestRecord = self.move_request_record_model(doc)
+        EdiMoveTrackerRecord = self.move_tracker_record_model(doc)
         PickingType = self.env['stock.picking.type']
         pick_type_map = self.pick_types_map(doc)
 
@@ -118,11 +120,20 @@ class EdiPickRequestTutorialDocument(models.AbstractModel):
                 raise UserError(_("\"%s\" matches multiple picking types: %s") %
                                 (fname, ", ".join(pick_type.mapped('name'))))
 
+            # Construct base name for this stock transfer
+            name = pathlib.Path(fname).stem
+
             # Create stock transfer request
             pick_request = EdiPickRequestRecord.create({
                 'doc_id': doc.id,
-                'name': pathlib.Path(fname).stem,
+                'name': name,
                 'pick_type_id': pick_type.id,
+            })
+
+            # Create a single tracking identity
+            EdiMoveTrackerRecord.create({
+                'doc_id': doc.id,
+                'name': name,
             })
 
             # Create stock moves
@@ -132,6 +143,7 @@ class EdiPickRequestTutorialDocument(models.AbstractModel):
                     'doc_id': doc.id,
                     'pick_request_id': pick_request.id,
                     'name': "%04d" % line,
+                    'tracker_key': name,
                     'product_key': product,
                     'qty': float(qty),
                 })
