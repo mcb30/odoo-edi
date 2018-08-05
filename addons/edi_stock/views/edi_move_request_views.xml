@@ -20,6 +20,7 @@
 		<field name="doc_id"/>
 		<field name="pick_request_id"/>
 		<field name="pick_id"/>
+		<field name="tracker_id"/>
 		<field name="move_id"/>
 	      </group>
 	      <group name="detail">
@@ -43,6 +44,7 @@
 	  <field name="name"/>
 	  <field name="pick_request_id"/>
 	  <field name="pick_id"/>
+	  <field name="tracker_id"/>
 	  <field name="move_id"/>
 	  <field name="product_key"/>
 	  <field name="product_id"/>
@@ -63,6 +65,7 @@
 	  <field name="doc_id"/>
 	  <field name="pick_request_id"/>
 	  <field name="pick_id"/>
+	  <field name="tracker_id"/>
 	  <field name="product_key"/>
 	  <field name="product_id"/>
 	  <group>
@@ -70,6 +73,8 @@
 		    context="{'group_by':'doc_id'}"/>
 	    <filter string="Stock Transfer" name="by_pick_id"
 		    domain="[]" context="{'group_by':'pick_id'}"/>
+	    <filter string="Tracker" name="by_tracker_id"
+		    domain="[]" context="{'group_by': 'tracker_id'}"/>
 	    <filter string="Product" name="by_product_id"
 		    domain="[]" context="{'group_by':'product_id'}"/>
 	  </group>

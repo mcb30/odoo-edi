@@ -29,6 +29,11 @@ class EdiMoveRequestRecord(models.Model):
     pick_id = fields.Many2one('stock.picking', string="Transfer",
                               related='pick_request_id.pick_id',
                               store=True, index=True)
+    tracker_key = fields.Char(string="Tracker Key", required=False,
+                              readonly=True, index=True,
+                              edi_relates='tracker_id.name')
+    tracker_id = fields.Many2one('edi.move.tracker', string="Tracker",
+                                 required=False, readonly=True, index=True)
     move_id = fields.Many2one('stock.move', "Move", required=False,
                               readonly=True, index=True)
     product_key = fields.Char(string="Product Key", required=True,
@@ -45,6 +50,7 @@ class EdiMoveRequestRecord(models.Model):
         self.ensure_one()
         return {
             'name': self.name,
+            'edi_tracker_id': self.tracker_id.id if self.tracker_id else False,
             'product_id': self.product_id.id,
             'product_uom_qty': self.qty,
             'product_uom': self.product_id.uom_id.id,
