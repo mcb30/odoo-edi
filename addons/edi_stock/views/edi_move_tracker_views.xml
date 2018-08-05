@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- EDI move tracker form view -->
+    <record id="move_tracker_form" model="ir.ui.view">
+      <field name="name">edi.move.tracker.form</field>
+      <field name="model">edi.move.tracker</field>
+      <field name="arch" type="xml">
+	<form string="Stock Tracker">
+	  <sheet>
+	    <div class="oe_button_box">
+	      <button name="toggle_active" type="object"
+		      class="oe_stat_button" icon="fa-archive">
+		<field name="active" widget="boolean_button"
+		       options="{'terminology': 'archive'}"/>
+	      </button>
+	    </div>
+	    <div class="oe_title">
+	      <label for="name" class="oe_edit_only"/>
+	      <h1>
+		<field name="name"/>
+	      </h1>
+	    </div>
+	    <group>
+	      <group name="basic">
+		<field name="create_date" readonly="1"/>
+	      </group>
+	      <field name="pick_ids" readonly="1" mode="kanban"/>
+	      <field name="move_ids" readonly="1"/>
+	    </group>
+	  </sheet>
+	</form>
+      </field>
+    </record>
+
+    <!-- EDI move tracker tree view -->
+    <record id="move_tracker_tree" model="ir.ui.view">
+      <field name="name">edi.move.tracker.tree</field>
+      <field name="model">edi.move.tracker</field>
+      <field name="arch" type="xml">
+	<tree string="Stock Trackers">
+	  <field name="name"/>
+	  <field name="pick_ids" widget="many2many_tags"/>
+	  <field name="move_ids"/>
+	</tree>
+      </field>
+    </record>
+
+    <!-- EDI move tracker search filter -->
+    <record id="move_tracker_search" model="ir.ui.view">
+      <field name="name">edi.move.tracker.search</field>
+      <field name="model">edi.move.tracker</field>
+      <field name="arch" type="xml">
+	<search string="Search Stock Tracker">
+	  <field name="name" string="Stock Tracker"
+		 filter_domain="[('name','ilike',self)]"/>
+	  <field name="pick_id"/>
+	  <field name="product_id"/>
+	</search>
+      </field>
+    </record>
+
+    <!-- EDI move tracker action window -->
+    <record id="move_tracker_action" model="ir.actions.act_window">
+      <field name="name">Stock Trackers</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.move.tracker</field>
+      <field name="view_type">form</field>
+      <field name="view_id" ref="move_tracker_tree"/>
+      <field name="search_view_id" ref="move_tracker_search"/>
+    </record>
+
+    <!-- EDI move tracker menu item -->
+    <menuitem id="move_tracker_menu" action="move_tracker_action"
+	      parent="stock.menu_warehouse_report" sequence="900"/>
+
+  </data>
+</odoo>

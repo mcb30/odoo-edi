@@ -22,6 +22,7 @@ Key Features
         'views/edi_orderpoint_views.xml',
         'views/edi_orderpoint_tutorial_views.xml',
         'views/edi_pick_document_views.xml',
+        'views/edi_move_tracker_views.xml',
         'views/edi_move_report_views.xml',
         'views/edi_move_request_views.xml',
         'views/edi_pick_report_views.xml',
