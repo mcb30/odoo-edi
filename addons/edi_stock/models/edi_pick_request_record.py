@@ -1,6 +1,8 @@
 """EDI stock transfer request records"""
 
 from odoo import api, fields, models
+from odoo.tools.translate import _
+from odoo.exceptions import ValidationError
 
 
 class EdiPickRequestRecord(models.Model):
@@ -32,6 +34,25 @@ class EdiPickRequestRecord(models.Model):
                          "Each name may appear at most once per document")]
 
     @api.multi
+    def get_not_started_picking(self):
+        """ Gets a picking with origin equal to self.name and
+            validates that the picking is not started
+        """
+        self.ensure_one()
+        Picking = self.env['stock.picking']
+        picking = Picking.search([
+            ('origin', '=', self.name),
+            ('picking_type_id', '=', self.pick_type_id.id),
+            ('state', 'not in', ['done', 'cancel'])
+        ])
+        if picking.mapped('move_line_ids').filtered(lambda ml: ml.qty_done > 0):
+            raise ValidationError(
+                _('Picking %s already started.') %
+                picking.mapped('origin'))
+
+        return picking
+
+    @api.multi
     def pick_values(self):
         """Construct ``stock.picking`` value dictionary"""
         self.ensure_one()
@@ -49,5 +70,8 @@ class EdiPickRequestRecord(models.Model):
         super().execute()
         Picking = self.env['stock.picking']
         for rec in self:
-            pick_vals = rec.pick_values()
-            rec.pick_id = Picking.create(pick_vals)
+            picking = rec.get_not_started_picking()
+            if not picking:
+                pick_vals = rec.pick_values()
+                picking = Picking.create(pick_vals)
+            rec.pick_id = picking

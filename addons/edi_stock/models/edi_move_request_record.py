@@ -4,8 +4,14 @@ import logging
 from odoo import api, fields, models
 from odoo.addons import decimal_precision as dp
 from odoo.tools.translate import _
+from odoo.exceptions import ValidationError
 
 _logger = logging.getLogger(__name__)
+
+MOVE_REQ_ACTIONS = [('C', 'Create'),
+                    ('U', 'Update'),
+                    ('D', 'Cancel'),
+                    ]
 
 
 class EdiMoveRequestRecord(models.Model):
@@ -44,6 +50,9 @@ class EdiMoveRequestRecord(models.Model):
     qty = fields.Float(string="Quantity", readonly=True, required=True,
                        digits=dp.get_precision('Product Unit of Measure'))
 
+    action = fields.Selection(selection=MOVE_REQ_ACTIONS, required=True,
+                              default='C', index=True, readonly=True)
+
     @api.multi
     def move_values(self):
         """Construct ``stock.move`` value dictionary"""
@@ -71,27 +80,60 @@ class EdiMoveRequestRecord(models.Model):
 
         # Identify containing document
         doc = self.mapped('doc_id')
-
+        to_cancel = Move.browse()
         # Process records in batches for efficiency
         for r, batch in self.batched(self.BATCH_SIZE):
 
             _logger.info(_("%s executing %s %d-%d"),
                          doc.name, self._name, r[0], r[-1])
 
-            # Cache all products, product templates, and picks for
+            # Cache all products, product templates, moves and picks for
             # this batch to reduce per-record database lookups
             picks = Picking.browse(batch.mapped('pick_id.id'))
             picks.mapped('name')
             products = Product.browse(batch.mapped('product_id.id'))
             templates = Template.browse(products.mapped('product_tmpl_id.id'))
             templates.mapped('name')
+            # assume all picks will have the same picking_type_id
+            moves = Move.search([('name', 'in', batch.mapped('name')),
+                                 ('picking_type_id', '=',
+                                  picks.mapped('picking_type_id').id),
+                                 ('state', 'not in', ['done', 'cancel'])])
+            moves.mapped('name')
 
-            # Create moves disassociated from any picking
             for rec in batch:
-                move_vals = rec.move_values()
-                rec.move_id = Move.create(move_vals)
+                move = moves.filtered(lambda m: m.name == rec.name)
+                if rec.action == 'C':
+                    if move:
+                        raise ValidationError(
+                            _('There is already an existing move with name %s' %
+                              rec.name)
+                        )
+                    # Create moves disassociated from any picking
+                    move_vals = rec.move_values()
+                    rec.move_id = Move.create(move_vals)
+                elif rec.action == 'U':
+                    if not move:
+                        raise ValidationError(
+                            _('Cannot find move to update with name %s' %
+                              rec.name)
+                        )
+                    rec.move_id = move
+                    move_vals = rec.move_values()
+                    move.update(move_vals)
+                else:
+                    if not move:
+                        raise ValidationError(
+                            _('Cannot find move to cancel with name %s' %
+                              rec.name)
+                        )
+                    rec.move_id = move
+                    to_cancel |= move
 
         # Associate moves to pickings.  Do this as a bulk operation to
         # avoid triggering updates on the picking for each new move.
         for pick_id, recs in self.groupby(lambda x: x.pick_id.id):
             recs.mapped('move_id').write({'picking_id': pick_id})
+
+        # Cancel moves in bulk
+        to_cancel._action_cancel()
