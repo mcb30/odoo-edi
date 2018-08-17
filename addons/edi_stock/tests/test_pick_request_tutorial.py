@@ -31,6 +31,7 @@ class TestTutorial(EdiPickCase):
         self.assertEqual(pick.location_dest_id, self.loc_customers)
         moves = pick.move_lines
         self.assertEqual(len(moves), 2)
+        self.assertEqual(moves.mapped('picking_type_id'), pick.picking_type_id)
         moves_by_code = {x.product_id.default_code: x for x in moves}
         self.assertEqual(moves_by_code['APPLE'].location_id, self.loc_stock)
         self.assertEqual(moves_by_code['APPLE'].product_uom_qty, 5)

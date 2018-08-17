@@ -56,6 +56,7 @@ class EdiMoveRequestRecord(models.Model):
             'product_uom': self.product_id.uom_id.id,
             'location_id': self.pick_id.location_id.id,
             'location_dest_id': self.pick_id.location_dest_id.id,
+            'picking_type_id': self.pick_id.picking_type_id.id,
         }
 
     @api.multi
