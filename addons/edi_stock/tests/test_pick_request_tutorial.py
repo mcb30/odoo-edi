@@ -1,6 +1,7 @@
 """EDI stock transfer request tutorial tests"""
 
 from .common import EdiPickCase
+from odoo.exceptions import ValidationError
 
 
 class TestTutorial(EdiPickCase):
@@ -20,12 +21,13 @@ class TestTutorial(EdiPickCase):
 
     def test01_basic(self):
         """Basic document execution"""
+        # out01 creates two moves
         doc = self.create_tutorial('out01.csv')
         self.assertTrue(doc.action_execute())
         pick = doc.mapped('pick_request_tutorial_ids.pick_id')
         self.assertEqual(doc.pick_ids, pick)
         self.assertEqual(len(pick), 1)
-        self.assertEqual(pick.origin, 'out01')
+        self.assertEqual(pick.origin, 'List01')
         self.assertEqual(pick.picking_type_id, self.pick_type_out)
         self.assertEqual(pick.location_id, self.loc_stock)
         self.assertEqual(pick.location_dest_id, self.loc_customers)
@@ -40,7 +42,19 @@ class TestTutorial(EdiPickCase):
         self.assertEqual(moves_by_code['BANANA'].product_uom_qty, 2)
         tracker = moves.mapped('edi_tracker_id')
         self.assertEqual(len(tracker), 1)
-        self.assertEqual(tracker.name, 'out01')
+        self.assertEqual(tracker.name, 'List01')
+
+        # out02 updates both moves
+        doc = self.create_tutorial('out02.csv')
+        self.assertTrue(doc.action_execute())
+        self.assertEqual(moves_by_code['APPLE'].product_uom_qty, 3)
+        self.assertEqual(moves_by_code['BANANA'].product_uom_qty, 5)
+
+        # out03 cancels BANANA move
+        doc = self.create_tutorial('out03.csv')
+        self.assertTrue(doc.action_execute())
+        self.assertNotEqual(moves_by_code['APPLE'].state, 'cancel')
+        self.assertEqual(moves_by_code['BANANA'].state, 'cancel')
 
     def test02_no_match(self):
         """Filename with no matched picking type"""
@@ -62,3 +76,57 @@ class TestTutorial(EdiPickCase):
         pick_types = doc.mapped('pick_request_tutorial_ids.pick_type_id')
         self.assertEqual(len(pick_types), 1)
         self.assertEqual(pick_types, self.pick_type_in)
+
+    def test04_started_picking(self):
+        """Picking already started but not validated"""
+        doc = self.create_tutorial('out01.csv')
+        self.assertTrue(doc.action_execute())
+        pick = doc.mapped('pick_request_tutorial_ids.pick_id')
+        moves = pick.move_lines
+        pick.action_assign()
+        for move in moves:
+            move.quantity_done = move.product_uom_qty
+        doc = self.create_tutorial('out02.csv')
+        self.assertTrue(doc.action_prepare())
+        with self.assertRaisesIssue(doc, exception=ValidationError):
+            doc.action_execute()
+
+    def test05_partially_completed_picking(self):
+        """Picking completed but the request partially fulfilled. Creates a
+        backorder which can be updated with a new update request
+        """
+        doc = self.create_tutorial('out01.csv')
+        self.assertTrue(doc.action_execute())
+        pick = doc.mapped('pick_request_tutorial_ids.pick_id')
+        moves = pick.move_lines
+        pick.action_assign()
+        for move in moves:
+            move.quantity_done = 1
+        pick.action_done()
+        doc = self.create_tutorial('out02.csv')
+        self.assertTrue(doc.action_execute())
+        pick = doc.mapped('pick_request_tutorial_ids.pick_id')
+        moves = pick.move_lines
+        moves_by_code = {x.product_id.default_code: x for x in moves}
+        self.assertEqual(moves_by_code['APPLE'].product_uom_qty, 3)
+        self.assertEqual(moves_by_code['BANANA'].product_uom_qty, 5)
+
+    def test06_repeat_create(self):
+        """Create the same two times"""
+        doc = self.create_tutorial('out01.csv')
+        self.assertTrue(doc.action_execute())
+        doc = self.create_tutorial('out01.csv')
+        with self.assertRaisesIssue(doc, exception=ValidationError):
+            doc.action_execute()
+
+    def test07_update_without_create(self):
+        """Update without create"""
+        doc = self.create_tutorial('out02.csv')
+        with self.assertRaisesIssue(doc, exception=ValidationError):
+            doc.action_execute()
+
+    def test08_cancel_without_create(self):
+        """Cancel without create"""
+        doc = self.create_tutorial('out03.csv')
+        with self.assertRaisesIssue(doc, exception=ValidationError):
+            doc.action_execute()

@@ -14,7 +14,6 @@ starting with "OUT".
 """
 
 import csv
-import pathlib
 import re
 from odoo import api, fields, models
 from odoo.exceptions import UserError
@@ -120,30 +119,33 @@ class EdiPickRequestTutorialDocument(models.AbstractModel):
                 raise UserError(_("\"%s\" matches multiple picking types: %s") %
                                 (fname, ", ".join(pick_type.mapped('name'))))
 
-            # Construct base name for this stock transfer
-            name = pathlib.Path(fname).stem
-
-            # Create stock transfer request
-            pick_request = EdiPickRequestRecord.create({
-                'doc_id': doc.id,
-                'name': name,
-                'pick_type_id': pick_type.id,
-            })
-
-            # Create a single tracking identity
-            EdiMoveTrackerRecord.create({
-                'doc_id': doc.id,
-                'name': name,
-            })
+            pick_request = None
 
             # Create stock moves
             reader = csv.reader(data.decode().splitlines())
-            for line, (product, qty) in enumerate(reader, start=1):
+            for order, product, qty, action in reader:
+                if pick_request is None:
+                    # Create stock transfer request
+                    pick_request = EdiPickRequestRecord.create({
+                        'doc_id': doc.id,
+                        'name': order,
+                        'pick_type_id': pick_type.id,
+                    })
+
+                    # Create a single tracking identity
+                    EdiMoveTrackerRecord.create({
+                        'doc_id': doc.id,
+                        'name': order,
+                    })
+                # Unique name to be used to be able find stock moves for update
+                # and cancel requests
+                name = "{}/{}".format(order, product)
                 EdiMoveRequestRecord.create({
                     'doc_id': doc.id,
                     'pick_request_id': pick_request.id,
-                    'name': "%04d" % line,
-                    'tracker_key': name,
+                    'name': name,
+                    'tracker_key': order,
                     'product_key': product,
                     'qty': float(qty),
+                    'action': action.upper(),
                 })

@@ -112,6 +112,7 @@
 		<field name="product_key"/>
 		<field name="product_id"/>
 		<field name="qty"/>
+		<field name="action"/>
 	      </tree>
 	    </field>
 	  </page>
