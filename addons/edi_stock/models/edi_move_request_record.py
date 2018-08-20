@@ -62,6 +62,7 @@ class EdiMoveRequestRecord(models.Model):
             'edi_tracker_id': self.tracker_id.id if self.tracker_id else False,
             'product_id': self.product_id.id,
             'product_uom_qty': self.qty,
+            'ordered_qty': self.qty,
             'product_uom': self.product_id.uom_id.id,
             'location_id': self.pick_id.location_id.id,
             'location_dest_id': self.pick_id.location_dest_id.id,
