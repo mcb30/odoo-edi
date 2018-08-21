@@ -4,6 +4,7 @@ This example shows the code required to implement a simple EDI pick
 request document format comprising a CSV file with a fixed list of
 columns:
 
+* Order reference
 * Product code
 * Quantity
 
@@ -14,11 +15,11 @@ starting with "OUT".
 """
 
 import csv
-import pathlib
 import re
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
+from odoo.tools.misc import OrderedSet
 
 
 class EdiDocument(models.Model):
@@ -120,30 +121,27 @@ class EdiPickRequestTutorialDocument(models.AbstractModel):
                 raise UserError(_("\"%s\" matches multiple picking types: %s") %
                                 (fname, ", ".join(pick_type.mapped('name'))))
 
-            # Construct base name for this stock transfer
-            name = pathlib.Path(fname).stem
-
-            # Create stock transfer request
-            EdiPickRequestRecord.create({
-                'doc_id': doc.id,
-                'name': name,
-                'pick_type_id': pick_type.id,
-            })
-
-            # Create a single tracking identity
-            EdiMoveTrackerRecord.create({
-                'doc_id': doc.id,
-                'name': name,
-            })
-
-            # Create stock moves
+            # Create stock move request records and construct list of orders
+            orders = OrderedSet()
             reader = csv.reader(data.decode().splitlines())
-            for line, (product, qty) in enumerate(reader, start=1):
+            for order, product, qty in reader:
+                orders.add(order)
                 EdiMoveRequestRecord.create({
                     'doc_id': doc.id,
-                    'pick_key': name,
-                    'name': "%04d" % line,
-                    'tracker_key': name,
+                    'pick_key': order,
+                    'name': '%s/%s' % (order, product),
+                    'tracker_key': order,
                     'product_key': product,
                     'qty': float(qty),
                 })
+
+            # Create stock move tracker records
+            EdiMoveTrackerRecord.prepare(doc, ({
+                'name': x,
+            } for x in orders))
+
+            # Create stock transfer request records
+            EdiPickRequestRecord.prepare(doc, ({
+                'name': x,
+                'pick_type_id': pick_type.id,
+            } for x in orders))
