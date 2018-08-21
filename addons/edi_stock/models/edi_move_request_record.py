@@ -3,6 +3,7 @@
 import logging
 from odoo import api, fields, models
 from odoo.addons import decimal_precision as dp
+from odoo.exceptions import UserError
 from odoo.tools.translate import _
 
 _logger = logging.getLogger(__name__)
@@ -60,6 +61,19 @@ class EdiMoveRequestRecord(models.Model):
         }
 
     @api.multi
+    def existing_move(self):
+        """Find corresponding existing move (if any)"""
+        self.ensure_one()
+        if not self.tracker_id:
+            return self.env['stock.move'].browse()
+        return self.tracker_id.move_ids.filtered(
+            lambda x:
+            x.state != 'cancel' and
+            x.product_id == self.product_id and
+            not x.move_orig_ids
+        )
+
+    @api.multi
     def execute(self):
         """Execute records"""
         # pylint: disable=too-many-locals
@@ -68,28 +82,61 @@ class EdiMoveRequestRecord(models.Model):
         Picking = self.env['stock.picking']
         Product = self.env['product.product']
         Template = self.env['product.template']
+        EdiMoveTracker = self.env['edi.move.tracker']
 
         # Identify containing document
         doc = self.mapped('doc_id')
 
         # Process records in batches for efficiency
+        cancel = Move.browse()
         for r, batch in self.batched(self.BATCH_SIZE):
 
             _logger.info(_("%s executing %s %d-%d"),
                          doc.name, self._name, r[0], r[-1])
 
-            # Cache all products, product templates, and picks for
-            # this batch to reduce per-record database lookups
+            # Cache all products, product templates, picks, tracking
+            # identities, and existing moves for this batch to reduce
+            # per-record database lookups
             picks = Picking.browse(batch.mapped('pick_id.id'))
             picks.mapped('name')
             products = Product.browse(batch.mapped('product_id.id'))
             templates = Template.browse(products.mapped('product_tmpl_id.id'))
             templates.mapped('name')
+            trackers = EdiMoveTracker.browse(batch.mapped('tracker_id.id'))
+            trackers.mapped('name')
+            moves = Move.browse(trackers.mapped('move_ids.id'))
+            moves.mapped('name')
 
             # Create moves disassociated from any picking
             for rec in batch:
+
+                # Find existing move, if any
+                move = rec.existing_move()
+                if move:
+                    if len(move) > 1:
+                        raise UserError(
+                            _("Multiple existing moves for %s") % rec.name
+                        )
+                    rec.move_id = move
+
+                # Construct move value dictionary
                 move_vals = rec.move_values()
-                rec.move_id = Move.create(move_vals)
+
+                # Create, update, or cancel move as applicable
+                if rec.move_id:
+                    if rec.move_line_ids.filtered(lambda x: x.qty_done):
+                        raise UserError(
+                            _("In-progress moves for %s") % rec.name
+                        )
+                    if move_vals['product_uom_qty']:
+                        rec.move_id.write(move_vals)
+                    else:
+                        cancel += rec
+                elif move_vals['product_uom_qty']:
+                    rec.move_id = Move.create(move_vals)
+
+        # Cancel moves
+        cancel._action_cancel()
 
         # Associate moves to pickings.  Do this as a bulk operation to
         # avoid triggering updates on the picking for each new move.

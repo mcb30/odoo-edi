@@ -4,6 +4,7 @@ This example shows the code required to implement a simple EDI pick
 request document format comprising a CSV file with a fixed list of
 columns:
 
+* Order reference
 * Product code
 * Quantity
 
@@ -19,6 +20,7 @@ import re
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
+from odoo.tools.misc import OrderedSet
 
 
 class EdiDocument(models.Model):
@@ -130,20 +132,17 @@ class EdiPickRequestTutorialDocument(models.AbstractModel):
                 'pick_type_id': pick_type.id,
             })
 
-            # Create a single tracking identity
-            EdiMoveTrackerRecord.create({
-                'doc_id': doc.id,
-                'name': name,
-            })
-
-            # Create stock moves
+            # Create stock moves and tracking identities
+            orders = OrderedSet()
             reader = csv.reader(data.decode().splitlines())
-            for line, (product, qty) in enumerate(reader, start=1):
+            for order, product, qty in reader:
+                orders.add(order)
                 EdiMoveRequestRecord.create({
                     'doc_id': doc.id,
                     'pick_request_id': pick_request.id,
-                    'name': "%04d" % line,
-                    'tracker_key': name,
+                    'name': '%s/%s' % (order, product),
+                    'tracker_key': order,
                     'product_key': product,
                     'qty': float(qty),
                 })
+            EdiMoveTrackerRecord.prepare(doc, ({'name': x} for x in orders))
