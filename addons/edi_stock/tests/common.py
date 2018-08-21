@@ -49,6 +49,10 @@ class EdiPickCase(EdiCase):
             'default_code': 'CHERRY',
             'name': 'Cherry',
         })
+        cls.damson = Product.create({
+            'default_code': 'DAMSON',
+            'name': 'Damson',
+        })
         # Ensure picking type definitions are usable for our tests
         cls.loc_suppliers = cls.env.ref('stock.stock_location_suppliers')
         cls.loc_stock = cls.env.ref('stock.stock_location_stock')
