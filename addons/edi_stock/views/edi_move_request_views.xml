@@ -20,6 +20,7 @@
 		<field name="doc_id"/>
 		<field name="pick_request_id"/>
 		<field name="pick_id"/>
+		<field name="tracker_key"/>
 		<field name="tracker_id"/>
 		<field name="move_id"/>
 	      </group>
@@ -44,6 +45,7 @@
 	  <field name="name"/>
 	  <field name="pick_request_id"/>
 	  <field name="pick_id"/>
+	  <field name="tracker_key"/>
 	  <field name="tracker_id"/>
 	  <field name="move_id"/>
 	  <field name="product_key"/>
@@ -65,6 +67,7 @@
 	  <field name="doc_id"/>
 	  <field name="pick_request_id"/>
 	  <field name="pick_id"/>
+	  <field name="tracker_key"/>
 	  <field name="tracker_id"/>
 	  <field name="product_key"/>
 	  <field name="product_id"/>
