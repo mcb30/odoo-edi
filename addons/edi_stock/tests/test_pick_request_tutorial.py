@@ -104,8 +104,7 @@ class TestTutorial(EdiPickCase):
         pick.action_done()
         doc = self.create_tutorial('out02.csv')
         self.assertTrue(doc.action_execute())
-        pick = doc.mapped('pick_request_tutorial_ids.pick_id')
-        moves = pick.move_lines
+        moves = doc.mapped('move_request_tutorial_ids.move_id')
         moves_by_code = {x.product_id.default_code: x for x in moves}
         self.assertEqual(moves_by_code['APPLE'].product_uom_qty, 3)
         self.assertEqual(moves_by_code['BANANA'].product_uom_qty, 5)

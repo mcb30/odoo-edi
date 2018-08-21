@@ -28,13 +28,11 @@ class EdiMoveRequestRecord(models.Model):
     _inherit = 'edi.record'
     _description = "Stock Move Request"
 
-    pick_request_id = fields.Many2one('edi.pick.request.record',
-                                      string="Transfer Request",
-                                      required=True, readonly=True,
-                                      index=True)
+    pick_key = fields.Char(string="Transfer key", required=True, readonly=True,
+                           index=True, edi_relates='pick_id.origin',
+                           edi_relates_domain=[('state', '!=', 'cancel')])
     pick_id = fields.Many2one('stock.picking', string="Transfer",
-                              related='pick_request_id.pick_id',
-                              store=True, index=True)
+                              required=False, readonly=True, index=True)
     tracker_key = fields.Char(string="Tracker Key", required=False,
                               readonly=True, index=True,
                               edi_relates='tracker_id.name')
@@ -104,6 +102,10 @@ class EdiMoveRequestRecord(models.Model):
 
             for rec in batch:
                 move = moves.filtered(lambda m: m.name == rec.name)
+                if move.move_line_ids.filtered(lambda x: x.qty_done):
+                    raise UserError(
+                        _("In-progress moves for %s") % rec.name
+                    )
                 if rec.action == 'C':
                     if move:
                         raise UserError(
