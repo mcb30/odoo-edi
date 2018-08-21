@@ -20,7 +20,9 @@
       <field name="inherit_id" ref="move_request_record_form"/>
       <field name="mode">primary</field>
       <field name="arch" type="xml">
-	<xpath expr="//group[@name='basic']" position="inside"/>
+	<xpath expr="//group[@name='basic']" position="inside">
+	  <field name="action"/>
+	</xpath>
       </field>
     </record>
 
@@ -42,7 +44,9 @@
       <field name="inherit_id" ref="move_request_record_tree"/>
       <field name="mode">primary</field>
       <field name="arch" type="xml">
-	<xpath expr="//tree" position="inside"/>
+	<xpath expr="//tree" position="inside">
+	  <field name="action"/>
+	</xpath>
       </field>
     </record>
 

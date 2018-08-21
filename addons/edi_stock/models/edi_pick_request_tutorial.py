@@ -4,8 +4,10 @@ This example shows the code required to implement a simple EDI pick
 request document format comprising a CSV file with a fixed list of
 columns:
 
+* Order reference
 * Product code
 * Quantity
+* Action
 
 The picking type will be deduced from the filename by matching against
 the sequence prefixes defined for each avaiable picking type.  For
@@ -71,6 +73,22 @@ class EdiMoveRequestTutorialRecord(models.Model):
 
     pick_key = fields.Char(edi_relates_domain=[('state', 'not in',
                                                 ('done', 'cancel'))])
+    action = fields.Selection(string="Action", required=True, readonly=True,
+                              index=True, selection=[('C', 'Create'),
+                                                     ('U', 'Update'),
+                                                     ('D', 'Delete')])
+
+    @api.multi
+    def existing_move(self):
+        """Find corresponding existing move (if any)"""
+        move = super().existing_move().filtered(lambda x: x.state != 'done')
+        if self.action == 'C':
+            if move:
+                raise UserError(_("Existing move for %s") % self.name)
+        else:
+            if not move:
+                raise UserError(_("No existing move for %s") % self.name)
+        return move
 
 
 class EdiPickRequestTutorialDocument(models.AbstractModel):
@@ -128,17 +146,14 @@ class EdiPickRequestTutorialDocument(models.AbstractModel):
             reader = csv.reader(data.decode().splitlines())
             for order, product, qty, action in reader:
                 orders.add(order)
-                # Unique name to be used to be able find stock moves for update
-                # and cancel requests
-                name = "{}/{}".format(order, product)
                 EdiMoveRequestRecord.create({
                     'doc_id': doc.id,
                     'pick_key': order,
-                    'name': name,
+                    'name': '%s/%s' % (order, product),
                     'tracker_key': order,
                     'product_key': product,
                     'qty': float(qty),
-                    'action': action.upper(),
+                    'action': action,
                 })
 
             # Create stock move tracker records

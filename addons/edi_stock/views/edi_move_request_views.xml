@@ -23,7 +23,6 @@
 		<field name="tracker_key"/>
 		<field name="tracker_id"/>
 		<field name="move_id"/>
-		<field name="action"/>
 	      </group>
 	      <group name="detail">
 		<field name="product_key"/>
@@ -52,7 +51,6 @@
 	  <field name="product_key"/>
 	  <field name="product_id"/>
 	  <field name="qty"/>
-	  <field name="action"/>
 	</tree>
       </field>
     </record>

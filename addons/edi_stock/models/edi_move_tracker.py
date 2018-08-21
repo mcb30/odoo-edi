@@ -24,7 +24,8 @@ class EdiMoveTracker(models.Model):
 
     name = fields.Char(string="Name", required=True, index=True)
     active = fields.Boolean(string="Active", default=True)
-    move_ids = fields.One2many('stock.move', 'edi_tracker_id', string="Moves")
+    move_ids = fields.One2many('stock.move', 'edi_tracker_id', string="Moves",
+                               auto_join=True)
     pick_ids = fields.One2many('stock.picking', string="Transfers",
                                compute='_compute_pick_ids')
 

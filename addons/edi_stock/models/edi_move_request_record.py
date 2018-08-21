@@ -8,11 +8,6 @@ from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
-MOVE_REQ_ACTIONS = [('C', 'Create'),
-                    ('U', 'Update'),
-                    ('D', 'Cancel'),
-                    ]
-
 
 class EdiMoveRequestRecord(models.Model):
     """EDI stock move request record
@@ -48,12 +43,15 @@ class EdiMoveRequestRecord(models.Model):
     qty = fields.Float(string="Quantity", readonly=True, required=True,
                        digits=dp.get_precision('Product Unit of Measure'))
 
-    action = fields.Selection(selection=MOVE_REQ_ACTIONS, required=True,
-                              default='C', index=True, readonly=True)
-
     @api.multi
     def move_values(self):
-        """Construct ``stock.move`` value dictionary"""
+        """Construct ``stock.move`` value dictionary
+
+        We deliberately omit the ``stock.picking`` from the per-move
+        value dictionary, since it is substantially more efficient to
+        perform the association of moves to pickings as a bulk
+        operation.
+        """
         self.ensure_one()
         return {
             'name': self.name,
@@ -68,6 +66,19 @@ class EdiMoveRequestRecord(models.Model):
         }
 
     @api.multi
+    def existing_move(self):
+        """Find corresponding existing move (if any)"""
+        self.ensure_one()
+        if not self.tracker_id:
+            return self.env['stock.move'].browse()
+        return self.tracker_id.move_ids.filtered(
+            lambda x:
+            x.state != 'cancel' and
+            x.product_id == self.product_id and
+            x.picking_type_id == self.pick_id.picking_type_id
+        )
+
+    @api.multi
     def execute(self):
         """Execute records"""
         # pylint: disable=too-many-locals
@@ -76,62 +87,58 @@ class EdiMoveRequestRecord(models.Model):
         Picking = self.env['stock.picking']
         Product = self.env['product.product']
         Template = self.env['product.template']
+        EdiMoveTracker = self.env['edi.move.tracker']
 
         # Identify containing document
         doc = self.mapped('doc_id')
-        to_cancel = Move.browse()
+
         # Process records in batches for efficiency
+        cancel = Move.browse()
         for r, batch in self.batched(self.BATCH_SIZE):
 
             _logger.info(_("%s executing %s %d-%d"),
                          doc.name, self._name, r[0], r[-1])
 
-            # Cache all products, product templates, moves and picks for
-            # this batch to reduce per-record database lookups
+            # Cache all products, product templates, picks, tracking
+            # identities, and existing moves for this batch to reduce
+            # per-record database lookups
             picks = Picking.browse(batch.mapped('pick_id.id'))
             picks.mapped('name')
             products = Product.browse(batch.mapped('product_id.id'))
             templates = Template.browse(products.mapped('product_tmpl_id.id'))
             templates.mapped('name')
-            # assume all picks will have the same picking_type_id
-            moves = Move.search([('name', 'in', batch.mapped('name')),
-                                 ('picking_type_id', '=',
-                                  picks.mapped('picking_type_id').id),
-                                 ('state', 'not in', ['done', 'cancel'])])
+            trackers = EdiMoveTracker.browse(batch.mapped('tracker_id.id'))
+            trackers.mapped('name')
+            moves = Move.browse(trackers.mapped('move_ids.id'))
             moves.mapped('name')
 
+            # Create, update, or cancel moves
             for rec in batch:
-                move = moves.filtered(lambda m: m.name == rec.name)
-                if move.move_line_ids.filtered(lambda x: x.qty_done):
-                    raise UserError(
-                        _("In-progress moves for %s") % rec.name
-                    )
-                if rec.action == 'C':
-                    if move:
+
+                # Find existing move, if any
+                move = rec.existing_move()
+                if move:
+                    if len(move) > 1:
                         raise UserError(
-                            _('There is already an existing move with name %s' %
-                              rec.name)
+                            _("Multiple existing moves for %s") % rec.name
                         )
-                    # Create moves disassociated from any picking
-                    move_vals = rec.move_values()
+                    rec.move_id = move
+
+                # Construct move value dictionary
+                move_vals = rec.move_values()
+
+                # Create, update, or cancel move as applicable
+                if rec.move_id:
+                    if rec.move_id.move_line_ids.filtered(lambda x: x.qty_done):
+                        raise UserError(
+                            _("In-progress moves for %s") % rec.name
+                        )
+                    if move_vals['product_uom_qty']:
+                        rec.move_id.write(move_vals)
+                    else:
+                        cancel += rec.move_id
+                elif move_vals['product_uom_qty']:
                     rec.move_id = Move.create(move_vals)
-                elif rec.action == 'U':
-                    if not move:
-                        raise UserError(
-                            _('Cannot find move to update with name %s' %
-                              rec.name)
-                        )
-                    rec.move_id = move
-                    move_vals = rec.move_values()
-                    move.update(move_vals)
-                else:
-                    if not move:
-                        raise UserError(
-                            _('Cannot find move to cancel with name %s' %
-                              rec.name)
-                        )
-                    rec.move_id = move
-                    to_cancel |= move
 
         # Associate moves to pickings.  Do this as a bulk operation to
         # avoid triggering updates on the picking for each new move.
@@ -139,4 +146,4 @@ class EdiMoveRequestRecord(models.Model):
             recs.mapped('move_id').write({'picking_id': pick_id})
 
         # Cancel moves in bulk
-        to_cancel._action_cancel()
+        cancel._action_cancel()
