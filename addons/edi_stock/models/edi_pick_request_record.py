@@ -16,12 +16,15 @@ class EdiPickRequestRecord(models.Model):
     define a priority level which could be converted to a stock
     transfer due date based on some hardcoded business rules.
 
-    Derived models should implement :meth:`~.pick_values`.
+    Derived models should implement :meth:`~.target_values`.
     """
 
     _name = 'edi.pick.request.record'
-    _inherit = 'edi.record'
+    _inherit = 'edi.record.sync'
     _description = "Stock Transfer Request"
+
+    _edi_sync_target = 'pick_id'
+    _edi_sync_via = 'origin'
 
     pick_type_id = fields.Many2one('stock.picking.type', string="Type",
                                    required=True, readonly=True, index=True)
@@ -31,23 +34,16 @@ class EdiPickRequestRecord(models.Model):
     _sql_constraints = [('doc_name_uniq', 'unique (doc_id, name)',
                          "Each name may appear at most once per document")]
 
-    @api.multi
-    def pick_values(self):
+    @api.model
+    def target_values(self, record_vals):
         """Construct ``stock.picking`` value dictionary"""
-        self.ensure_one()
-        pick_type = self.pick_type_id
-        return {
-            'origin': self.name,
+        pick_vals = super().target_values(record_vals)
+        PickingType = self.env['stock.picking.type']
+        pick_type = PickingType.browse(record_vals['pick_type_id'])
+        pick_vals.update({
+            'origin': record_vals['name'],
             'picking_type_id': pick_type.id,
             'location_id': pick_type.default_location_src_id.id,
             'location_dest_id': pick_type.default_location_dest_id.id,
-        }
-
-    @api.multi
-    def execute(self):
-        """Execute records"""
-        super().execute()
-        Picking = self.env['stock.picking']
-        for rec in self:
-            pick_vals = rec.pick_values()
-            rec.pick_id = Picking.create(pick_vals)
+        })
+        return pick_vals

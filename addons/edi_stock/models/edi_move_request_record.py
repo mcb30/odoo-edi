@@ -22,13 +22,10 @@ class EdiMoveRequestRecord(models.Model):
     _inherit = 'edi.record'
     _description = "Stock Move Request"
 
-    pick_request_id = fields.Many2one('edi.pick.request.record',
-                                      string="Transfer Request",
-                                      required=True, readonly=True,
-                                      index=True)
+    pick_key = fields.Char(string="Transfer key", required=True, readonly=True,
+                           index=True, edi_relates='pick_id.origin')
     pick_id = fields.Many2one('stock.picking', string="Transfer",
-                              related='pick_request_id.pick_id',
-                              store=True, index=True)
+                              required=False, readonly=True, index=True)
     tracker_key = fields.Char(string="Tracker Key", required=False,
                               readonly=True, index=True,
                               edi_relates='tracker_id.name')

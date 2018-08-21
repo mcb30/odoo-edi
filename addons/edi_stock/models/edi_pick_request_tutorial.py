@@ -124,7 +124,7 @@ class EdiPickRequestTutorialDocument(models.AbstractModel):
             name = pathlib.Path(fname).stem
 
             # Create stock transfer request
-            pick_request = EdiPickRequestRecord.create({
+            EdiPickRequestRecord.create({
                 'doc_id': doc.id,
                 'name': name,
                 'pick_type_id': pick_type.id,
@@ -141,7 +141,7 @@ class EdiPickRequestTutorialDocument(models.AbstractModel):
             for line, (product, qty) in enumerate(reader, start=1):
                 EdiMoveRequestRecord.create({
                     'doc_id': doc.id,
-                    'pick_request_id': pick_request.id,
+                    'pick_key': name,
                     'name': "%04d" % line,
                     'tracker_key': name,
                     'product_key': product,
