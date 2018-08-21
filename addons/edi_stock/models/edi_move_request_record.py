@@ -80,15 +80,14 @@ class EdiMoveRequestRecord(models.Model):
 
             # Cache all products, product templates, and picks for
             # this batch to reduce per-record database lookups
-            recs = self.browse([x.id for x in batch])
-            picks = Picking.browse(recs.mapped('pick_id.id'))
+            picks = Picking.browse(batch.mapped('pick_id.id'))
             picks.mapped('name')
-            products = Product.browse(recs.mapped('product_id.id'))
+            products = Product.browse(batch.mapped('product_id.id'))
             templates = Template.browse(products.mapped('product_tmpl_id.id'))
             templates.mapped('name')
 
             # Create moves disassociated from any picking
-            for rec in recs:
+            for rec in batch:
                 move_vals = rec.move_values()
                 rec.move_id = Move.create(move_vals)
 
