@@ -63,3 +63,14 @@ class TestTutorial(EdiPickCase):
         pick_types = doc.mapped('pick_request_tutorial_ids.pick_type_id')
         self.assertEqual(len(pick_types), 1)
         self.assertEqual(pick_types, self.pick_type_in)
+
+    def test04_update(self):
+        """Updates on a document"""
+        doc = self.create_tutorial('out01.csv')
+        self.assertTrue(doc.action_execute())
+        doc2 = self.create_tutorial('out01.csv')
+        self.assertTrue(doc2.action_execute())
+
+        pick2 = doc2.mapped('pick_request_tutorial_ids.pick_id')
+        self.assertEqual(doc2.pick_ids, pick2)
+        self.assertEqual(len(pick2), 2)
