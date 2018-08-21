@@ -18,6 +18,7 @@ import re
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
+from odoo.tools.misc import OrderedSet
 
 
 class EdiDocument(models.Model):
@@ -54,6 +55,8 @@ class EdiPickRequestTutorialRecord(models.Model):
     _inherit = 'edi.pick.request.record'
     _description = "Stock Transfer Request"
 
+    _edi_sync_domain = [('state', 'not in', ('done', 'cancel'))]
+
 
 class EdiMoveRequestTutorialRecord(models.Model):
     """EDI stock move request tutorial record
@@ -66,7 +69,8 @@ class EdiMoveRequestTutorialRecord(models.Model):
     _inherit = 'edi.move.request.record'
     _description = "Stock Move Request"
 
-    pick_request_id = fields.Many2one('edi.pick.request.tutorial.record')
+    pick_key = fields.Char(edi_relates_domain=[('state', 'not in',
+                                                ('done', 'cancel'))])
 
 
 class EdiPickRequestTutorialDocument(models.AbstractModel):
@@ -119,33 +123,31 @@ class EdiPickRequestTutorialDocument(models.AbstractModel):
                 raise UserError(_("\"%s\" matches multiple picking types: %s") %
                                 (fname, ", ".join(pick_type.mapped('name'))))
 
-            pick_request = None
-
-            # Create stock moves
+            # Create stock move request records and construct list of orders
+            orders = OrderedSet()
             reader = csv.reader(data.decode().splitlines())
             for order, product, qty, action in reader:
-                if pick_request is None:
-                    # Create stock transfer request
-                    pick_request = EdiPickRequestRecord.create({
-                        'doc_id': doc.id,
-                        'name': order,
-                        'pick_type_id': pick_type.id,
-                    })
-
-                    # Create a single tracking identity
-                    EdiMoveTrackerRecord.create({
-                        'doc_id': doc.id,
-                        'name': order,
-                    })
+                orders.add(order)
                 # Unique name to be used to be able find stock moves for update
                 # and cancel requests
                 name = "{}/{}".format(order, product)
                 EdiMoveRequestRecord.create({
                     'doc_id': doc.id,
-                    'pick_request_id': pick_request.id,
+                    'pick_key': order,
                     'name': name,
                     'tracker_key': order,
                     'product_key': product,
                     'qty': float(qty),
                     'action': action.upper(),
                 })
+
+            # Create stock move tracker records
+            EdiMoveTrackerRecord.prepare(doc, ({
+                'name': x,
+            } for x in orders))
+
+            # Create stock transfer request records
+            EdiPickRequestRecord.prepare(doc, ({
+                'name': x,
+                'pick_type_id': pick_type.id,
+            } for x in orders))
