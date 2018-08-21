@@ -19,6 +19,14 @@ class EdiOrderpointCase(EdiCase):
             'default_code': 'BANANA',
             'name': 'Banana',
         })
+        cls.cherry = Product.create({
+            'default_code': 'CHERRY',
+            'name': 'Cherry',
+        })
+        cls.damson = Product.create({
+            'default_code': 'DAMSON',
+            'name': 'Damson',
+        })
         # Create test locations
         Location = cls.env['stock.location']
         cls.fridge = Location.create({

@@ -15,7 +15,6 @@ starting with "OUT".
 """
 
 import csv
-import pathlib
 import re
 from odoo import api, fields, models
 from odoo.exceptions import UserError
@@ -122,27 +121,27 @@ class EdiPickRequestTutorialDocument(models.AbstractModel):
                 raise UserError(_("\"%s\" matches multiple picking types: %s") %
                                 (fname, ", ".join(pick_type.mapped('name'))))
 
-            # Construct base name for this stock transfer
-            name = pathlib.Path(fname).stem
-
-            # Create stock transfer request
-            pick_request = EdiPickRequestRecord.create({
-                'doc_id': doc.id,
-                'name': name,
-                'pick_type_id': pick_type.id,
-            })
-
-            # Create stock moves and tracking identities
+            # Create stock move request records and construct list of orders
             orders = OrderedSet()
             reader = csv.reader(data.decode().splitlines())
             for order, product, qty in reader:
                 orders.add(order)
                 EdiMoveRequestRecord.create({
                     'doc_id': doc.id,
-                    'pick_request_id': pick_request.id,
+                    'pick_key': order,
                     'name': '%s/%s' % (order, product),
                     'tracker_key': order,
                     'product_key': product,
                     'qty': float(qty),
                 })
-            EdiMoveTrackerRecord.prepare(doc, ({'name': x} for x in orders))
+
+            # Create stock move tracker records
+            EdiMoveTrackerRecord.prepare(doc, ({
+                'name': x,
+            } for x in orders))
+
+            # Create stock transfer request records
+            EdiPickRequestRecord.prepare(doc, ({
+                'name': x,
+                'pick_type_id': pick_type.id,
+            } for x in orders))

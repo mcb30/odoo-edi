@@ -18,8 +18,9 @@
 	    <group>
 	      <group name="basic">
 		<field name="doc_id"/>
-		<field name="pick_request_id"/>
+		<field name="pick_key"/>
 		<field name="pick_id"/>
+		<field name="tracker_key"/>
 		<field name="tracker_id"/>
 		<field name="move_id"/>
 	      </group>
@@ -42,8 +43,9 @@
 	<tree string="Stock Move Requests" default_order="doc_id desc, id">
 	  <field name="doc_id"/>
 	  <field name="name"/>
-	  <field name="pick_request_id"/>
+	  <field name="pick_key"/>
 	  <field name="pick_id"/>
+	  <field name="tracker_key"/>
 	  <field name="tracker_id"/>
 	  <field name="move_id"/>
 	  <field name="product_key"/>
@@ -63,8 +65,9 @@
 		 filter_domain="['|',('name','ilike',self),
 				     ('product_key','ilike',self)]"/>
 	  <field name="doc_id"/>
-	  <field name="pick_request_id"/>
+	  <field name="pick_key"/>
 	  <field name="pick_id"/>
+	  <field name="tracker_key"/>
 	  <field name="tracker_id"/>
 	  <field name="product_key"/>
 	  <field name="product_id"/>

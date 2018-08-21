@@ -25,12 +25,12 @@ class TestTutorial(EdiPickCase):
         pick = doc.mapped('pick_request_tutorial_ids.pick_id')
         self.assertEqual(doc.pick_ids, pick)
         self.assertEqual(len(pick), 1)
-        self.assertEqual(pick.origin, 'out01')
+        self.assertEqual(pick.origin, 'ORDER01')
         self.assertEqual(pick.picking_type_id, self.pick_type_out)
         self.assertEqual(pick.location_id, self.loc_stock)
         self.assertEqual(pick.location_dest_id, self.loc_customers)
         moves = pick.move_lines
-        self.assertEqual(len(moves), 2)
+        self.assertEqual(len(moves), 3)
         self.assertEqual(moves.mapped('picking_type_id'), pick.picking_type_id)
         moves_by_code = {x.product_id.default_code: x for x in moves}
         self.assertEqual(moves_by_code['APPLE'].location_id, self.loc_stock)
@@ -38,9 +38,10 @@ class TestTutorial(EdiPickCase):
         self.assertEqual(moves_by_code['BANANA'].location_dest_id,
                          self.loc_customers)
         self.assertEqual(moves_by_code['BANANA'].product_uom_qty, 2)
+        self.assertEqual(moves_by_code['CHERRY'].product_uom_qty, 7)
         tracker = moves.mapped('edi_tracker_id')
         self.assertEqual(len(tracker), 1)
-        self.assertEqual(tracker.name, 'out01')
+        self.assertEqual(tracker.name, 'ORDER01')
 
     def test02_no_match(self):
         """Filename with no matched picking type"""
