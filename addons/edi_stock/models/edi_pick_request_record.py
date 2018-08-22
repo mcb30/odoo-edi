@@ -2,7 +2,7 @@
 
 from odoo import api, fields, models
 from odoo.tools.translate import _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError
 
 
 class EdiPickRequestRecord(models.Model):
@@ -46,7 +46,7 @@ class EdiPickRequestRecord(models.Model):
             ('state', 'not in', ['done', 'cancel'])
         ])
         if picking.mapped('move_line_ids').filtered(lambda ml: ml.qty_done > 0):
-            raise ValidationError(
+            raise UserError(
                 _('Picking %s already started.') %
                 picking.mapped('origin'))
 

@@ -4,7 +4,7 @@ import logging
 from odoo import api, fields, models
 from odoo.addons import decimal_precision as dp
 from odoo.tools.translate import _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -106,7 +106,7 @@ class EdiMoveRequestRecord(models.Model):
                 move = moves.filtered(lambda m: m.name == rec.name)
                 if rec.action == 'C':
                     if move:
-                        raise ValidationError(
+                        raise UserError(
                             _('There is already an existing move with name %s' %
                               rec.name)
                         )
@@ -115,7 +115,7 @@ class EdiMoveRequestRecord(models.Model):
                     rec.move_id = Move.create(move_vals)
                 elif rec.action == 'U':
                     if not move:
-                        raise ValidationError(
+                        raise UserError(
                             _('Cannot find move to update with name %s' %
                               rec.name)
                         )
@@ -124,7 +124,7 @@ class EdiMoveRequestRecord(models.Model):
                     move.update(move_vals)
                 else:
                     if not move:
-                        raise ValidationError(
+                        raise UserError(
                             _('Cannot find move to cancel with name %s' %
                               rec.name)
                         )

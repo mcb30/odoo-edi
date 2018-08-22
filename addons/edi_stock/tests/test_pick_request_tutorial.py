@@ -1,7 +1,6 @@
 """EDI stock transfer request tutorial tests"""
 
 from .common import EdiPickCase
-from odoo.exceptions import ValidationError
 
 
 class TestTutorial(EdiPickCase):
@@ -88,7 +87,7 @@ class TestTutorial(EdiPickCase):
             move.quantity_done = move.product_uom_qty
         doc = self.create_tutorial('out02.csv')
         self.assertTrue(doc.action_prepare())
-        with self.assertRaisesIssue(doc, exception=ValidationError):
+        with self.assertRaisesIssue(doc):
             doc.action_execute()
 
     def test05_partially_completed_picking(self):
@@ -116,17 +115,17 @@ class TestTutorial(EdiPickCase):
         doc = self.create_tutorial('out01.csv')
         self.assertTrue(doc.action_execute())
         doc = self.create_tutorial('out01.csv')
-        with self.assertRaisesIssue(doc, exception=ValidationError):
+        with self.assertRaisesIssue(doc):
             doc.action_execute()
 
     def test07_update_without_create(self):
         """Update without create"""
         doc = self.create_tutorial('out02.csv')
-        with self.assertRaisesIssue(doc, exception=ValidationError):
+        with self.assertRaisesIssue(doc):
             doc.action_execute()
 
     def test08_cancel_without_create(self):
         """Cancel without create"""
         doc = self.create_tutorial('out03.csv')
-        with self.assertRaisesIssue(doc, exception=ValidationError):
+        with self.assertRaisesIssue(doc):
             doc.action_execute()
