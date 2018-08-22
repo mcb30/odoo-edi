@@ -78,7 +78,7 @@ class EdiSyncRecord(models.AbstractModel):
         )
         key = self._edi_sync_via
         targets = Target.search([(key, 'in', [x['name'] for x in vlist])])
-        return {x[key]: x for x in targets}
+        return {k: v.ensure_one() for k, v in targets.groupby(key)}
 
     @api.model
     def target_values(self, record_vals):

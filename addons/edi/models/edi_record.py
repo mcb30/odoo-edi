@@ -125,7 +125,8 @@ class EdiRecord(models.AbstractModel):
                 targets = Target.search(
                     [(rel.via, 'in', list(set(keygetter(x) for x in batch)))]
                 )
-                targets_by_key = {x[rel.via]: x for x in targets}
+                targets_by_key = {k: v.ensure_one() for k, v in
+                                  targets.groupby(rel.via)}
 
                 # Update target fields
                 for key, recs in batch.groupby(keygetter):
@@ -160,7 +161,8 @@ class EdiRecord(models.AbstractModel):
             targets = self.browse()[rel.target].search(
                 [(rel.via, 'in', list(set(x[rel.key] for x in missing)))]
             )
-            targets_by_key = {x[rel.via]: x for x in targets}
+            targets_by_key = {k: v.ensure_one() for k, v in
+                              targets.groupby(rel.via)}
 
             # Add target values where known
             for vals in missing:
