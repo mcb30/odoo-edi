@@ -3,6 +3,7 @@
 import logging
 from odoo import api, models
 from odoo.tools.translate import _
+from odoo.osv import expression
 from ..tools import batched, Comparator
 
 _logger = logging.getLogger(__name__)
@@ -61,6 +62,13 @@ class EdiSyncRecord(models.AbstractModel):
     identify the corresponding target record.  Defaults to ``name``.
     """
 
+    _edi_sync_domain = None
+    """EDI synchronizer target domain
+
+    This is an additional search domain applied to the target Odoo
+    model when identifying the corresponding target record.
+    """
+
     _name = 'edi.record.sync'
     _inherit = 'edi.record'
     _description = "EDI Synchronizer Record"
@@ -77,7 +85,10 @@ class EdiSyncRecord(models.AbstractModel):
             active_test=False
         )
         key = self._edi_sync_via
-        targets = Target.search([(key, 'in', [x['name'] for x in vlist])])
+        targets = Target.search(expression.AND([
+            [(key, 'in', [x['name'] for x in vlist])],
+            self._edi_sync_domain or []
+        ]))
         return {k: v.ensure_one() for k, v in targets.groupby(key)}
 
     @api.model

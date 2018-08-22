@@ -5,6 +5,7 @@ from operator import itemgetter
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
+from odoo.osv import expression
 
 _logger = logging.getLogger(__name__)
 
@@ -35,14 +36,15 @@ class EdiLookupRelationship(object):
     the ``_edi_relates`` model attribute.
     """
 
-    def __init__(self, key, target, via=None):
+    def __init__(self, key, target, via=None, domain=None):
         self.key = key
         self.target = target
         self.via = via if via else key
+        self.domain = domain if domain else []
 
     def __repr__(self):
-        return '%s(%r, %r, %r)' % (self.__class__.__name__, self.key,
-                                   self.target, self.via)
+        return '%s(%r, %r, %r %r)' % (self.__class__.__name__, self.key,
+                                      self.target, self.via, self.domain)
 
 
 class EdiRecordType(models.Model):
@@ -96,7 +98,8 @@ class EdiRecord(models.AbstractModel):
         for name, field in cls._fields.items():
             if hasattr(field, 'edi_relates'):
                 (target, _sep, via) = field.edi_relates.partition('.')
-                rel = EdiLookupRelationship(name, target, via)
+                domain = getattr(field, 'edi_relates_domain', None)
+                rel = EdiLookupRelationship(name, target, via, domain)
                 cls._edi_relates.append(rel)
 
     @api.multi
@@ -122,9 +125,10 @@ class EdiRecord(models.AbstractModel):
 
                 # Search for target records by key
                 Target = Record[rel.target]
-                targets = Target.search(
-                    [(rel.via, 'in', list(set(keygetter(x) for x in batch)))]
-                )
+                targets = Target.search(expression.AND([
+                    [(rel.via, 'in', list(set(keygetter(x) for x in batch)))],
+                    rel.domain
+                ]))
                 targets_by_key = {k: v.ensure_one() for k, v in
                                   targets.groupby(rel.via)}
 
@@ -158,9 +162,10 @@ class EdiRecord(models.AbstractModel):
                 continue
 
             # Search for target records by key
-            targets = self.browse()[rel.target].search(
-                [(rel.via, 'in', list(set(x[rel.key] for x in missing)))]
-            )
+            targets = self.browse()[rel.target].search(expression.AND([
+                [(rel.via, 'in', list(set(x[rel.key] for x in missing)))],
+                rel.domain
+            ]))
             targets_by_key = {k: v.ensure_one() for k, v in
                               targets.groupby(rel.via)}
 
