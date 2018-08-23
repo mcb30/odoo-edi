@@ -29,8 +29,8 @@ class TestPickReport(EdiPickCase):
             'pick_type_ids': [(6, 0, [cls.pick_type_in.id])],
         })
         cls.pick_in = cls.create_pick(cls.pick_type_in)
-        cls.create_move(cls.pick_in, cls.apple, 5)
-        cls.create_move(cls.pick_in, cls.banana, 7)
+        cls.create_move(cls.pick_in, None, cls.apple, 5)
+        cls.create_move(cls.pick_in, None, cls.banana, 7)
 
     def test01_empty(self):
         """Test document with no pickings"""

@@ -17,13 +17,10 @@ class TestMoveTracker(EdiPickCase):
     def test01_pick_ids(self):
         """Test associated stock transfer calculation"""
         first = self.create_pick(self.pick_type_in)
-        self.create_move(first, self.apple, 3,
-                         edi_tracker_id=self.tracker_red.id)
-        self.create_move(first, self.banana, 5,
-                         edi_tracker_id=self.tracker_yellow.id)
+        self.create_move(first, self.tracker_red, self.apple, 3)
+        self.create_move(first, self.tracker_yellow, self.banana, 5)
         second = self.create_pick(self.pick_type_in)
-        self.create_move(second, self.apple, 8,
-                         edi_tracker_id=self.tracker_red.id)
+        self.create_move(second, self.tracker_red, self.apple, 8)
         self.assertEqual(self.tracker_red.pick_ids, (first | second))
         self.assertEqual(self.tracker_yellow.pick_ids, first)
         self.assertFalse(self.tracker_green.pick_ids)

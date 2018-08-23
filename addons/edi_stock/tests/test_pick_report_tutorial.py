@@ -13,12 +13,12 @@ class TestTutorial(EdiPickCase):
             'edi_stock.pick_report_tutorial_document_type'
         )
         cls.pick_morning = cls.create_pick(cls.pick_type_in)
-        cls.create_move(cls.pick_morning, cls.apple, 5)
-        cls.create_move(cls.pick_morning, cls.banana, 7)
+        cls.create_move(cls.pick_morning, None, cls.apple, 5)
+        cls.create_move(cls.pick_morning, None, cls.banana, 7)
         cls.pick_afternoon = cls.create_pick(cls.pick_type_in)
-        cls.create_move(cls.pick_afternoon, cls.apple, 58)
-        cls.create_move(cls.pick_afternoon, cls.banana, 74)
-        cls.create_move(cls.pick_afternoon, cls.cherry, 172)
+        cls.create_move(cls.pick_afternoon, None, cls.apple, 58)
+        cls.create_move(cls.pick_afternoon, None, cls.banana, 74)
+        cls.create_move(cls.pick_afternoon, None, cls.cherry, 172)
 
     @classmethod
     def create_tutorial(cls):

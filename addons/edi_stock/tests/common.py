@@ -82,7 +82,7 @@ class EdiPickCase(EdiCase):
         self.assertEqual(pick.state, 'done')
 
     @classmethod
-    def create_move(cls, pick, product, qty, **kwargs):
+    def create_move(cls, pick, tracker, product, qty, **kwargs):
         """Create stock move"""
         Move = cls.env['stock.move']
         vals = {
@@ -93,6 +93,7 @@ class EdiPickCase(EdiCase):
             'product_id': product.id,
             'product_uom': product.uom_id.id,
             'product_uom_qty': qty,
+            'edi_tracker_id': tracker.id if tracker else None,
         }
         vals.update(kwargs)
         move = Move.create(vals)
