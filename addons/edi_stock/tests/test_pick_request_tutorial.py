@@ -20,13 +20,14 @@ class TestTutorial(EdiPickCase):
 
     def test01_basic(self):
         """Basic document execution"""
+
         # out01 creates two moves
         doc = self.create_tutorial('out01.csv')
         self.assertTrue(doc.action_execute())
         pick = doc.mapped('pick_request_tutorial_ids.pick_id')
         self.assertEqual(doc.pick_ids, pick)
         self.assertEqual(len(pick), 1)
-        self.assertEqual(pick.origin, 'List01')
+        self.assertEqual(pick.origin, 'ORDER01')
         self.assertEqual(pick.picking_type_id, self.pick_type_out)
         self.assertEqual(pick.location_id, self.loc_stock)
         self.assertEqual(pick.location_dest_id, self.loc_customers)
@@ -41,7 +42,7 @@ class TestTutorial(EdiPickCase):
         self.assertEqual(moves_by_code['BANANA'].product_uom_qty, 2)
         tracker = moves.mapped('edi_tracker_id')
         self.assertEqual(len(tracker), 1)
-        self.assertEqual(tracker.name, 'List01')
+        self.assertEqual(tracker.name, 'ORDER01')
 
         # out02 updates both moves
         doc = self.create_tutorial('out02.csv')
