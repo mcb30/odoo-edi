@@ -9,16 +9,20 @@ class TestTutorial(EdiPickCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        Tracker = cls.env['edi.move.tracker']
+        cls.tracker_first = Tracker.create({'name': "ORDER01"})
+        cls.tracker_second = Tracker.create({'name': "ORDER02"})
+        cls.tracker_third = Tracker.create({'name': "ORDER03"})
         cls.doc_type_tutorial = cls.env.ref(
             'edi_stock.pick_report_tutorial_document_type'
         )
         cls.pick_morning = cls.create_pick(cls.pick_type_in)
-        cls.create_move(cls.pick_morning, None, cls.apple, 5)
-        cls.create_move(cls.pick_morning, None, cls.banana, 7)
+        cls.create_move(cls.pick_morning, cls.tracker_first, cls.apple, 5)
+        cls.create_move(cls.pick_morning, cls.tracker_first, cls.banana, 7)
         cls.pick_afternoon = cls.create_pick(cls.pick_type_in)
-        cls.create_move(cls.pick_afternoon, None, cls.apple, 58)
-        cls.create_move(cls.pick_afternoon, None, cls.banana, 74)
-        cls.create_move(cls.pick_afternoon, None, cls.cherry, 172)
+        cls.create_move(cls.pick_afternoon, cls.tracker_second, cls.apple, 58)
+        cls.create_move(cls.pick_afternoon, cls.tracker_second, cls.banana, 74)
+        cls.create_move(cls.pick_afternoon, cls.tracker_third, cls.cherry, 172)
 
     @classmethod
     def create_tutorial(cls):

@@ -4,6 +4,7 @@ This example shows the code required to implement a simple EDI pick
 report document format comprising a CSV file with a fixed list of
 columns:
 
+* Order reference
 * Product code
 * Quantity
 
@@ -110,7 +111,8 @@ class EdiPickReportTutorialDocument(models.AbstractModel):
                 writer = csv.writer(output, dialect='unix',
                                     quoting=csv.QUOTE_MINIMAL)
                 for rec in recs:
-                    writer.writerow([rec.product_id.default_code, int(rec.qty)])
+                    writer.writerow([rec.move_ids.edi_tracker_id.name,
+                                     rec.product_id.default_code, int(rec.qty)])
                 data = output.getvalue().encode()
 
             # Create output attachment
