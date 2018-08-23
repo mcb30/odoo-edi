@@ -127,7 +127,7 @@ class EdiRecord(models.AbstractModel):
                 Target = Record[rel.target]
                 targets = Target.search(expression.AND([
                     [(rel.via, 'in', list(set(keygetter(x) for x in batch)))],
-                    rel.domain
+                    rel.domain(Record) if callable(rel.domain) else rel.domain
                 ]))
                 targets_by_key = {k: v.ensure_one() for k, v in
                                   targets.groupby(rel.via)}
@@ -153,6 +153,7 @@ class EdiRecord(models.AbstractModel):
         incurring the cost of creating full recordset objects for
         records that may be elided from the final document.
         """
+        Record = self.browse()
         for rel in self._edi_relates:
             # pylint: disable=cell-var-from-loop
 
@@ -164,7 +165,7 @@ class EdiRecord(models.AbstractModel):
             # Search for target records by key
             targets = self.browse()[rel.target].search(expression.AND([
                 [(rel.via, 'in', list(set(x[rel.key] for x in missing)))],
-                rel.domain
+                rel.domain(Record) if callable(rel.domain) else rel.domain
             ]))
             targets_by_key = {k: v.ensure_one() for k, v in
                               targets.groupby(rel.via)}
