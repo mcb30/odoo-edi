@@ -129,3 +129,15 @@ class TestTutorial(EdiPickCase):
         doc = self.create_tutorial('out03.csv')
         with self.assertRaisesIssue(doc):
             doc.action_execute()
+
+    def test09_no_tracking(self):
+        """Input with no tracking key"""
+        doc = self.create_tutorial('out01.csv')
+        self.assertTrue(doc.action_prepare())
+        doc.mapped('move_request_tutorial_ids').write({
+            'tracker_key': False
+        })
+        self.assertTrue(doc.action_execute())
+        moves = doc.mapped('move_request_tutorial_ids.move_id')
+        self.assertEqual(len(moves), 2)
+        self.assertFalse(moves.mapped('edi_tracker_id'))
