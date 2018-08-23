@@ -141,3 +141,23 @@ class TestTutorial(EdiPickCase):
         moves = doc.mapped('move_request_tutorial_ids.move_id')
         self.assertEqual(len(moves), 2)
         self.assertFalse(moves.mapped('edi_tracker_id'))
+
+    def test10_multiple_moves(self):
+        """Test failure when multiple existing moves found"""
+        doc1 = self.create_tutorial('out01.csv')
+        self.assertTrue(doc1.action_execute())
+        move = doc1.mapped('move_request_tutorial_ids.move_id').filtered(
+            lambda x: x.product_id == self.banana
+        )
+        self.assertEqual(len(move), 1)
+        self.assertEqual(move.product_uom_qty, 2)
+        move.write({
+            'product_uom_qty': 1,
+            'ordered_qty': 1,
+        })
+        move.copy()
+        doc2 = self.create_tutorial('out02.csv')
+        with self.assertRaisesIssue(doc2):
+            doc2.action_execute()
+        move._action_cancel()
+        self.assertTrue(doc2.action_execute())
