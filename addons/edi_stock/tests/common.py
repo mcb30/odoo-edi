@@ -103,3 +103,53 @@ class EdiPickCase(EdiCase):
         vals.update(kwargs)
         move = Move.create(vals)
         return move
+
+
+class EdiQuantCase(EdiCase):
+    """Base test case for EDI stock level models"""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # Create test products
+        Product = cls.env['product.product']
+        cls.apple = Product.create({
+            'default_code': 'APPLE',
+            'name': 'Apple',
+            'type': 'product',
+        })
+        cls.banana = Product.create({
+            'default_code': 'BANANA',
+            'name': 'Banana',
+            'type': 'product',
+        })
+        cls.cherry = Product.create({
+            'default_code': 'CHERRY',
+            'name': 'Cherry',
+            'type': 'product',
+        })
+        # Create test locations
+        Location = cls.env['stock.location']
+        cls.loc_stock = cls.env.ref('stock.stock_location_stock')
+        cls.loc_suppliers = cls.env.ref('stock.stock_location_suppliers')
+        cls.fridge = Location.create({
+            'name': 'FRIDGE',
+            'location_id': cls.loc_stock.id,
+        })
+        cls.cupboard = Location.create({
+            'name': 'CUPBOARD',
+            'location_id': cls.loc_stock.id,
+        })
+
+    @classmethod
+    def create_quant(cls, location, product, qty, **kwargs):
+        """Create stock quant"""
+        Quant = cls.env['stock.quant']
+        vals = {
+            'product_id': product.id,
+            'location_id': location.id,
+            'quantity': qty,
+        }
+        vals.update(kwargs)
+        quant = Quant.create(vals)
+        return quant
