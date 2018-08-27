@@ -89,9 +89,9 @@ class EdiPickReportTutorialDocument(models.AbstractModel):
         )
 
     @api.model
-    def prepare(self, doc):
-        """Prepare document"""
-        super().prepare(doc)
+    def execute(self, doc):
+        """Execute document"""
+        super().execute(doc)
         EdiPickReportRecord = self.pick_report_record_model(doc)
         EdiMoveReportRecord = self.move_report_record_model(doc)
 

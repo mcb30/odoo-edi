@@ -33,6 +33,8 @@ class TestTutorial(EdiPickCase):
         """Basic document execution"""
         self.complete_pick(self.pick_morning)
         doc = self.create_tutorial()
+        self.assertTrue(doc.action_prepare())
+        self.assertEqual(len(doc.output_ids), 0)
         self.assertTrue(doc.action_execute())
         self.assertEqual(len(doc.output_ids), 1)
         self.assertAttachment(doc.output_ids, 'in01.csv',
