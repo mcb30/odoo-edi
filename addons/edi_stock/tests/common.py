@@ -14,10 +14,12 @@ class EdiOrderpointCase(EdiCase):
         cls.apple = Product.create({
             'default_code': 'APPLE',
             'name': 'Apple',
+            'type': 'product',
         })
         cls.banana = Product.create({
             'default_code': 'BANANA',
             'name': 'Banana',
+            'type': 'product',
         })
         # Create test locations
         Location = cls.env['stock.location']
@@ -40,14 +42,17 @@ class EdiPickCase(EdiCase):
         cls.apple = Product.create({
             'default_code': 'APPLE',
             'name': 'Apple',
+            'type': 'product',
         })
         cls.banana = Product.create({
             'default_code': 'BANANA',
             'name': 'Banana',
+            'type': 'product',
         })
         cls.cherry = Product.create({
             'default_code': 'CHERRY',
             'name': 'Cherry',
+            'type': 'product',
         })
         # Ensure picking type definitions are usable for our tests
         cls.loc_suppliers = cls.env.ref('stock.stock_location_suppliers')
