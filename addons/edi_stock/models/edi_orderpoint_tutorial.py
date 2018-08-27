@@ -37,6 +37,7 @@ class EdiOrderpointTutorialRecord(models.Model):
 
     @api.model
     def target_values(self, record_vals):
+        """Construct ``stock.warehouse.orderpoint`` field value dictionary"""
         orderpoint_vals = super().target_values(record_vals)
         orderpoint_vals.update({
             'lead_days': (record_vals['lead_weeks'] * 7),
@@ -53,6 +54,7 @@ class EdiOrderpointTutorialDocument(models.AbstractModel):
 
     @api.model
     def orderpoint_record_values(self, data):
+        """Construct EDI minimum inventory rule record value dictionaries"""
         reader = csv.reader(data.decode().splitlines())
         return ({
             'name': '%s@%s' % (product, location),
