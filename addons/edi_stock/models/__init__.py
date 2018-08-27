@@ -1,5 +1,6 @@
 """EDI stock models"""
 
+from . import edi_location_document
 from . import edi_move_report_record
 from . import edi_move_request_record
 from . import edi_move_tracker
