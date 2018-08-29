@@ -39,8 +39,9 @@ class EdiPickReportDocument(models.AbstractModel):
     represent multiple stock transfer line items, and is not directly
     associated with a single EDI stock transfer report record.
 
-    Derived models should implement :meth:`~.movelist` and
-    :meth:`~.execute`.
+    Derived models should implement :meth:`~.move_report_list` and
+    :meth:`~.execute`, and may choose to implement
+    :meth:`~.pick_report_domain` and :meth:`~.move_report_domain`.
     """
 
     _name = 'edi.pick.report.document'
@@ -60,23 +61,31 @@ class EdiPickReportDocument(models.AbstractModel):
         return self.record_model(doc, supermodel=supermodel)
 
     @api.model
-    def pickings(self, doc):
-        """Get stock transfers for which reports should be generated
+    def pick_report_domain(self, doc):
+        """Get stock transfer search domain
 
         The default implementation returns all completed stock
         transfers of any associated picking type for which a report
         has not yet been generated.
         """
-        Picking = self.env['stock.picking']
-        return Picking.search([
+        return [
             ('edi_pick_report_id', '=', False),
             ('state', '=', 'done'),
             ('picking_type_id', 'in', doc.doc_type_id.pick_type_ids.ids),
-        ])
+        ]
 
     @api.model
-    def movelist(self, _doc, moves):
-        """Get stock moves for which reports should be generated
+    def move_report_domain(self, _doc, picks):
+        """Get stock move search domain
+
+        The default implementation returns all moves associated with
+        the specified stock transfers.
+        """
+        return [('picking_id', 'in', picks.ids)]
+
+    @api.model
+    def move_report_list(self, _doc, moves):
+        """Get list of stock moves for which reports should be generated
 
         Returns an iterable of ``stock.move`` recordsets.  Each
         recordset in the iterable will result in the creation of a
@@ -96,13 +105,15 @@ class EdiPickReportDocument(models.AbstractModel):
         """Prepare document"""
         PickReport = self.pick_report_record_model(doc)
         MoveReport = self.move_report_record_model(doc)
+        Picking = self.env['stock.picking']
         Move = self.env['stock.move']
         # Lock pickings to prevent concurrent report generation attempts
-        picks = self.pickings(doc)
+        picks = Picking.search(self.pick_report_domain(doc))
         picks.write({'edi_pick_report_id': False})
         # Construct move list
-        moves = Move.search([('picking_id', 'in', picks.ids)])
-        movelist = self.movelist(doc, moves)
+        moves = Move.search(self.move_report_domain(doc, picks))
+        movelist = self.move_report_list(doc, moves)
+        # Prepare records
         PickReport.prepare(doc, picks)
         MoveReport.prepare(doc, movelist)
 

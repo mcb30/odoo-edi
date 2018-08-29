@@ -73,7 +73,7 @@ class EdiPickReportTutorialDocument(models.AbstractModel):
     _description = "Tutorial stock transfer report CSV file"""
 
     @api.model
-    def movelist(self, _doc, moves):
+    def move_report_list(self, _doc, moves):
         """Get moves for which reports should be generated
 
         Moves are grouped by stock transfer and by product, and
