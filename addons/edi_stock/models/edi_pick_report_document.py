@@ -78,10 +78,10 @@ class EdiPickReportDocument(models.AbstractModel):
     def move_report_domain(self, _doc, picks):
         """Get stock move search domain
 
-        The default implementation returns all moves associated with
-        the specified stock transfers.
+        The default implementation returns all completed moves
+        associated with the specified stock transfers.
         """
-        return [('picking_id', 'in', picks.ids)]
+        return [('picking_id', 'in', picks.ids), ('state', '=', 'done')]
 
     @api.model
     def move_report_list(self, _doc, moves):

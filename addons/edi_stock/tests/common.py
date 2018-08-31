@@ -81,7 +81,10 @@ class EdiPickCase(EdiCase):
     def complete_pick(self, pick):
         """Complete stock transfer"""
         pick.action_confirm()
-        for move in pick.move_lines:
+        moves = pick.move_lines.filtered(
+            lambda x: x.state not in ('done', 'cancel')
+        )
+        for move in moves:
             move.quantity_done = move.product_uom_qty
         pick.action_done()
         self.assertEqual(pick.state, 'done')

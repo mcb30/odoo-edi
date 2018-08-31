@@ -75,3 +75,15 @@ class TestTutorial(EdiPickCase):
         self.assertEqual(len(doc.output_ids), 1)
         self.assertAttachment(doc.output_ids, 'in02.csv',
                               pattern=r'IN\d+\.csv')
+
+    def test05_cancelled_move(self):
+        """Cancelled moves"""
+        self.pick_morning.move_lines.filtered(
+            lambda x: x.product_id == self.apple
+        )._action_cancel()
+        self.complete_pick(self.pick_morning)
+        doc = self.create_tutorial()
+        self.assertTrue(doc.action_execute())
+        self.assertEqual(len(doc.output_ids), 1)
+        self.assertAttachment(doc.output_ids, 'in03.csv',
+                              pattern=r'IN\d+\.csv')
