@@ -65,3 +65,13 @@ class TestTutorial(EdiPickCase):
         self.assertEqual(len(doc2.output_ids), 1)
         self.assertAttachment(doc2.output_ids, 'in02.csv',
                               pattern=r'IN\d+\.csv')
+
+    def test04_cancelled_pick(self):
+        """Cancelled picks"""
+        self.pick_morning.action_cancel()
+        self.complete_pick(self.pick_afternoon)
+        doc = self.create_tutorial()
+        self.assertTrue(doc.action_execute())
+        self.assertEqual(len(doc.output_ids), 1)
+        self.assertAttachment(doc.output_ids, 'in02.csv',
+                              pattern=r'IN\d+\.csv')
