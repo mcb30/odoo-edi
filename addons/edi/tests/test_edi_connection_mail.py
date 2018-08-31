@@ -29,7 +29,10 @@ class TestEdiConnectionMail(test_edi_gateway.EdiGatewayConnectionCase):
         sending any e-mails.
         """
         Mail = self.env['mail.mail']
-        return patch.object(Mail.__class__, 'send', autospec=True)
+        return patch.object(
+            Mail.__class__, 'send', autospec=True,
+            side_effect=lambda self, **kwargs: self.write({'state': 'sent'}),
+        )
 
     def assertSent(self, ctx, path_files):
         """Assert that specified test files were sent

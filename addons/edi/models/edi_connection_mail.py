@@ -53,6 +53,7 @@ class EdiConnectionMail(models.AbstractModel):
             ('date', '>=', fields.Datetime.to_string(min_date)),
             ('model', '=', 'edi.gateway.path'),
             ('res_id', '=', path.id),
+            ('state', '=', 'sent'),
         ]).mapped('attachment_ids')
 
         # Send documents
