@@ -103,8 +103,6 @@ class EdiSyncRecord(models.AbstractModel):
         target_vals = {
             self._edi_sync_via: record_vals['name'],
         }
-        for rel in self._edi_relates:
-            target_vals[rel.target] = record_vals[rel.target]
         return target_vals
 
     @api.multi

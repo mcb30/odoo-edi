@@ -59,6 +59,8 @@ class EdiOrderpointRecord(models.Model):
         """Construct ``stock.warehouse.orderpoint`` field value dictionary"""
         orderpoint_vals = super().target_values(record_vals)
         orderpoint_vals.update({
+            'product_id': record_vals['product_id'],
+            'location_id': record_vals['location_id'],
             'product_min_qty': record_vals['product_min_qty'],
             'product_max_qty': record_vals['product_max_qty'],
             'active': True,
