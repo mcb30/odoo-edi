@@ -44,9 +44,22 @@ class TestPartner(EdiCase):
     def test02_partner_title(self):
         """Test partner title document with dummy input attachment"""
         EdiDocument = self.env['edi.document']
+        EdiPartnerTitleRecord = self.env['edi.partner.title.record']
         doc = EdiDocument.create({
-            'name': "Dummy partner test",
+            'name': "Dummy partner title test",
             'doc_type_id': self.doc_type_partner_title.id,
         })
         self.create_input_attachment(doc, 'dummy.txt')
-        doc.action_execute()
+        self.assertTrue(doc.action_prepare())
+        # There is no tutorial model for partner titles, so create a
+        # record manually to exercise all code paths.
+        EdiPartnerTitleRecord.create({
+            'doc_id': doc.id,
+            'name': "Lieutenant",
+            'shortcut': "Lt.",
+        })
+        self.assertTrue(doc.action_execute())
+        titles = doc.mapped('partner_title_ids.title_id')
+        self.assertEqual(len(titles), 1)
+        self.assertEqual(titles.name, "Lieutenant")
+        self.assertEqual(titles.shortcut, "Lt.")
