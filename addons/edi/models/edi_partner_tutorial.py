@@ -34,6 +34,7 @@ class EdiPartnerTutorialRecord(models.Model):
 
     @api.model
     def target_values(self, record_vals):
+        """Construct ``res.partner`` field value dictionary"""
         partner_vals = super().target_values(record_vals)
         partner_vals.update({
             'email': record_vals['email'],
@@ -50,6 +51,7 @@ class EdiPartnerTutorialDocument(models.AbstractModel):
 
     @api.model
     def partner_record_values(self, data):
+        """Construct EDI partner record value dictionaries"""
         reader = csv.reader(data.decode().splitlines())
         return ({
             'name': ref,
