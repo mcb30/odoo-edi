@@ -135,11 +135,25 @@ class EdiRecord(models.AbstractModel):
                 # Update target fields
                 for key, recs in batch.groupby(keygetter):
                     target = targets_by_key.get(key)
-                    if target:
-                        recs.write({rel.target: target.id})
-                    else:
-                        raise UserError(_("Cannot identify %s \"%s\"") %
-                                        (Target._description, key))
+                    if not target:
+                        target = recs.missing_edi_relates(rel, key)
+                    recs.write({rel.target: target.id})
+
+    @api.multi
+    def missing_edi_relates(self, rel, key):
+        """Handle missing EDI lookup relationship targets
+
+        Report (or create) missing EDI lookup relationship targets.
+        Must either raise an exception or return a singleton record in
+        the target model.
+        """
+        func = getattr(self, 'missing_edi_relates_%s' % rel.key, None)
+        if func:
+            return func(rel, key)
+        Record = self.browse()
+        Target = Record[rel.target]
+        raise UserError(_("Cannot identify %s \"%s\"") %
+                        (Target._description, key))
 
     @api.model
     def _add_edi_relates_vlist(self, vlist):
