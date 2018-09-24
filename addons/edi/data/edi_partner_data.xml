@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- Create "EDI Partner Document" sequence -->
+    <record id="partner_sequence_default" model="ir.sequence">
+      <field name="name">EDI Partner Document</field>
+      <field name="prefix">PRT</field>
+      <field name="padding" eval="5"/>
+    </record>
+
+    <!-- EDI partner title record type -->
+    <record id="record_type" model="edi.record.type">
+      <field name="name">Partner Title</field>
+      <field name="model_id" ref="model_edi_partner_title_record"/>
+      <field name="sequence">5</field>
+    </record>
+
+    <!-- EDI partner record type -->
+    <record id="record_type" model="edi.record.type">
+      <field name="name">Partner</field>
+      <field name="model_id" ref="model_edi_partner_record"/>
+      <field name="sequence">6</field>
+    </record>
+
+  </data>
+</odoo>

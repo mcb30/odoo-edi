@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- EDI partner record form view -->
+    <record id="partner_record_form" model="ir.ui.view">
+      <field name="name">edi.partner.record.form</field>
+      <field name="model">edi.partner.record</field>
+      <field name="arch" type="xml">
+	<form string="Partner">
+	  <sheet>
+	    <div class="oe_title">
+	      <label for="name" class="oe_edit_only"/>
+	      <h1>
+		<field name="name"/>
+	      </h1>
+	    </div>
+	    <group>
+	      <group name="basic">
+		<field name="doc_id"/>
+		<field name="partner_id"/>
+		<field name="full_name"/>
+		<field name="title_key"/>
+		<field name="title_id"/>
+	      </group>
+	      <group name="detail"/>
+	    </group>
+	  </sheet>
+	</form>
+      </field>
+    </record>
+
+    <!-- EDI partner record tree view -->
+    <record id="partner_record_tree" model="ir.ui.view">
+      <field name="name">edi.partner.record.tree</field>
+      <field name="model">edi.partner.record</field>
+      <field name="arch" type="xml">
+	<tree string="Partners" default_order="doc_id desc, id">
+	  <field name="doc_id"/>
+	  <field name="name"/>
+	  <field name="partner_id"/>
+	  <field name="full_name"/>
+	  <field name="title_key"/>
+	  <field name="title_id"/>
+	</tree>
+      </field>
+    </record>
+
+    <!-- EDI partner record search filter -->
+    <record id="partner_record_search" model="ir.ui.view">
+      <field name="name">edi.partner.record.search</field>
+      <field name="model">edi.partner.record</field>
+      <field name="arch" type="xml">
+	<search string="Search Partner">
+	  <field name="name" string="Partner"
+		 filter_domain="['|',('name','ilike',self),
+				     ('full_name','ilike',self)]"/>
+	  <field name="doc_id"/>
+	  <field name="partner_id"/>
+	  <field name="full_name"/>
+	  <group>
+	    <filter string="Document" name="by_doc_id" domain="[]"
+		    context="{'group_by':'doc_id'}"/>
+	    <filter string="Partner" name="by_partner_id"
+		    domain="[]" context="{'group_by':'partner_id'}"/>
+	  </group>
+	</search>
+      </field>
+    </record>
+
+    <!-- EDI partner record action window -->
+    <record id="partner_record_action" model="ir.actions.act_window">
+      <field name="name">Partners</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.partner.record</field>
+      <field name="view_type">form</field>
+      <field name="view_id" ref="partner_record_tree"/>
+      <field name="search_view_id" ref="partner_record_search"/>
+      <field name="context">{'create': False}</field>
+    </record>
+
+    <!-- EDI partner records field -->
+    <record id="partner_document_form" model="ir.ui.view">
+      <field name="name">edi.partner.document.form</field>
+      <field name="model">edi.document</field>
+      <field name="inherit_id" ref="edi.document_form"/>
+      <field name="arch" type="xml">
+	<xpath expr="//notebook[@name='records']" position="inside">
+	  <page name="partner" string="Partners"
+		attrs="{'invisible':['!',('rec_type_names','ilike',
+		       '/edi.partner.record/')]}">
+	    <field name="partner_ids" readonly="1">
+	      <tree>
+		<field name="name"/>
+		<field name="partner_id"/>
+		<field name="full_name"/>
+		<field name="title_key"/>
+		<field name="title_id"/>
+	      </tree>
+	    </field>
+	  </page>
+	</xpath>
+      </field>
+    </record>
+
+  </data>
+</odoo>
