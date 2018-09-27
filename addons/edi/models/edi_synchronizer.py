@@ -69,6 +69,13 @@ class EdiSyncRecord(models.AbstractModel):
     model when identifying the corresponding target record.
     """
 
+    _edi_deactivate_missing = False
+    """EDI synchronizer deactivation setting
+    
+    When true, all records in the target model that are missing in the 
+    imported file will be marked as inactive.
+    """
+
     _name = 'edi.record.sync'
     _inherit = 'edi.record'
     _description = "EDI Synchronizer Record"
@@ -169,6 +176,17 @@ class EdiSyncRecord(models.AbstractModel):
                 if target:
                     record_vals[self._edi_sync_target] = target.id
                 self.create(record_vals)
+
+            # Force active=False on missing fields if flag is set
+            if self._edi_deactivate_missing:
+                Target = self.browse()[self._edi_sync_target].with_context(tracking_disable=True)
+                records_to_deactivate = Target.search([(self._edi_sync_via, 'not in', [x['name'] for x in vbatch])])
+                for record in records_to_deactivate:
+                    record_vals = record.copy_data()[0]
+                    record_vals[self._edi_sync_target] = record.id
+                    record_vals['doc_id'] = doc.id
+                    record_vals['active'] = False
+                    self.create(record_vals)
 
     @api.multi
     def execute(self):
