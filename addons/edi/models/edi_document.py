@@ -102,12 +102,14 @@ class EdiDocumentType(models.Model):
 
     @api.multi
     def autoemit(self):
-        """Create, prepare, and execute a single document with no inputs"""
-        self.ensure_one()
+        """Create, prepare, and execute documents with no inputs"""
         Document = self.env['edi.document']
-        doc = Document.create({'doc_type_id': self.id})
-        doc.action_execute()
-        return doc
+        docs = Document.browse()
+        for doc_type in self:
+            doc = Document.create({'doc_type_id': doc_type.id})
+            doc.action_execute()
+            docs += doc
+        return docs
 
 
 class EdiDocument(models.Model):
