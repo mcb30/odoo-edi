@@ -95,3 +95,20 @@ class TestTutorial(EdiPickCase):
         self.assertEqual(len(doc.output_ids), 1)
         self.assertAttachment(doc.output_ids, 'in01.csv',
                               pattern=r'IN\d+\.csv')
+
+    def test07_trigger_autoemit(self):
+        """Autoemit functionality triggered on pick completion"""
+        self.pick_type_in.edi_pick_report_autoemit = True
+        self.complete_pick(self.pick_morning)
+        self.complete_pick(self.pick_afternoon)
+        doc1 = self.pick_morning.edi_pick_report_id
+        doc2 = self.pick_afternoon.edi_pick_report_id
+        self.assertTrue(doc1)
+        self.assertTrue(doc2)
+        self.assertNotEqual(doc1, doc2)
+        self.assertEqual(len(doc1.output_ids), 1)
+        self.assertEqual(len(doc2.output_ids), 1)
+        self.assertAttachment(doc1.output_ids, 'in01.csv',
+                              pattern=r'IN\d+\.csv')
+        self.assertAttachment(doc2.output_ids, 'in02.csv',
+                              pattern=r'IN\d+\.csv')

@@ -32,6 +32,7 @@ Key Features
         'views/edi_pick_request_tutorial_views.xml',
         'views/edi_quant_report_views.xml',
         'views/edi_quant_report_tutorial_views.xml',
+        'views/stock_picking_type.xml',
         'data/edi_orderpoint_data.xml',
         'data/edi_orderpoint_tutorial_data.xml',
         'data/edi_move_tracker_data.xml',
