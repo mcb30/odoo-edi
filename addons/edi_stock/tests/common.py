@@ -78,16 +78,17 @@ class EdiPickCase(EdiCase):
         })
         return pick
 
-    def complete_pick(self, pick):
-        """Complete stock transfer"""
-        pick.action_confirm()
-        moves = pick.move_lines.filtered(
+    def complete_picks(self, picks):
+        """Complete stock transfers"""
+        picks.action_confirm()
+        moves = picks.mapped('move_lines').filtered(
             lambda x: x.state not in ('done', 'cancel')
         )
         for move in moves:
             move.quantity_done = move.product_uom_qty
-        pick.action_done()
-        self.assertEqual(pick.state, 'done')
+        picks.action_done()
+        for pick in picks:
+            self.assertEqual(pick.state, 'done')
 
     @classmethod
     def create_move(cls, pick, tracker, product, qty, **kwargs):

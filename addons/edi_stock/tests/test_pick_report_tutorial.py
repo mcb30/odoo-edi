@@ -31,7 +31,7 @@ class TestTutorial(EdiPickCase):
 
     def test01_basic(self):
         """Basic document execution"""
-        self.complete_pick(self.pick_morning)
+        self.complete_picks(self.pick_morning)
         doc = self.create_tutorial()
         self.assertTrue(doc.action_prepare())
         self.assertEqual(len(doc.output_ids), 0)
@@ -42,8 +42,8 @@ class TestTutorial(EdiPickCase):
 
     def test02_combined(self):
         """Multiple pickings"""
-        self.complete_pick(self.pick_morning)
-        self.complete_pick(self.pick_afternoon)
+        self.complete_picks(self.pick_morning)
+        self.complete_picks(self.pick_afternoon)
         doc = self.create_tutorial()
         self.assertTrue(doc.action_execute())
         self.assertEqual(len(doc.output_ids), 2)
@@ -53,13 +53,13 @@ class TestTutorial(EdiPickCase):
 
     def test03_multiple(self):
         """Multiple reports"""
-        self.complete_pick(self.pick_morning)
+        self.complete_picks(self.pick_morning)
         doc1 = self.create_tutorial()
         self.assertTrue(doc1.action_execute())
         self.assertEqual(len(doc1.output_ids), 1)
         self.assertAttachment(doc1.output_ids, 'in01.csv',
                               pattern=r'IN\d+\.csv')
-        self.complete_pick(self.pick_afternoon)
+        self.complete_picks(self.pick_afternoon)
         doc2 = self.create_tutorial()
         self.assertTrue(doc2.action_execute())
         self.assertEqual(len(doc2.output_ids), 1)
@@ -69,7 +69,7 @@ class TestTutorial(EdiPickCase):
     def test04_cancelled_pick(self):
         """Cancelled picks"""
         self.pick_morning.action_cancel()
-        self.complete_pick(self.pick_afternoon)
+        self.complete_picks(self.pick_afternoon)
         doc = self.create_tutorial()
         self.assertTrue(doc.action_execute())
         self.assertEqual(len(doc.output_ids), 1)
@@ -81,7 +81,7 @@ class TestTutorial(EdiPickCase):
         self.pick_morning.move_lines.filtered(
             lambda x: x.product_id == self.apple
         )._action_cancel()
-        self.complete_pick(self.pick_morning)
+        self.complete_picks(self.pick_morning)
         doc = self.create_tutorial()
         self.assertTrue(doc.action_execute())
         self.assertEqual(len(doc.output_ids), 1)
@@ -90,7 +90,7 @@ class TestTutorial(EdiPickCase):
 
     def test06_autoemit(self):
         """Autoemit functionality"""
-        self.complete_pick(self.pick_morning)
+        self.complete_picks(self.pick_morning)
         doc = self.doc_type_tutorial.autoemit()
         self.assertEqual(len(doc.output_ids), 1)
         self.assertAttachment(doc.output_ids, 'in01.csv',
@@ -99,8 +99,8 @@ class TestTutorial(EdiPickCase):
     def test07_trigger_autoemit(self):
         """Autoemit functionality triggered on pick completion"""
         self.pick_type_in.edi_pick_report_autoemit = True
-        self.complete_pick(self.pick_morning)
-        self.complete_pick(self.pick_afternoon)
+        self.complete_picks(self.pick_morning)
+        self.complete_picks(self.pick_afternoon)
         doc1 = self.pick_morning.edi_pick_report_id
         doc2 = self.pick_afternoon.edi_pick_report_id
         self.assertTrue(doc1)

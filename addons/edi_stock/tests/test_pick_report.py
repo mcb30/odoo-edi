@@ -52,7 +52,7 @@ class TestPickReport(EdiPickCase):
         EdiDocument = self.env['edi.document']
         EdiPickReport = self.env['edi.pick.report.record']
         EdiMoveReport = self.env['edi.move.report.record']
-        self.complete_pick(self.pick_in)
+        self.complete_picks(self.pick_in)
         doc = EdiDocument.create({
             'name': "Dummy stock transfer report test",
             'doc_type_id': self.doc_type_pick_report.id,
@@ -72,7 +72,7 @@ class TestPickReport(EdiPickCase):
     def test03_duplicate(self):
         """Test attempt to create duplicate pick report"""
         EdiDocument = self.env['edi.document']
-        self.complete_pick(self.pick_in)
+        self.complete_picks(self.pick_in)
         doc1 = EdiDocument.create({
             'name': "Dummy stock transfer report test 1",
             'doc_type_id': self.doc_type_pick_report.id,
