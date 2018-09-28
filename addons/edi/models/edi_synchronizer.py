@@ -1,7 +1,7 @@
 """EDI synchronizer documents"""
 
 import logging
-from odoo import api, models
+from odoo import api, fields, models
 from odoo.tools.translate import _
 from odoo.osv import expression
 from ..tools import batched, Comparator
@@ -69,6 +69,18 @@ class EdiSyncRecord(models.AbstractModel):
     model when identifying the corresponding target record.
     """
 
+    _edi_deactivate_missing = False
+    """EDI synchronizer deactivation setting
+    
+    When true, all records in the target model that are missing in the 
+    imported file will be marked as inactive.
+    """
+
+    _target_fields = {}
+    """
+    Dict to contain field mappings between source and target records
+    """
+
     _name = 'edi.record.sync'
     _inherit = 'edi.record'
     _description = "EDI Synchronizer Record"
@@ -78,6 +90,8 @@ class EdiSyncRecord(models.AbstractModel):
          "Each synchronizer key may appear at most once per document")
     ]
 
+    is_active = fields.Boolean(string="Is the target record active", required=False,
+                               readonly=False, index=False)
     @api.model
     def targets_by_key(self, vlist):
         """Construct lookup cache of target records indexed by key field"""
@@ -103,7 +117,39 @@ class EdiSyncRecord(models.AbstractModel):
         target_vals = {
             self._edi_sync_via: record_vals['name'],
         }
+        Target = self.browse()[self._edi_sync_target].with_context(tracking_disable=True)
+        if 'active' in Target._fields:
+            if 'is_active' in record_vals:
+                target_vals['active'] = record_vals['is_active']
+            else:
+                target_vals['active'] = True
+        for t, s in self._target_fields.items():
+            if s in record_vals:
+                target_vals.update({
+                    t: record_vals[s]
+                })
         return target_vals
+
+    @api.model
+    def source_values(self, target):
+        """Construct source model field value dictionary
+
+        Must return a dictionary that can be passed to
+        :meth:`~odoo.models.Model.create` or
+        :meth:`~odoo.models.Model.write` in order to create or update
+        a record within the EDI sync model.
+        """
+        target_vals = target.copy_data()[0]
+        source_vals = {
+            'name': target_vals[self._edi_sync_via],
+            self._edi_sync_target: target.id
+        }
+        if 'active' in target._fields:
+            source_vals['is_active'] = target.active
+        for t, s in self._target_fields.items():
+            if t in target_vals:
+                source_vals[s] = target_vals[t]
+        return source_vals
 
     @api.multi
     def _record_values(self):
@@ -141,6 +187,9 @@ class EdiSyncRecord(models.AbstractModel):
         # Construct comparator for target model
         comparator = Comparator(self.browse()[self._edi_sync_target])
 
+        # List of names to populate
+        matched_names = []
+
         # Process records in batches for efficiency
         for r, vbatch in batched(vlist, self.BATCH_SIZE):
 
@@ -156,6 +205,10 @@ class EdiSyncRecord(models.AbstractModel):
             # Create EDI records
             for record_vals in vbatch:
 
+                # If we will deactivate missing records, we need a reference of names to compare with
+                if self._edi_deactivate_missing:
+                    matched_names.append(record_vals['name'])
+
                 # Omit EDI records that would not change the target record
                 target = targets_by_key.get(record_vals['name'])
                 if target:
@@ -168,6 +221,17 @@ class EdiSyncRecord(models.AbstractModel):
                 record_vals['doc_id'] = doc.id
                 if target:
                     record_vals[self._edi_sync_target] = target.id
+                self.create(record_vals)
+
+        # Force active=False on missing fields if flag is set
+        if self._edi_deactivate_missing:
+            Target = self.browse()[self._edi_sync_target].with_context(tracking_disable=True)
+            all_records = Target.search([])
+            records_to_deactivate = all_records.filtered(lambda x: x.name not in matched_names)
+            for record in records_to_deactivate:
+                record_vals = self.source_values(record)
+                record_vals['doc_id'] = doc.id
+                record_vals['is_active'] = False
                 self.create(record_vals)
 
     @api.multi
