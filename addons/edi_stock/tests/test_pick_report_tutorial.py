@@ -87,3 +87,11 @@ class TestTutorial(EdiPickCase):
         self.assertEqual(len(doc.output_ids), 1)
         self.assertAttachment(doc.output_ids, 'in03.csv',
                               pattern=r'IN\d+\.csv')
+
+    def test06_autoemit(self):
+        """Autoemit functionality"""
+        self.complete_pick(self.pick_morning)
+        doc = self.doc_type_tutorial.autoemit()
+        self.assertEqual(len(doc.output_ids), 1)
+        self.assertAttachment(doc.output_ids, 'in01.csv',
+                              pattern=r'IN\d+\.csv')
