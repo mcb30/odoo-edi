@@ -3,6 +3,17 @@
 from odoo import api, fields, models
 
 
+class EdiDocument(models.Model):
+    """Extend ``edi.document`` to include EDI product records"""
+
+    _inherit = 'edi.document'
+
+    product_ids = fields.One2many('edi.product.record', 'doc_id',
+                                  string="Products")
+    inactive_product_ids = fields.One2many('edi.inactive.product.record',
+                                           'doc_id', string="Inactive Products")
+
+
 class EdiProductRecord(models.Model):
     """EDI product record
 
@@ -55,3 +66,13 @@ class EdiProductRecord(models.Model):
             'name': record_vals['description'],
         })
         return product_vals
+
+
+class EdiInactiveProductRecord(models.Model):
+    """EDI inactive product record"""
+
+    _name = 'edi.inactive.product.record'
+    _inherit = 'edi.record.deactivator'
+    _description = "Inactive Product"
+
+    target_id = fields.Many2one('product.product', string="Product")

@@ -16,7 +16,8 @@
       <field name="sequence" eval="900"/>
       <field name="sequence_id" ref="sequence_default"/>
       <field name="rec_type_ids"
-	     eval="[(6, False, [ref('tutorial_record_type')])]"/>
+	     eval="[(6, False, [ref('tutorial_record_type'),
+				ref('inactive_record_type')])]"/>
     </record>
 
     <!-- EDI product tutorial XML-RPC gateway path -->

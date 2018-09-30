@@ -16,5 +16,12 @@
       <field name="sequence">10</field>
     </record>
 
+    <!-- EDI inactive product record type -->
+    <record id="inactive_record_type" model="edi.record.type">
+      <field name="name">Inactive Product</field>
+      <field name="model_id" ref="model_edi_inactive_product_record"/>
+      <field name="sequence">11</field>
+    </record>
+
   </data>
 </odoo>

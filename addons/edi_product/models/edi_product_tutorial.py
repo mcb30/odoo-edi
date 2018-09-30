@@ -25,6 +25,8 @@ class EdiDocument(models.Model):
 class EdiProductTutorialRecord(models.Model):
     """EDI product tutorial record"""
 
+    _edi_sync_deactivator = 'edi.inactive.product.record'
+
     _name = 'edi.product.tutorial.record'
     _inherit = 'edi.product.record'
     _description = "Product"
@@ -38,6 +40,7 @@ class EdiProductTutorialRecord(models.Model):
 
     @api.model
     def target_values(self, record_vals):
+        """Construct ``product.product`` field value dictionary"""
         product_vals = super().target_values(record_vals)
         product_vals.update({
             'barcode': record_vals['name'],
