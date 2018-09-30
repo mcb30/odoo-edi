@@ -32,7 +32,7 @@ class EdiPartnerRecord(models.Model):
     """
 
     _name = 'edi.partner.record'
-    _inherit = 'edi.record.sync'
+    _inherit = 'edi.record.sync.active'
     _description = "Partner"
 
     _edi_sync_target = 'partner_id'
@@ -56,7 +56,6 @@ class EdiPartnerRecord(models.Model):
         partner_vals.update({
             'name': record_vals['full_name'],
             'title': record_vals['title_id'],
-            'active': True,
         })
         return partner_vals
 

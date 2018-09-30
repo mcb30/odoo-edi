@@ -23,7 +23,7 @@ class EdiMoveTrackerRecord(models.Model):
     """
 
     _name = 'edi.move.tracker.record'
-    _inherit = 'edi.record.sync'
+    _inherit = 'edi.record.sync.active'
     _description = "Stock Move Tracker"
 
     _edi_sync_target = 'tracker_id'
@@ -31,12 +31,3 @@ class EdiMoveTrackerRecord(models.Model):
     tracker_id = fields.Many2one('edi.move.tracker', string="Tracker",
                                  required=False, readonly=True, index=True,
                                  auto_join=True)
-
-    @api.model
-    def target_values(self, record_vals):
-        """Construct ``edi.move.tracker`` field value dictionary"""
-        tracker_vals = super().target_values(record_vals)
-        tracker_vals.update({
-            'active': True,
-        })
-        return tracker_vals

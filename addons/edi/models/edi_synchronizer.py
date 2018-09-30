@@ -1,7 +1,7 @@
 """EDI synchronizer documents"""
 
 import logging
-from odoo import api, models
+from odoo import api, fields, models
 from odoo.tools.translate import _
 from odoo.osv import expression
 from ..tools import batched, Comparator
@@ -138,8 +138,12 @@ class EdiSyncRecord(models.AbstractModel):
         from the document.
         """
 
+        # Get target model
+        Target = self.browse()[self._edi_sync_target]
+        matched_ids = set()
+
         # Construct comparator for target model
-        comparator = Comparator(self.browse()[self._edi_sync_target])
+        comparator = Comparator(Target)
 
         # Process records in batches for efficiency
         for r, vbatch in batched(vlist, self.BATCH_SIZE):
@@ -152,6 +156,9 @@ class EdiSyncRecord(models.AbstractModel):
 
             # Look up existing target records
             targets_by_key = self.targets_by_key(vbatch)
+
+            # Add to list of matched target record IDs
+            matched_ids |= set(x.id for x in targets_by_key.values())
 
             # Create EDI records
             for record_vals in vbatch:
@@ -169,6 +176,14 @@ class EdiSyncRecord(models.AbstractModel):
                 if target:
                     record_vals[self._edi_sync_target] = target.id
                 self.create(record_vals)
+
+        # Process all matched target records
+        self.matched(doc, Target.browse(matched_ids))
+
+    @api.model
+    def matched(self, _doc, _targets):
+        """Process matched target records"""
+        pass
 
     @api.multi
     def execute(self):
@@ -209,3 +224,81 @@ class EdiSyncRecord(models.AbstractModel):
             for rec in batch:
                 target_vals = rec.target_values(rec._record_values())
                 rec[target] = Target.create(target_vals)
+
+
+class EdiDeactivatorRecord(models.AbstractModel):
+    """EDI deactivator record
+
+    This is the base model for EDI records that simply deactivate
+    records in a target model.  Each row represents an Odoo record
+    that will be deactivated when the document is executed.
+
+    Derived models must override the comodel name for ``target_id``.
+    """
+
+    _edi_deactivator_name = 'name'
+    """EDI deactivator target name field
+
+    This is the name of the field within the target Odoo model used to
+    provide a name for the corresponding EDI record.  Defaults to
+    ``name``.
+    """
+
+    _name = 'edi.record.deactivator'
+    _inherit = 'edi.record'
+    _description = "EDI Deactivator Record"
+
+    target_id = fields.Many2one('_unknown', string="Target", required=True,
+                                readonly=True, index=True)
+
+    @api.model
+    def prepare(self, doc, targets):
+        """Prepare records
+
+        Accepts an EDI document ``doc`` and a list of target records
+        to be deactivated.
+        """
+        for target in targets:
+            self.create({
+                'doc_id': doc.id,
+                'target_id': target.id,
+                'name': target[self._edi_deactivator_name],
+            })
+
+    @api.multi
+    def execute(self):
+        """Execute records"""
+        super().execute()
+        self.mapped('target_id').write({'active': False})
+
+
+class EdiActiveSyncRecord(models.AbstractModel):
+    """EDI active synchronizer record
+
+    This is an extension of an EDI synchronizer record to handle the
+    active status of a target record.
+    """
+
+    _edi_sync_deactivator = None
+    """EDI record model for target deactivation records"""
+
+    _name = 'edi.record.sync.active'
+    _inherit = 'edi.record.sync'
+    _description = "EDI Active Synchronizer Record"
+
+    @api.model
+    def target_values(self, record_vals):
+        """Construct target model field value dictionary"""
+        target_vals = super().target_values(record_vals)
+        target_vals.update({
+            'active': True,
+        })
+        return target_vals
+
+    @api.model
+    def matched(self, doc, targets):
+        """Process matched target records"""
+        if self._edi_sync_deactivator is not None:
+            Deactivator = self.env[self._edi_sync_deactivator]
+            unmatched = (targets.search([]) - targets)
+            Deactivator.prepare(doc, unmatched)

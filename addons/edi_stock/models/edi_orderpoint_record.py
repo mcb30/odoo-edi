@@ -30,7 +30,7 @@ class EdiOrderpointRecord(models.Model):
     """
 
     _name = 'edi.orderpoint.record'
-    _inherit = 'edi.record.sync'
+    _inherit = 'edi.record.sync.active'
     _description = "Minimum Inventory Rule"
 
     _edi_sync_target = 'orderpoint_id'
@@ -63,6 +63,5 @@ class EdiOrderpointRecord(models.Model):
             'location_id': record_vals['location_id'],
             'product_min_qty': record_vals['product_min_qty'],
             'product_max_qty': record_vals['product_max_qty'],
-            'active': True,
         })
         return orderpoint_vals

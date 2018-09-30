@@ -21,7 +21,7 @@ class EdiProductRecord(models.Model):
     """
 
     _name = 'edi.product.record'
-    _inherit = 'edi.record.sync'
+    _inherit = 'edi.record.sync.active'
     _description = "Product"
 
     _edi_sync_target = 'product_id'
@@ -53,6 +53,5 @@ class EdiProductRecord(models.Model):
         product_vals = super().target_values(record_vals)
         product_vals.update({
             'name': record_vals['description'],
-            'active': True,
         })
         return product_vals
