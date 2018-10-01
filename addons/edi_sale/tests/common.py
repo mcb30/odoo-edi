@@ -26,5 +26,4 @@ class EdiSaleCase(EdiCase):
             'partner_invoice_id': customer.id,
             'partner_shipping_id': customer.id,
             'pricelist_id': cls.env.ref('product.list0').id,
-            'picking_policy': 'direct',
         })
