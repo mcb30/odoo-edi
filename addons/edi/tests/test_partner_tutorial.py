@@ -23,17 +23,18 @@ class TestPartnerTutorial(EdiCase):
         doc = self.create_tutorial('friends.csv')
         self.assertTrue(doc.action_execute())
         partners = doc.mapped('partner_tutorial_ids.partner_id')
-        self.assertEqual(len(partners), 3)
+        self.assertEqual(len(partners), 4)
         partners_by_ref = {x.ref: x for x in partners}
         self.assertEqual(partners_by_ref['A'].name, 'Alice')
         self.assertEqual(partners_by_ref['B'].email, 'bob@example.com')
         self.assertEqual(partners_by_ref['E'].title.name, 'Ms')
+        self.assertFalse(partners_by_ref['U'].title)
 
     def test02_identical(self):
         """Document and subsequent identical document"""
         doc1 = self.create_tutorial('friends.csv')
         self.assertTrue(doc1.action_execute())
-        self.assertEqual(len(doc1.partner_tutorial_ids), 3)
+        self.assertEqual(len(doc1.partner_tutorial_ids), 4)
         doc2 = self.create_tutorial('friends.csv')
         self.assertTrue(doc2.action_execute())
         self.assertEqual(len(doc2.partner_tutorial_ids), 0)
@@ -43,7 +44,7 @@ class TestPartnerTutorial(EdiCase):
         doc1 = self.create_tutorial('friends.csv')
         self.assertTrue(doc1.action_execute())
         partners = doc1.mapped('partner_tutorial_ids.partner_id')
-        self.assertEqual(len(partners), 3)
+        self.assertEqual(len(partners), 4)
         partners.filtered(lambda x: x.ref == 'E').email = 'eve@example.org'
         doc2 = self.create_tutorial('friends.csv')
         self.assertTrue(doc2.action_execute())
