@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- Create "EDI Sale Request Document" sequence -->
+    <record id="pick_request_sequence_default" model="ir.sequence">
+      <field name="name">EDI Sale Request Document</field>
+      <field name="prefix">REQ</field>
+      <field name="padding" eval="5"/>
+    </record>
+
+    <!-- EDI sale request record type -->
+    <record id="sale_request_record_type" model="edi.record.type">
+      <field name="name">Sale Request</field>
+      <field name="model_id" ref="model_edi_sale_request_record"/>
+      <field name="sequence">40</field>
+    </record>
+
+    <!-- EDI stock move request record type -->
+    <record id="sale_line_request_record_type" model="edi.record.type">
+      <field name="name">Sale Line Request</field>
+      <field name="model_id" ref="model_edi_sale_line_request_record"/>
+      <field name="sequence">45</field>
+    </record>
+
+  </data>
+</odoo>
