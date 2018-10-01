@@ -7,6 +7,27 @@ class EdiSaleCase(EdiCase):
     """Base test case for EDI sale order models"""
 
     @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # Create test products
+        Product = cls.env['product.product']
+        cls.apple = Product.create({
+            'default_code': 'APPLE',
+            'name': 'Apple',
+            'type': 'product',
+        })
+        cls.banana = Product.create({
+            'default_code': 'BANANA',
+            'name': 'Banana',
+            'type': 'product',
+        })
+        cls.cherry = Product.create({
+            'default_code': 'CHERRY',
+            'name': 'Cherry',
+            'type': 'product',
+        })
+
+    @classmethod
     def create_sale_line(cls, sale, product, qty, **kwargs):
         """Create a sale order line and attach it a sale order"""
         create_values = {
