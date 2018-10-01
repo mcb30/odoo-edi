@@ -53,9 +53,9 @@
     <record id="tutorial_document_form" model="ir.ui.view">
       <field name="name">edi.product.tutorial.document.form</field>
       <field name="model">edi.document</field>
-      <field name="inherit_id" ref="edi.document_form"/>
+      <field name="inherit_id" ref="edi_product.product_document_form"/>
       <field name="arch" type="xml">
-	<xpath expr="//notebook[@name='records']" position="inside">
+	<xpath expr="//page[@name='product']" position="after">
 	  <page name="product_tutorial" string="Products"
 		attrs="{'invisible':['!',('rec_type_names','ilike',
 					  '/edi.product.tutorial.record/')]}">
