@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- EDI sale document associated sale orders field -->
+    <record id="sale_document_form" model="ir.ui.view">
+      <field name="name">edi.sale.document.form</field>
+      <field name="model">edi.document</field>
+      <field name="inherit_id" ref="edi.document_form"/>
+      <field name="arch" type="xml">
+	<xpath expr="//group[@name='info']" position="after">
+	  <field name="sale_ids" readonly="1" mode="kanban"
+		 attrs="{'invisible':[('sale_ids','=',[])]}"/>
+	</xpath>
+      </field>
+    </record>
+
+  </data>
+</odoo>
