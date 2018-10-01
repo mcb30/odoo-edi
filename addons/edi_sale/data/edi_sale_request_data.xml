@@ -3,7 +3,7 @@
   <data>
 
     <!-- Create "EDI Sale Request Document" sequence -->
-    <record id="pick_request_sequence_default" model="ir.sequence">
+    <record id="sale_request_sequence_default" model="ir.sequence">
       <field name="name">EDI Sale Request Document</field>
       <field name="prefix">REQ</field>
       <field name="padding" eval="5"/>

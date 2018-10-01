@@ -19,7 +19,7 @@ class EdiSaleRequestRecord(models.Model):
 
     _name = 'edi.sale.request.record'
     _inherit = 'edi.record.sync'
-    _description = "Stock Transfer Request"
+    _description = "Sale Request"
 
     _edi_sync_target = 'sale_id'
     _edi_sync_via = 'name'

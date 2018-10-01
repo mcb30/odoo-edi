@@ -21,7 +21,7 @@ class EdiSaleRequestDocument(models.AbstractModel):
 
     _name = 'edi.sale.request.document'
     _inherit = 'edi.document.model'
-    _description = "Stock Transfer Requests"
+    _description = "Sale Requests"
 
     @api.model
     def sale_request_record_model(self, doc,

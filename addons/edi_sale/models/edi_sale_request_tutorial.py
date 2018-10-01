@@ -42,7 +42,8 @@ class EdiDocument(models.Model):
     def _compute_order_ids(self):
         super()._compute_order_ids()
         for doc in self:
-            doc.order_ids += doc.mapped('sale_request_tutorial_ids.order_id')
+            # TODO: fix the varied use of names 'sale' and 'order' to be consistent.
+            doc.order_ids += doc.mapped('sale_request_tutorial_ids.sale_id')
 
 
 class EdiSaleCustomerTutorialRecord(models.Model):
@@ -88,7 +89,7 @@ class EdiSaleLineRequestTutorialRecord(models.Model):
 
     _name = 'edi.sale.line.request.tutorial.record'
     _inherit = 'edi.sale.line.request.record'
-    _description = "Stock Move Request"
+    _description = "Sale Line Request"
 
     order_key = fields.Char(edi_relates_domain=[('state', 'not in',
                                                  ('done', 'cancel'))])
@@ -111,7 +112,7 @@ class EdiSaleRequestTutorialDocument(models.AbstractModel):
 
         pricelist = self.env.ref('product.list0')
 
-        # Create picking for each input attachment
+        # Create sales for each input attachment
         for fname, data in doc.inputs():
             # Create sale request records and construct list of orders
             customer_orders = OrderedSet()
@@ -129,13 +130,17 @@ class EdiSaleRequestTutorialDocument(models.AbstractModel):
                     'qty': float(qty),
                 })
 
+            print(customer_orders)
             for order, customer in customer_orders:
+                # TODO: build list of dicts then pass to the two prepares.
+                print(order, customer)
                 EdiSaleCustomerTutorialRecord.prepare(doc, ({
                     'name': customer,
+                    'title_key': 'Miss',  # TODO: Move title to file. Currently cannot create partner with no title.
                     'full_name': customer,
-                }))
+                },))
                 EdiSaleRequestRecord.prepare(doc, ({
                     'name': order,
                     'customer_key': customer,
                     'pricelist_id': pricelist.id,
-                }))
+                },))

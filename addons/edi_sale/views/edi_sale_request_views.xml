@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- EDI sale request record form view -->
+    <record id="sale_request_record_form" model="ir.ui.view">
+      <field name="name">edi.sale.request.record.form</field>
+      <field name="model">edi.sale.request.record</field>
+      <field name="arch" type="xml">
+	<form string="Sale Request">
+	  <sheet>
+	    <div class="oe_title">
+	      <label for="name" class="oe_edit_only"/>
+	      <h1>
+		<field name="name"/>
+	      </h1>
+	    </div>
+	    <group>
+	      <group name="basic">
+		<field name="doc_id"/>
+		<field name="sale_id"/>
+		<field name="pricelist_id"/>
+		<field name="customer_key"/>
+		<field name="customer_id"/>
+	      </group>
+	    </group>
+	  </sheet>
+	</form>
+      </field>
+    </record>
+
+    <!-- EDI sale request record tree view -->
+    <record id="sale_request_record_tree" model="ir.ui.view">
+      <field name="name">edi.sale.request.record.tree</field>
+      <field name="model">edi.sale.request.record</field>
+      <field name="arch" type="xml">
+	<tree string="Sale Requests" default_order="doc_id desc, id">
+	  <field name="doc_id"/>
+	  <field name="name"/>
+	  <field name="sale_id"/>
+	  <field name="customer_id"/>
+	</tree>
+      </field>
+    </record>
+
+    <!-- EDI sale request record search filter -->
+    <record id="sale_request_record_search" model="ir.ui.view">
+      <field name="name">edi.sale.request.record.search</field>
+      <field name="model">edi.sale.request.record</field>
+      <field name="arch" type="xml">
+	<search string="Search Sale Request">
+	  <field name="name"/>
+	  <field name="doc_id"/>
+	  <field name="sale_id"/>
+	  <field name="customer_id"/>
+	  <group>
+	    <filter string="Document" name="by_doc_id" domain="[]"
+		    context="{'group_by':'doc_id'}"/>
+	    <filter string="Sale" name="by_sale_id"
+		    domain="[]" context="{'group_by':'sale_id'}"/>
+	    <filter string="Customer" name="by_customer_id"
+		    domain="[]" context="{'group_by':'customer_id'}"/>
+	  </group>
+	</search>
+      </field>
+    </record>
+
+    <!-- EDI sale request record action window -->
+    <record id="sale_request_record_action" model="ir.actions.act_window">
+      <field name="name">Sale Requests</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.sale.request.record</field>
+      <field name="view_type">form</field>
+      <field name="view_id" ref="sale_request_record_tree"/>
+      <field name="search_view_id" ref="sale_request_record_search"/>
+      <field name="context">{'create': False}</field>
+    </record>
+
+  </data>
+</odoo>
