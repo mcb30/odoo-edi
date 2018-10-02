@@ -11,10 +11,7 @@ columns:
 """
 
 import csv
-import re
 from odoo import api, fields, models
-from odoo.exceptions import UserError
-from odoo.tools.translate import _
 from odoo.tools.misc import OrderedSet
 
 
@@ -86,7 +83,7 @@ class EdiSaleRequestTutorialDocument(models.AbstractModel):
         EdiPartnerRecord = self.partner_record_model(doc)
 
         # Create sales for each input attachment
-        for fname, data in doc.inputs():
+        for _fname, data in doc.inputs():
 
             # Create sale line request records and construct list of orders
             customers = OrderedSet()
