@@ -49,7 +49,7 @@
     <!-- EDI sale request tutorial record action window -->
     <record id="sale_request_tutorial_record_action"
 	    model="ir.actions.act_window">
-      <field name="name">Sale Requests</field>
+      <field name="name">Sale Order Requests</field>
       <field name="type">ir.actions.act_window</field>
       <field name="res_model">edi.sale.request.tutorial.record</field>
       <field name="view_type">form</field>
@@ -61,7 +61,7 @@
     <!-- EDI sale line request tutorial record action window -->
     <record id="sale_line_request_tutorial_record_action"
 	    model="ir.actions.act_window">
-      <field name="name">Sale line Requests</field>
+      <field name="name">Sale Line Requests</field>
       <field name="type">ir.actions.act_window</field>
       <field name="res_model">edi.sale.line.request.tutorial.record</field>
       <field name="view_type">form</field>
@@ -73,10 +73,10 @@
     <!-- EDI sale request tutorial record menu items -->
     <menuitem id="sale_request_tutorial_record_menu"
 	      action="sale_request_tutorial_record_action"
-	      parent="edi.tutorial_menu" sequence="40"/>
+	      parent="edi.tutorial_menu" sequence="80"/>
     <menuitem id="sale_line_request_tutorial_record_menu"
 	      action="sale_line_request_tutorial_record_action"
-	      parent="edi.tutorial_menu" sequence="45"/>
+	      parent="edi.tutorial_menu" sequence="85"/>
 
     <!-- EDI sale request tutorial records field -->
     <record id="sale_request_tutorial_document_form" model="ir.ui.view">

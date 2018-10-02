@@ -56,8 +56,8 @@
       <field name="name">edi.sale.line.request.record.search</field>
       <field name="model">edi.sale.line.request.record</field>
       <field name="arch" type="xml">
-	<search string="Search Sale line Request">
-	  <field name="name" string="Sale line Request"
+	<search string="Search Sale Line Request">
+	  <field name="name" string="Sale Line Request"
 		 filter_domain="['|',('name','ilike',self),
 				     ('product_key','ilike',self)]"/>
 	  <field name="doc_id"/>
