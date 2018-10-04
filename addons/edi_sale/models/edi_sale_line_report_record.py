@@ -39,7 +39,7 @@ class EdiSaleLineReportRecord(models.Model):
             'name': lines.env.context.get('default_name', product.default_code),
             'line_ids': [(6, 0, lines.ids)],
             'product_id': product.id,
-            'qty': sum(x.quantity_delivered for x in lines),
+            'qty': sum(x.qty_delivered for x in lines),
         }
 
     @api.model
