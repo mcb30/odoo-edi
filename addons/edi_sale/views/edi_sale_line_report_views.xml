@@ -77,5 +77,28 @@
       <field name="context">{'create': False}</field>
     </record>
 
+    <!-- EDI sale line report records field -->
+    <record id="sale_line_report_document_form" model="ir.ui.view">
+      <field name="name">edi.sale.line.report.document.form</field>
+      <field name="model">edi.document</field>
+      <field name="inherit_id" ref="edi.document_form"/>
+      <field name="arch" type="xml">
+	<xpath expr="//page[@name='sale_report']" position="after">
+	  <page name="sale_line_report" string="Sale Lines"
+		attrs="{'invisible':['!',('rec_type_names','ilike',
+		       '/edi.sale.line.report.record/')]}">
+	    <field name="sale_line_report_ids" readonly="1">
+	      <tree>
+		<field name="name"/>
+		<field name="line_ids" widget="many2many_tags"/>
+		<field name="product_id"/>
+		<field name="qty"/>
+	      </tree>
+	    </field>
+	  </page>
+	</xpath>
+      </field>
+    </record>
+
   </data>
 </odoo>

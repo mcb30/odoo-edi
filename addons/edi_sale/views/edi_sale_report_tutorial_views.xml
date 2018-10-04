@@ -1,0 +1,123 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- EDI sale report tutorial record form view -->
+    <record id="sale_report_tutorial_record_form" model="ir.ui.view">
+      <field name="name">edi.sale.report.tutorial.record.form</field>
+      <field name="model">edi.sale.report.tutorial.record</field>
+      <field name="inherit_id" ref="sale_report_record_form"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+	<xpath expr="//group[@name='basic']" position="inside"/>
+      </field>
+    </record>
+
+    <!-- EDI sale line report tutorial record form view -->
+    <record id="sale_line_report_tutorial_record_form" model="ir.ui.view">
+      <field name="name">edi.sale.line.report.tutorial.record.form</field>
+      <field name="model">edi.sale.line.report.tutorial.record</field>
+      <field name="inherit_id" ref="sale_line_report_record_form"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+	<xpath expr="//group[@name='basic']" position="inside">
+	  <field name="price_subtotal"/>
+	  <field name="price_total"/>
+	</xpath>
+      </field>
+    </record>
+
+    <!-- EDI sale report tutorial record tree view -->
+    <record id="sale_report_tutorial_record_tree" model="ir.ui.view">
+      <field name="name">edi.sale.report.tutorial.record.tree</field>
+      <field name="model">edi.sale.report.tutorial.record</field>
+      <field name="inherit_id" ref="sale_report_record_tree"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+	<xpath expr="//tree" position="inside"/>
+      </field>
+    </record>
+
+    <!-- EDI sale line report tutorial record tree view -->
+    <record id="sale_line_report_tutorial_record_tree" model="ir.ui.view">
+      <field name="name">edi.sale.line.report.tutorial.record.tree</field>
+      <field name="model">edi.sale.line.report.tutorial.record</field>
+      <field name="inherit_id" ref="sale_line_report_record_tree"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+	<xpath expr="//tree" position="inside">
+	  <field name="price_subtotal"/>
+	  <field name="price_total"/>
+	</xpath>
+      </field>
+    </record>
+
+    <!-- EDI sale report tutorial record action window -->
+    <record id="sale_report_tutorial_record_action"
+	    model="ir.actions.act_window">
+      <field name="name">Sale Order Reports</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.sale.report.tutorial.record</field>
+      <field name="view_type">form</field>
+      <field name="view_id" ref="sale_report_tutorial_record_tree"/>
+      <field name="search_view_id" ref="sale_report_record_search"/>
+      <field name="context">{'create': False}</field>
+    </record>
+
+    <!-- EDI sale line report tutorial record action window -->
+    <record id="sale_line_report_tutorial_record_action"
+	    model="ir.actions.act_window">
+      <field name="name">Sale Line Reports</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.sale.line.report.tutorial.record</field>
+      <field name="view_type">form</field>
+      <field name="view_id" ref="sale_line_report_tutorial_record_tree"/>
+      <field name="search_view_id" ref="sale_line_report_record_search"/>
+      <field name="context">{'create': False}</field>
+    </record>
+
+    <!-- EDI sale report tutorial record menu items -->
+    <menuitem id="sale_report_tutorial_record_menu"
+	      action="sale_report_tutorial_record_action"
+	      parent="edi.tutorial_menu" sequence="90"/>
+    <menuitem id="sale_line_report_tutorial_record_menu"
+	      action="sale_line_report_tutorial_record_action"
+	      parent="edi.tutorial_menu" sequence="95"/>
+
+    <!-- EDI sale report tutorial records field -->
+    <record id="sale_report_tutorial_document_form" model="ir.ui.view">
+      <field name="name">edi.sale.report.tutorial.document.form</field>
+      <field name="model">edi.document</field>
+      <field name="inherit_id" ref="edi.document_form"/>
+      <field name="arch" type="xml">
+	<xpath expr="//notebook[@name='records']" position="inside">
+	  <page name="sale_report_tutorial" string="Sales"
+		attrs="{'invisible':['!',('rec_type_names','ilike',
+		       '/edi.sale.report.tutorial.record/')]}">
+	    <field name="sale_report_tutorial_ids" readonly="1">
+	      <tree>
+		<field name="name"/>
+		<field name="sale_id"/>
+	      </tree>
+	    </field>
+	  </page>
+	  <page name="sale_line_report_tutorial" string="Sale Lines"
+		attrs="{'invisible':['!',('rec_type_names','ilike',
+		       '/edi.sale.line.report.tutorial.record/')]}">
+	    <field name="sale_line_report_tutorial_ids" readonly="1">
+	      <tree>
+		<field name="name"/>
+		<field name="line_ids" widget="many2many_tags"/>
+		<field name="product_id"/>
+		<field name="qty"/>
+		<field name="price_subtotal"/>
+		<field name="price_total"/>
+	      </tree>
+	    </field>
+	  </page>
+	</xpath>
+      </field>
+    </record>
+
+  </data>
+</odoo>

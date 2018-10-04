@@ -3,6 +3,17 @@
 from odoo import api, fields, models
 
 
+class EdiDocument(models.Model):
+    """Extend ``edi.document`` to include sale order report records"""
+
+    _inherit = 'edi.document'
+
+    sale_report_ids = fields.One2many(
+        'edi.sale.report.record', 'doc_id',
+        string="Sale Order Reports",
+    )
+
+
 class EdiSaleReportRecord(models.Model):
     """EDI sale order report record
 

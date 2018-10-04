@@ -4,6 +4,17 @@ from odoo import api, fields, models
 from odoo.addons import decimal_precision as dp
 
 
+class EdiDocument(models.Model):
+    """Extend ``edi.document`` to include sale order line report records"""
+
+    _inherit = 'edi.document'
+
+    sale_line_report_ids = fields.One2many(
+        'edi.sale.line.report.record', 'doc_id',
+        string="Sale Order Line Reports",
+    )
+
+
 class EdiSaleLineReportRecord(models.Model):
     """EDI sale order line report record
 

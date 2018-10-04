@@ -26,7 +26,8 @@ Key Features
         'views/edi_sale_request_views.xml',
         'views/edi_sale_line_request_views.xml',
         'views/edi_sale_request_tutorial_views.xml',
-        'views/edi_sale_line_report_views.xml',
         'views/edi_sale_report_views.xml',
+        'views/edi_sale_line_report_views.xml',
+        'views/edi_sale_report_tutorial_views.xml',
     ],
 }
