@@ -15,16 +15,19 @@ class EdiSaleCase(EdiCase):
             'default_code': 'APPLE',
             'name': 'Apple',
             'type': 'product',
+            'list_price': 0.70,
         })
         cls.banana = Product.create({
             'default_code': 'BANANA',
             'name': 'Banana',
             'type': 'product',
+            'list_price': 0.20,
         })
         cls.cherry = Product.create({
             'default_code': 'CHERRY',
             'name': 'Cherry',
             'type': 'product',
+            'list_price': 0.04,
         })
 
     @classmethod
@@ -52,3 +55,10 @@ class EdiSaleCase(EdiCase):
         }
         create_values.update(kwargs)
         return cls.env['sale.order'].create(create_values)
+
+    @classmethod
+    def complete_sale(cls, sale):
+        """Complete a sale order"""
+        for line in sale.order_line:
+            line.qty_delivered = line.product_uom_qty
+        sale.action_done()

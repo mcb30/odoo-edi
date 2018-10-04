@@ -18,6 +18,8 @@ Key Features
     'category': "Extra Tools",
     'data': [
         'security/ir.model.access.csv',
+        'data/edi_sale_report_data.xml',
+        'data/edi_sale_report_tutorial_data.xml',
         'data/edi_sale_request_data.xml',
         'data/edi_sale_request_tutorial_data.xml',
         'views/edi_sale_document_views.xml',

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- Create "EDI Sale Order Report Document" sequence -->
+    <record id="sale_report_sequence_default" model="ir.sequence">
+      <field name="name">EDI Sale Order Report Document</field>
+      <field name="prefix">RPT</field>
+      <field name="padding" eval="5"/>
+    </record>
+
+    <!-- EDI sale order report record type -->
+    <record id="sale_report_record_type" model="edi.record.type">
+      <field name="name">Sale Order Report</field>
+      <field name="model_id" ref="model_edi_sale_report_record"/>
+      <field name="sequence">50</field>
+    </record>
+
+    <!-- EDI sale order line report record type -->
+    <record id="sale_line_report_record_type" model="edi.record.type">
+      <field name="name">Sale Order Line Report</field>
+      <field name="model_id" ref="model_edi_sale_line_report_record"/>
+      <field name="sequence">55</field>
+    </record>
+
+  </data>
+</odoo>
