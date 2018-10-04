@@ -4,7 +4,6 @@ import base64
 from contextlib import contextmanager
 from datetime import datetime
 import pathlib
-import re
 import sys
 from unittest.mock import patch
 from psycopg2 import DatabaseError
@@ -124,7 +123,7 @@ class EdiCase(common.SavepointCase):
         if pattern is None:
             self.assertEqual(attachment.datas_fname, filename)
         else:
-            self.assertTrue(re.match(pattern, attachment.datas_fname))
+            self.assertRegex(attachment.datas_fname, pattern)
         self.assertEqual(base64.b64decode(attachment.datas), data)
 
     @contextmanager
