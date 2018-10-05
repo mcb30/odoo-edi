@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- EDI location record form view -->
+    <record id="location_record_form" model="ir.ui.view">
+      <field name="name">edi.location.record.form</field>
+      <field name="model">edi.location.record</field>
+      <field name="arch" type="xml">
+	<form string="Location">
+	  <sheet>
+	    <div class="oe_title">
+	      <label for="name" class="oe_edit_only"/>
+	      <h1>
+		<field name="name"/>
+	      </h1>
+	    </div>
+	    <group>
+	      <group name="basic">
+		<field name="doc_id"/>
+		<field name="location_id"/>
+		<field name="description"/>
+	      </group>
+	      <group name="detail"/>
+	    </group>
+	  </sheet>
+	</form>
+      </field>
+    </record>
+
+    <!-- EDI location record tree view -->
+    <record id="location_record_tree" model="ir.ui.view">
+      <field name="name">edi.location.record.tree</field>
+      <field name="model">edi.location.record</field>
+      <field name="arch" type="xml">
+	<tree string="Locations" default_order="doc_id desc, id">
+	  <field name="doc_id"/>
+	  <field name="name"/>
+	  <field name="location_id"/>
+	  <field name="description"/>
+	</tree>
+      </field>
+    </record>
+
+    <!-- EDI location record search filter -->
+    <record id="location_record_search" model="ir.ui.view">
+      <field name="name">edi.location.record.search</field>
+      <field name="model">edi.location.record</field>
+      <field name="arch" type="xml">
+	<search string="Search Location">
+	  <field name="name" string="Location"
+		 filter_domain="['|',('name','ilike',self),
+				     ('description','ilike',self)]"/>
+	  <field name="doc_id"/>
+	  <field name="location_id"/>
+	  <field name="description"/>
+	  <group>
+	    <filter string="Document" name="by_doc_id" domain="[]"
+		    context="{'group_by':'doc_id'}"/>
+	    <filter string="Location" name="by_location_id"
+		    domain="[]" context="{'group_by':'location_id'}"/>
+	  </group>
+	</search>
+      </field>
+    </record>
+
+    <!-- EDI location record action window -->
+    <record id="location_record_action" model="ir.actions.act_window">
+      <field name="name">Locations</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.location.record</field>
+      <field name="view_type">form</field>
+      <field name="view_id" ref="location_record_tree"/>
+      <field name="search_view_id" ref="location_record_search"/>
+      <field name="context">{'create': False}</field>
+    </record>
+
+    <!-- EDI location records field -->
+    <record id="location_document_form" model="ir.ui.view">
+      <field name="name">edi.location.document.form</field>
+      <field name="model">edi.document</field>
+      <field name="inherit_id" ref="edi.document_form"/>
+      <field name="arch" type="xml">
+	<xpath expr="//notebook[@name='records']" position="inside">
+	  <page name="location" string="Locations"
+		attrs="{'invisible':['!',('rec_type_names','ilike',
+		       '/edi.location.record/')]}">
+	    <field name="location_ids" readonly="1">
+	      <tree>
+		<field name="name"/>
+		<field name="location_id"/>
+		<field name="description"/>
+	      </tree>
+	    </field>
+	  </page>
+	</xpath>
+      </field>
+    </record>
+
+  </data>
+</odoo>

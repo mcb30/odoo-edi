@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- Create "EDI Stock Location" sequence -->
+    <record id="location_sequence_default" model="ir.sequence">
+      <field name="name">EDI Stock Location Document</field>
+      <field name="prefix">LOC</field>
+      <field name="padding" eval="5"/>
+    </record>
+
+    <!-- EDI stock location record type -->
+    <record id="location_record_type" model="edi.record.type">
+      <field name="name">Stock Location</field>
+      <field name="model_id" ref="model_edi_location_record"/>
+      <field name="sequence">15</field>
+    </record>
+
+    <!-- EDI inactive stock location record type -->
+    <record id="inactive_location_record_type" model="edi.record.type">
+      <field name="name">Inactive Stock Location</field>
+      <field name="model_id" ref="model_edi_inactive_location_record"/>
+      <field name="sequence">16</field>
+    </record>
+
+  </data>
+</odoo>
