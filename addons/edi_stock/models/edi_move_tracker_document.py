@@ -27,7 +27,10 @@ class EdiMoveTrackerDocument(models.AbstractModel):
     @api.model
     def move_tracker_record_model(self, doc,
                                   supermodel='edi.move.tracker.record'):
-        """Get EDI stock move tracker record model class"""
+        """Get EDI stock move tracker record model class
+
+        Subclasses should never need to override this method.
+        """
         return self.record_model(doc, supermodel=supermodel)
 
     @api.model

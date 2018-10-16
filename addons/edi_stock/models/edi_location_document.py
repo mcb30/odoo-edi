@@ -38,7 +38,10 @@ class EdiLocationDocument(models.AbstractModel):
 
     @api.model
     def location_record_model(self, doc, supermodel='edi.location.record'):
-        """Get EDI location record model class"""
+        """Get EDI location record model class
+
+        Subclasses should never need to override this method.
+        """
         return self.record_model(doc, supermodel=supermodel)
 
     @api.model

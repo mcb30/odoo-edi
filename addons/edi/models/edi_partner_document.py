@@ -41,7 +41,10 @@ class EdiPartnerDocument(models.AbstractModel):
 
     @api.model
     def partner_record_model(self, doc, supermodel='edi.partner.record'):
-        """Get EDI partner record model class"""
+        """Get EDI partner record model class
+
+        Subclasses should never need to override this method.
+        """
         return self.record_model(doc, supermodel=supermodel)
 
     @api.model
@@ -94,7 +97,10 @@ class EdiPartnerTitleDocument(models.AbstractModel):
     @api.model
     def partner_title_record_model(self, doc,
                                    supermodel='edi.partner.title.record'):
-        """Get EDI partner title record model class"""
+        """Get EDI partner title record model class
+
+        Subclasses should never need to override this method.
+        """
         return self.record_model(doc, supermodel=supermodel)
 
     @api.model

@@ -51,13 +51,19 @@ class EdiPickReportDocument(models.AbstractModel):
     @api.model
     def pick_report_record_model(self, doc,
                                  supermodel='edi.pick.report.record'):
-        """Get EDI stock transfer report record model class"""
+        """Get EDI stock transfer report record model class
+
+        Subclasses should never need to override this method.
+        """
         return self.record_model(doc, supermodel=supermodel)
 
     @api.model
     def move_report_record_model(self, doc,
                                  supermodel='edi.move.report.record'):
-        """Get EDI stock move report record model class"""
+        """Get EDI stock move report record model class
+
+        Subclasses should never need to override this method.
+        """
         return self.record_model(doc, supermodel=supermodel)
 
     @api.model

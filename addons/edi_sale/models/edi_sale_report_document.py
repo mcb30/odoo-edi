@@ -42,13 +42,19 @@ class EdiSaleReportDocument(models.AbstractModel):
     @api.model
     def sale_report_record_model(self, doc,
                                  supermodel='edi.sale.report.record'):
-        """Get EDI sale order report record model class"""
+        """Get EDI sale order report record model class
+
+        Subclasses should never need to override this method.
+        """
         return self.record_model(doc, supermodel=supermodel)
 
     @api.model
     def sale_line_report_record_model(self, doc,
                                       supermodel='edi.sale.line.report.record'):
-        """Get EDI sale order line report record model class"""
+        """Get EDI sale order line report record model class
+
+        Subclasses should never need to override this method.
+        """
         return self.record_model(doc, supermodel=supermodel)
 
     @api.model

@@ -23,7 +23,10 @@ class EdiQuantReportDocument(models.AbstractModel):
     @api.model
     def quant_report_record_model(self, doc,
                                   supermodel='edi.quant.report.record'):
-        """Get EDI stock level report record model class"""
+        """Get EDI stock level report record model class
+
+        Subclasses should never need to override this method.
+        """
         return self.record_model(doc, supermodel=supermodel)
 
     @api.model

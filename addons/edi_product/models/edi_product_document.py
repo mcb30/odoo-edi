@@ -30,7 +30,10 @@ class EdiProductDocument(models.AbstractModel):
 
     @api.model
     def product_record_model(self, doc, supermodel='edi.product.record'):
-        """Get EDI product record model class"""
+        """Get EDI product record model class
+
+        Subclasses should never need to override this method.
+        """
         return self.record_model(doc, supermodel=supermodel)
 
     @api.model

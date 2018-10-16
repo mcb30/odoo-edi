@@ -32,7 +32,10 @@ class EdiOrderpointDocument(models.AbstractModel):
 
     @api.model
     def orderpoint_record_model(self, doc, supermodel='edi.orderpoint.record'):
-        """Get EDI minimum inventory rule record model class"""
+        """Get EDI minimum inventory rule record model class
+
+        Subclasses should never need to override this method.
+        """
         return self.record_model(doc, supermodel=supermodel)
 
     @api.model
