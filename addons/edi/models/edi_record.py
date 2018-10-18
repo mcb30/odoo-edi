@@ -40,11 +40,13 @@ class EdiLookupRelationship(object):
         self.key = key
         self.target = target
         self.via = via if via else key
-        self.domain = domain if domain else []
+        self.domain = (domain if callable(domain) else
+                       (lambda self: domain) if domain else
+                       (lambda self: []))
 
     def __repr__(self):
-        return '%s(%r, %r, %r %r)' % (self.__class__.__name__, self.key,
-                                      self.target, self.via, self.domain)
+        return '%s(%r, %r, %r)' % (self.__class__.__name__, self.key,
+                                   self.target, self.via)
 
 
 class EdiRecordType(models.Model):
@@ -127,7 +129,7 @@ class EdiRecord(models.AbstractModel):
                 Target = Record[rel.target]
                 targets = Target.search(expression.AND([
                     [(rel.via, 'in', list(set(keygetter(x) for x in batch)))],
-                    rel.domain(Record) if callable(rel.domain) else rel.domain
+                    rel.domain(Record),
                 ]))
                 targets_by_key = {k: v.ensure_one() for k, v in
                                   targets.groupby(rel.via)}
@@ -179,7 +181,7 @@ class EdiRecord(models.AbstractModel):
             # Search for target records by key
             targets = self.browse()[rel.target].search(expression.AND([
                 [(rel.via, 'in', list(set(x[rel.key] for x in missing)))],
-                rel.domain(Record) if callable(rel.domain) else rel.domain
+                rel.domain(Record),
             ]))
             targets_by_key = {k: v.ensure_one() for k, v in
                               targets.groupby(rel.via)}
