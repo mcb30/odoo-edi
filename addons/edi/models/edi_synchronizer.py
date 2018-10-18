@@ -300,5 +300,5 @@ class EdiActiveSyncRecord(models.AbstractModel):
         """Process matched target records"""
         if self._edi_sync_deactivator is not None:
             Deactivator = self.env[self._edi_sync_deactivator]
-            unmatched = (targets.search([]) - targets)
+            unmatched = (targets.search(self._edi_sync_domain or []) - targets)
             Deactivator.prepare(doc, unmatched)
