@@ -44,7 +44,7 @@ class EdiProductDocument(models.AbstractModel):
         passed to :meth:`~odoo.models.Model.create` in order to create
         an EDI product record.
         """
-        return ()
+        return self.no_record_values()
 
     @api.model
     def prepare(self, doc):

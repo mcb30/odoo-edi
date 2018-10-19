@@ -55,7 +55,7 @@ class EdiPartnerDocument(models.AbstractModel):
         passed to :meth:`~odoo.models.Model.create` in order to create
         an EDI partner record.
         """
-        return ()
+        return self.no_record_values()
 
     @api.model
     def prepare(self, doc):
@@ -111,7 +111,7 @@ class EdiPartnerTitleDocument(models.AbstractModel):
         passed to :meth:`~odoo.models.Model.create` in order to create
         an EDI partner title record.
         """
-        return ()
+        return self.no_record_values()
 
     @api.model
     def prepare(self, doc):

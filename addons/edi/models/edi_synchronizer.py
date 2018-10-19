@@ -9,6 +9,23 @@ from ..tools import batched, Comparator
 _logger = logging.getLogger(__name__)
 
 
+class NoRecordValuesError(NotImplementedError):
+    """Method for constructing EDI record value dictionaries is not used
+
+    This exception can be raised by document models derived from
+    ``edi.document.sync`` to indicate that the method for constructing
+    EDI record value dictionaries has not been implemented and should
+    not be used.
+
+    This allows a record model derived from ``edi.record.sync`` to
+    identify situations in which the document model has chosen not to
+    use the convenience methods for constructing EDI record value
+    dictionaries, and so abandon the record preparation without any
+    side effects (such as deactivating any unmatched records).
+    """
+    pass
+
+
 class EdiSyncDocumentModel(models.AbstractModel):
     """EDI synchronizer document model
 
@@ -30,6 +47,17 @@ class EdiSyncDocumentModel(models.AbstractModel):
     _name = 'edi.document.sync'
     _inherit = 'edi.document.model'
     _description = "EDI Synchronizer Document"
+
+    @api.model
+    def no_record_values(self):
+        """Indicate that this record value generator is not implemented
+
+        This method should be called by any empty placeholder
+        convenience methods for constructing EDI record value
+        dictionaries (such as are typically found in the base models
+        for an EDI synchronizer document type).
+        """
+        raise NoRecordValuesError
 
 
 class EdiSyncRecord(models.AbstractModel):
@@ -157,37 +185,46 @@ class EdiSyncRecord(models.AbstractModel):
         # Construct comparator for target model
         comparator = Comparator(Target)
 
-        # Process records in batches for efficiency
-        for r, vbatch in batched(vlist, self.BATCH_SIZE):
+        # Check for unimplemented values dictionary iterable
+        try:
 
-            _logger.info(_("%s preparing %s %d-%d"),
-                         doc.name, self._name, r[0], r[-1])
+            # Process records in batches for efficiency
+            for r, vbatch in batched(vlist, self.BATCH_SIZE):
 
-            # Add EDI lookup relationship target IDs where known
-            self._add_edi_relates_vlist(vbatch)
+                _logger.info(_("%s preparing %s %d-%d"),
+                             doc.name, self._name, r[0], r[-1])
 
-            # Look up existing target records
-            targets_by_key = self.targets_by_key(vbatch)
+                # Add EDI lookup relationship target IDs where known
+                self._add_edi_relates_vlist(vbatch)
 
-            # Add to list of matched target record IDs
-            matched_ids |= set(x.id for x in targets_by_key.values())
+                # Look up existing target records
+                targets_by_key = self.targets_by_key(vbatch)
 
-            # Create EDI records
-            for record_vals in vbatch:
+                # Add to list of matched target record IDs
+                matched_ids |= set(x.id for x in targets_by_key.values())
 
-                # Omit EDI records that would not change the target record
-                target = targets_by_key.get(record_vals['name'])
-                if target:
-                    target_vals = self.target_values(record_vals)
-                    if all(comparator[k](target[k], v)
-                           for k, v in target_vals.items()):
-                        continue
+                # Create EDI records
+                for record_vals in vbatch:
 
-                # Create EDI record
-                record_vals['doc_id'] = doc.id
-                if target:
-                    record_vals[self._edi_sync_target] = target.id
-                self.create(record_vals)
+                    # Omit EDI records that would not change the target record
+                    target = targets_by_key.get(record_vals['name'])
+                    if target:
+                        target_vals = self.target_values(record_vals)
+                        if all(comparator[k](target[k], v)
+                               for k, v in target_vals.items()):
+                            continue
+
+                    # Create EDI record
+                    record_vals['doc_id'] = doc.id
+                    if target:
+                        record_vals[self._edi_sync_target] = target.id
+                    self.create(record_vals)
+
+        except NoRecordValuesError:
+            # Values dictionary iterable was not implemented (most
+            # likely because the document model has chosen not to use
+            # a convenience method): skip all further processing.
+            return
 
         # Process all matched target records
         self.matched(doc, Target.browse(matched_ids))
