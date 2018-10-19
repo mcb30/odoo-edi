@@ -93,6 +93,16 @@
 	      </tree>
 	    </field>
 	  </page>
+	  <page name="inactive_location" string="Inactive Locations"
+		attrs="{'invisible':['!',('rec_type_names','ilike',
+		       '/edi.inactive.location.record/')]}">
+	    <field name="inactive_location_ids" readonly="1">
+	      <tree>
+		<field name="name"/>
+		<field name="target_id"/>
+	      </tree>
+	    </field>
+	  </page>
 	</xpath>
       </field>
     </record>
