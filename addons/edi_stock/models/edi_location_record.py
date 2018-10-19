@@ -62,4 +62,6 @@ class EdiInactiveLocationRecord(models.Model):
     _inherit = 'edi.record.deactivator'
     _description = "Inactive Stock Location"
 
+    _edi_deactivator_name = 'complete_name'
+
     target_id = fields.Many2one('stock.location', string="Location")
