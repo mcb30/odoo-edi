@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- EDI route record form view -->
+    <record id="route_record_form" model="ir.ui.view">
+      <field name="name">edi.route.record.form</field>
+      <field name="model">edi.route.record</field>
+      <field name="arch" type="xml">
+	<form string="Route">
+	  <sheet>
+	    <div class="oe_title">
+	      <label for="name" class="oe_edit_only"/>
+	      <h1>
+		<field name="name"/>
+	      </h1>
+	    </div>
+	    <group>
+	      <group name="basic">
+		<field name="doc_id"/>
+		<field name="route_id"/>
+	      </group>
+	      <group name="detail"/>
+	    </group>
+	  </sheet>
+	</form>
+      </field>
+    </record>
+
+    <!-- EDI route record tree view -->
+    <record id="route_record_tree" model="ir.ui.view">
+      <field name="name">edi.route.record.tree</field>
+      <field name="model">edi.route.record</field>
+      <field name="arch" type="xml">
+	<tree string="Routes" default_order="doc_id desc, id">
+	  <field name="doc_id"/>
+	  <field name="name"/>
+	  <field name="route_id"/>
+	</tree>
+      </field>
+    </record>
+
+    <!-- EDI route record search filter -->
+    <record id="route_record_search" model="ir.ui.view">
+      <field name="name">edi.route.record.search</field>
+      <field name="model">edi.route.record</field>
+      <field name="arch" type="xml">
+	<search string="Search Route">
+	  <field name="name" string="Route"
+		 filter_domain="[('name','ilike',self)]"/>
+	  <field name="doc_id"/>
+	  <field name="route_id"/>
+	  <group>
+	    <filter string="Document" name="by_doc_id" domain="[]"
+		    context="{'group_by':'doc_id'}"/>
+	    <filter string="Route" name="by_route_id"
+		    domain="[]" context="{'group_by':'route_id'}"/>
+	  </group>
+	</search>
+      </field>
+    </record>
+
+    <!-- EDI route record action window -->
+    <record id="route_record_action" model="ir.actions.act_window">
+      <field name="name">Routes</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.route.record</field>
+      <field name="view_type">form</field>
+      <field name="view_id" ref="route_record_tree"/>
+      <field name="search_view_id" ref="route_record_search"/>
+      <field name="context">{'create': False}</field>
+    </record>
+
+    <!-- EDI route records field -->
+    <record id="route_document_form" model="ir.ui.view">
+      <field name="name">edi.route.document.form</field>
+      <field name="model">edi.document</field>
+      <field name="inherit_id" ref="edi.document_form"/>
+      <field name="arch" type="xml">
+	<xpath expr="//notebook[@name='records']" position="inside">
+	  <page name="route" string="Routes"
+		attrs="{'invisible':['!',('rec_type_names','ilike',
+		       '/edi.route.record/')]}">
+	    <field name="route_ids" readonly="1">
+	      <tree>
+		<field name="name"/>
+		<field name="route_id"/>
+	      </tree>
+	    </field>
+	  </page>
+	  <page name="inactive_route" string="Inactive Routes"
+		attrs="{'invisible':['!',('rec_type_names','ilike',
+		       '/edi.inactive.route.record/')]}">
+	    <field name="inactive_route_ids" readonly="1">
+	      <tree>
+		<field name="name"/>
+		<field name="target_id"/>
+	      </tree>
+	    </field>
+	  </page>
+	</xpath>
+      </field>
+    </record>
+
+  </data>
+</odoo>

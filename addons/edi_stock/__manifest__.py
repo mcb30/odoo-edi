@@ -34,6 +34,7 @@ Key Features
         'views/edi_pick_request_tutorial_views.xml',
         'views/edi_quant_report_views.xml',
         'views/edi_quant_report_tutorial_views.xml',
+        'views/edi_route_views.xml',
         'views/stock_picking_type.xml',
         'data/edi_location_data.xml',
         'data/edi_location_tutorial_data.xml',
@@ -46,5 +47,6 @@ Key Features
         'data/edi_pick_request_tutorial_data.xml',
         'data/edi_quant_report_data.xml',
         'data/edi_quant_report_tutorial_data.xml',
+        'data/edi_route_data.xml',
     ],
 }

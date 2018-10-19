@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- Create "EDI Stock Route" sequence -->
+    <record id="route_sequence_default" model="ir.sequence">
+      <field name="name">EDI Stock Route Document</field>
+      <field name="prefix">RTS</field>
+      <field name="padding" eval="5"/>
+    </record>
+
+    <!-- EDI stock route record type -->
+    <record id="route_record_type" model="edi.record.type">
+      <field name="name">Stock Route</field>
+      <field name="model_id" ref="model_edi_route_record"/>
+      <field name="sequence">20</field>
+    </record>
+
+    <!-- EDI inactive stock route record type -->
+    <record id="inactive_route_record_type" model="edi.record.type">
+      <field name="name">Inactive Stock Route</field>
+      <field name="model_id" ref="model_edi_inactive_route_record"/>
+      <field name="sequence">21</field>
+    </record>
+
+  </data>
+</odoo>
