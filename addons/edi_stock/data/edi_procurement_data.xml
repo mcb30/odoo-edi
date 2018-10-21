@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- Create "EDI Procurement Rule" sequence -->
+    <record id="procurement_sequence_default" model="ir.sequence">
+      <field name="name">EDI Procurement Rule Document</field>
+      <field name="prefix">PLL</field>
+      <field name="padding" eval="5"/>
+    </record>
+
+    <!-- EDI procurement rule record type -->
+    <record id="procurement_record_type" model="edi.record.type">
+      <field name="name">Procurement Rule</field>
+      <field name="model_id" ref="model_edi_procurement_record"/>
+      <field name="sequence">30</field>
+    </record>
+
+    <!-- EDI inactive procurement rule record type -->
+    <record id="inactive_procurement_record_type" model="edi.record.type">
+      <field name="name">Inactive Procurement Rule</field>
+      <field name="model_id" ref="model_edi_inactive_procurement_record"/>
+      <field name="sequence">31</field>
+    </record>
+
+  </data>
+</odoo>

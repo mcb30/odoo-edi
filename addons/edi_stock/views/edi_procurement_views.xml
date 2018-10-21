@@ -1,0 +1,122 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- EDI procurement record form view -->
+    <record id="procurement_record_form" model="ir.ui.view">
+      <field name="name">edi.procurement.record.form</field>
+      <field name="model">edi.procurement.record</field>
+      <field name="arch" type="xml">
+	<form string="Rule">
+	  <sheet>
+	    <div class="oe_title">
+	      <label for="name" class="oe_edit_only"/>
+	      <h1>
+		<field name="name"/>
+	      </h1>
+	    </div>
+	    <group>
+	      <group name="basic">
+		<field name="doc_id"/>
+		<field name="rule_id"/>
+		<field name="route_key"/>
+		<field name="route_id"/>
+		<field name="pick_type_id"/>
+	      </group>
+	      <group name="detail"/>
+	    </group>
+	  </sheet>
+	</form>
+      </field>
+    </record>
+
+    <!-- EDI procurement record tree view -->
+    <record id="procurement_record_tree" model="ir.ui.view">
+      <field name="name">edi.procurement.record.tree</field>
+      <field name="model">edi.procurement.record</field>
+      <field name="arch" type="xml">
+	<tree string="Rules" default_order="doc_id desc, id">
+	  <field name="doc_id"/>
+	  <field name="name"/>
+	  <field name="rule_id"/>
+	  <field name="route_key"/>
+	  <field name="route_id"/>
+	  <field name="pick_type_id"/>
+	</tree>
+      </field>
+    </record>
+
+    <!-- EDI procurement record search filter -->
+    <record id="procurement_record_search" model="ir.ui.view">
+      <field name="name">edi.procurement.record.search</field>
+      <field name="model">edi.procurement.record</field>
+      <field name="arch" type="xml">
+	<search string="Search Rule">
+	  <field name="name" string="Rule"
+		 filter_domain="[('name','ilike',self)]"/>
+	  <field name="doc_id"/>
+	  <field name="rule_id"/>
+	  <field name="route_key"/>
+	  <field name="route_id"/>
+	  <field name="pick_type_id"/>
+	  <group>
+	    <filter string="Document" name="by_doc_id" domain="[]"
+		    context="{'group_by':'doc_id'}"/>
+	    <filter string="Rule" name="by_rule_id"
+		    domain="[]" context="{'group_by':'rule_id'}"/>
+	    <filter string="Route" name="by_route_id"
+		    domain="[]" context="{'group_by':'route_id'}"/>
+	    <filter string="Stock Transfer Type" name="by_pick_type_id"
+		    domain="[]" context="{'group_by':'pick_type_id'}"/>
+	  </group>
+	</search>
+      </field>
+    </record>
+
+    <!-- EDI procurement record action window -->
+    <record id="procurement_record_action" model="ir.actions.act_window">
+      <field name="name">Rules</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.procurement.record</field>
+      <field name="view_type">form</field>
+      <field name="view_id" ref="procurement_record_tree"/>
+      <field name="search_view_id" ref="procurement_record_search"/>
+      <field name="context">{'create': False}</field>
+    </record>
+
+    <!-- EDI procurement records field -->
+    <record id="procurement_document_form" model="ir.ui.view">
+      <field name="name">edi.procurement.document.form</field>
+      <field name="model">edi.document</field>
+      <field name="inherit_id" ref="edi.document_form"/>
+      <field name="arch" type="xml">
+	<xpath expr="//notebook[@name='records']" position="inside">
+	  <page name="procurement" string="Rules"
+		attrs="{'invisible':['!',('rec_type_names','ilike',
+		       '/edi.procurement.record/')]}">
+	    <field name="procurement_ids" readonly="1">
+	      <tree>
+		<field name="name"/>
+		<field name="rule_id"/>
+		<field name="route_key"/>
+		<field name="route_id"/>
+		<field name="pick_type_id"/>
+	      </tree>
+	    </field>
+	  </page>
+	  <page name="inactive_procurement" string="Inactive Rules"
+		attrs="{'invisible':['!',('rec_type_names','ilike',
+		       '/edi.inactive.procurement.record/')]}">
+	    <field name="inactive_procurement_ids" readonly="1">
+	      <tree>
+		<field name="name"/>
+		<field name="target_id"/>
+	      </tree>
+	    </field>
+	  </page>
+	</xpath>
+      </field>
+    </record>
+
+  </data>
+</odoo>
