@@ -3,14 +3,6 @@
 from odoo import api, fields, models
 
 
-class EdiDocumentType(models.Model):
-    """Extend ``edi.document.type`` to include associated stock routes"""
-
-    _inherit = 'edi.document.type'
-
-    route_ids = fields.Many2many('stock.location.route', string="Stock Routes")
-
-
 class EdiRouteDocument(models.AbstractModel):
     """EDI route document
 
