@@ -255,6 +255,14 @@ class EdiDocument(models.Model):
                 for x in self.input_ids.sorted('id'))
 
     @api.multi
+    def input(self):
+        """Get single decoded input attachment"""
+        self.ensure_one()
+        if len(self.input_ids) > 1:
+            raise UserError(_("More than one input attachment"))
+        return next(self.inputs())
+
+    @api.multi
     def output(self, name, data):
         """Create output attachment"""
         self.ensure_one()
