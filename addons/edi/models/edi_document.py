@@ -18,7 +18,7 @@ class IrModel(models.Model):
                                      help="This is an EDI document model")
 
     def _reflect_model_params(self, model):
-        vals = super(IrModel, self)._reflect_model_params(model)
+        vals = super()._reflect_model_params(model)
         vals['is_edi_document'] = (
             model._name != 'edi.document.model' and
             issubclass(type(model), self.pool['edi.document.model'])
@@ -221,7 +221,7 @@ class EdiDocument(models.Model):
     @api.model
     def create(self, vals):
         """Create record (generating name automatically if needed)"""
-        doc = super(EdiDocument, self).create(vals)
+        doc = super().create(vals)
         if not doc.name:
             doc.name = doc.doc_type_id.sequence_id.next_by_id()
         return doc
@@ -230,7 +230,7 @@ class EdiDocument(models.Model):
     def copy(self, default=None):
         """Duplicate record (including input attachments)"""
         self.ensure_one()
-        new = super(EdiDocument, self).copy(default)
+        new = super().copy(default)
         for attachment in self.input_ids.sorted('id'):
             attachment.copy({
                 'res_id': new.id,
@@ -471,5 +471,5 @@ class EdiDocumentUnknown(models.AbstractModel):
     @api.model
     def prepare(self, doc):
         """Prepare document"""
-        super(EdiDocumentUnknown, self).prepare(doc)
+        super().prepare(doc)
         raise UserError(_("Unknown document type"))

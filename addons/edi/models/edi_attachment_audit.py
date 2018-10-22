@@ -17,7 +17,7 @@ class Message(models.Model):
     @api.multi
     def message_format(self):
         """Add attachment audit information to mail messages"""
-        values = super(Message, self).message_format()
+        values = super().message_format()
         for value in values:
             msg = self.browse(value['id'])
             if msg.edi_attachment_audit_ids:
