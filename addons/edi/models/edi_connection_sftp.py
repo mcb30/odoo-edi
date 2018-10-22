@@ -32,7 +32,7 @@ class SFTPOnlyClient(paramiko.SFTPClient):
 
     def close(self):
         """Close SFTP client and the underlying SSH client"""
-        super(SFTPOnlyClient, self).close()
+        super().close()
         self.__sftp_only_ssh.close()
 
 
