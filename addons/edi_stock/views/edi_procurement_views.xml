@@ -105,8 +105,9 @@
 	    </field>
 	  </page>
 	  <page name="inactive_procurement" string="Inactive Rules"
-		attrs="{'invisible':['!',('rec_type_names','ilike',
-		       '/edi.inactive.procurement.record/')]}">
+		attrs="{'invisible':['|','!',('rec_type_names','ilike',
+		       '/edi.inactive.procurement.record/'),
+		       ('inactive_procurement_ids','=',[])]}">
 	    <field name="inactive_procurement_ids" readonly="1">
 	      <tree>
 		<field name="name"/>

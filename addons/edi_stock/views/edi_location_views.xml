@@ -94,8 +94,9 @@
 	    </field>
 	  </page>
 	  <page name="inactive_location" string="Inactive Locations"
-		attrs="{'invisible':['!',('rec_type_names','ilike',
-		       '/edi.inactive.location.record/')]}">
+		attrs="{'invisible':['|','!',('rec_type_names','ilike',
+		       '/edi.inactive.location.record/'),
+		       ('inactive_location_ids','=',[])]}">
 	    <field name="inactive_location_ids" readonly="1">
 	      <tree>
 		<field name="name"/>

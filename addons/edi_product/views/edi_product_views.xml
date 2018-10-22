@@ -92,8 +92,9 @@
 	    </field>
 	  </page>
 	  <page name="inactive_product" string="Inactive Products"
-		attrs="{'invisible':['!',('rec_type_names','ilike',
-		       '/edi.inactive.product.record/')]}">
+		attrs="{'invisible':['|','!',('rec_type_names','ilike',
+		       '/edi.inactive.product.record/'),
+		       ('inactive_product_ids','=',[])]}">
 	    <field name="inactive_product_ids" readonly="1">
 	      <tree>
 		<field name="name"/>
