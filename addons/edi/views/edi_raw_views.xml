@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- EDI raw record form view -->
+    <record id="raw_record_form" model="ir.ui.view">
+      <field name="name">edi.raw.record.form</field>
+      <field name="model">edi.raw.record</field>
+      <field name="arch" type="xml">
+	<form string="Raw Record">
+	  <sheet>
+	    <div class="oe_title">
+	      <label for="name" class="oe_edit_only"/>
+	      <h1>
+		<field name="name"/>
+	      </h1>
+	    </div>
+	    <group>
+	      <group name="basic">
+		<field name="doc_id"/>
+		<field name="model_id"/>
+		<field name="res_id"/>
+	      </group>
+	      <group name="detail"/>
+	    </group>
+	  </sheet>
+	</form>
+      </field>
+    </record>
+
+    <!-- EDI raw record tree view -->
+    <record id="raw_record_tree" model="ir.ui.view">
+      <field name="name">edi.raw.record.tree</field>
+      <field name="model">edi.raw.record</field>
+      <field name="arch" type="xml">
+	<tree string="Raw Records" default_order="doc_id desc, id">
+	  <field name="doc_id"/>
+	  <field name="name"/>
+	  <field name="model_id"/>
+	  <field name="res_id"/>
+	</tree>
+      </field>
+    </record>
+
+    <!-- EDI raw record search filter -->
+    <record id="raw_record_search" model="ir.ui.view">
+      <field name="name">edi.raw.record.search</field>
+      <field name="model">edi.raw.record</field>
+      <field name="arch" type="xml">
+	<search string="Search Raw Record">
+	  <field name="doc_id"/>
+	  <field name="model_id"/>
+	  <field name="res_id"/>
+	  <group>
+	    <filter string="Document" name="by_doc_id" domain="[]"
+		    context="{'group_by':'doc_id'}"/>
+	    <filter string="Model" name="by_model_id"
+		    domain="[]" context="{'group_by':'model_id'}"/>
+	  </group>
+	</search>
+      </field>
+    </record>
+
+    <!-- EDI raw record action window -->
+    <record id="raw_record_action" model="ir.actions.act_window">
+      <field name="name">Raw Records</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.raw.record</field>
+      <field name="view_type">form</field>
+      <field name="view_id" ref="raw_record_tree"/>
+      <field name="search_view_id" ref="raw_record_search"/>
+      <field name="context">{'create': False}</field>
+    </record>
+
+    <!-- EDI raw records field -->
+    <record id="raw_document_form" model="ir.ui.view">
+      <field name="name">edi.raw.document.form</field>
+      <field name="model">edi.document</field>
+      <field name="inherit_id" ref="edi.document_form"/>
+      <field name="arch" type="xml">
+	<xpath expr="//notebook[@name='records']" position="inside">
+	  <page name="raw" string="Raw Records"
+		attrs="{'invisible':['!',('rec_type_names','ilike',
+		       '/edi.raw.record/')]}">
+	    <group attrs="{'invisible':[('raw_count','=',0)]}">
+	      <group>
+		<field name="raw_model_id"/>
+		<field name="raw_count" string="Record Count"/>
+	      </group>
+	      <group>
+		<button name="action_view_raw" type="object" icon="fa-bars"
+			string="View Records" class="btn-primary"/>
+	      </group>
+	    </group>
+	    <group attrs="{'invisible':[('raw_count','!=',0)]}">
+	      <field name="raw_index_content"/>
+	    </group>
+	  </page>
+	</xpath>
+      </field>
+    </record>
+
+  </data>
+</odoo>

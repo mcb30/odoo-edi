@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- Create "EDI Raw Import Document" sequence -->
+    <record id="raw_sequence_default" model="ir.sequence">
+      <field name="name">EDI Raw Import Document</field>
+      <field name="prefix">RAW</field>
+      <field name="padding" eval="5"/>
+    </record>
+
+    <!-- EDI raw import record type -->
+    <record id="raw_record_type" model="edi.record.type">
+      <field name="name">Raw Import</field>
+      <field name="model_id" ref="model_edi_raw_record"/>
+      <field name="sequence">0</field>
+    </record>
+
+    <!-- EDI raw import document type -->
+    <record id="raw_document_type" model="edi.document.type">
+      <field name="name">Raw Import</field>
+      <field name="model_id" ref="model_edi_raw_document"/>
+      <field name="sequence" eval="0"/>
+      <field name="sequence_id" ref="raw_sequence_default"/>
+      <field name="rec_type_ids"
+	     eval="[(6, False, [ref('raw_record_type')])]"/>
+    </record>
+
+  </data>
+</odoo>
