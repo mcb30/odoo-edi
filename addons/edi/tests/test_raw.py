@@ -73,7 +73,6 @@ class TestRaw(EdiCase):
             b'mail.action_view_mail_message', b'edi.nonexistent_xmlid',
             b64decode(attachment.datas)
         ))
-        doc.action_prepare()
         with self.assertRaisesIssue(doc):
             doc.action_execute()
 
