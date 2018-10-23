@@ -80,6 +80,7 @@ class EdiDocumentType(models.Model):
             'res_model': 'edi.document',
             'res_field': 'input_ids',
         })
+        input_ids = inputs.ids
         docs = Document.browse()
         for doc_type in self or self.search([]):
             Model = self.env[doc_type.model_id.model]
@@ -98,7 +99,7 @@ class EdiDocumentType(models.Model):
             doc = Document.create({'doc_type_id': doc_type_unknown.id})
             inputs.write({'res_id': doc.id})
             docs += doc
-        return docs
+        return docs.sorted(lambda x: input_ids.index(min(x.input_ids.ids)))
 
     @api.multi
     def autoemit(self):
