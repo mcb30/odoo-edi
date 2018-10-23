@@ -1,6 +1,7 @@
 """EDI raw import documents"""
 
 import pathlib
+import re
 from odoo import api, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
@@ -12,6 +13,8 @@ OPTIONS = {
 }
 
 TRIAL_COUNT = 10
+
+MODEL_PATTERN = re.compile(r'.*?(?P<model>([a-z]+\.)+[a-z]+)$')
 
 
 class TrialImport(Exception):
@@ -32,18 +35,27 @@ class EdiRawDocument(models.AbstractModel):
     _description = "Raw Records"
 
     @api.model
+    def automodel(self, fname):
+        """Calculate model name from input filename"""
+        m = MODEL_PATTERN.match(pathlib.Path(fname).stem)
+        if m:
+            return self.env.get(m['model'])
+
+    @api.model
     def autotype(self, inputs):
         """Autodetect document type"""
-        return [x for x in inputs if
-                pathlib.Path(x.datas_fname).stem in self.env]
+        return [x for x in inputs if self.automodel(x.datas_fname) is not None]
 
     @api.model
     def importer(self, doc):
         """Construct importer"""
         Import = self.env['base_import.import']
         fname, data = doc.input()
+        Model = self.automodel(fname)
+        if Model is None:
+            raise UserError(_("Unable to determine model from \"%s\"") % fname)
         importer = Import.create({
-            'res_model': pathlib.Path(fname).stem,
+            'res_model': Model._name,
             'file': data,
             'file_name': fname,
         })

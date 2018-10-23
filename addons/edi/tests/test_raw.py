@@ -76,3 +76,26 @@ class TestRaw(EdiCase):
         doc.action_prepare()
         with self.assertRaisesIssue(doc):
             doc.action_execute()
+
+    def test05_prefixed_filename(self):
+        """Prefixed model name in filename"""
+        doc = self.create_raw('res.users.csv')
+        attachment = doc.input_ids
+        attachment.datas_fname = '01-initial-res.users.csv'
+        self.assertTrue(doc.action_execute())
+
+    def test06_unknown_model(self):
+        """Unrecognised model name in filename"""
+        doc = self.create_raw('res.users.csv')
+        attachment = doc.input_ids
+        attachment.datas_fname = '01-initial-res.definitely.not.users.csv'
+        with self.assertRaisesIssue(doc):
+            doc.action_prepare()
+
+    def test07_unrecognisable_filename(self):
+        """Unrecognisable model name in filename"""
+        doc = self.create_raw('res.users.csv')
+        attachment = doc.input_ids
+        attachment.datas_fname = 'res.users-broken.csv'
+        with self.assertRaisesIssue(doc):
+            doc.action_prepare()
