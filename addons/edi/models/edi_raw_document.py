@@ -11,6 +11,13 @@ OPTIONS = {
     'separator': ',',
 }
 
+TRIAL_COUNT = 10
+
+
+class TrialImport(Exception):
+    """Exception raised in a trial import to trigger a savepoint rollback"""
+    pass
+
 
 class EdiRawDocument(models.AbstractModel):
     """EDI raw import document
@@ -43,37 +50,58 @@ class EdiRawDocument(models.AbstractModel):
         return importer
 
     @api.model
-    def headers(self, importer):
-        """Construct header list"""
+    def import_data(self, doc, trial=None):
+        """Import data"""
+        IrModel = self.env['ir.model']
 
-        # Generate preview
+        # Construct importer
+        importer = self.importer(doc)
+
+        # Construct header list
         preview = importer.parse_preview(OPTIONS)
         if 'error' in preview:
             raise UserError(preview['error'])
-
-        # Construct and validate fields list
         headers = preview['headers']
-        matches = preview['matches']
-        fields = [matches.get(i) for i in range(len(headers))]
-        unmatched = [
-            header for header, field in zip(headers, fields) if not field
-        ]
-        if unmatched:
-            raise UserError(_("No match for headers: %s") %
-                            ', '.join(unmatched))
-        return headers
+
+        # Parse import file
+        raw, fields = importer._convert_import_data(headers, OPTIONS)
+        assert fields == headers
+        raw = importer._parse_import_data(raw, fields, OPTIONS)
+
+        # Import raw data
+        model = IrModel._get(importer.res_model)
+        Model = self.env[model.model]
+        try:
+            with self.env.cr.savepoint():
+                res = Model.load(fields, raw[:trial])
+                msgs = res.get('messages')
+                ids = res.get('ids')
+                if trial:
+                    ids = []
+                    raise TrialImport
+        except TrialImport:
+            # Exception raised solely to trigger rollback to savepoint
+            pass
+        except KeyError as e:
+            # Most likely an unrecognised column heading
+            raise UserError(_("Unrecognised header \"%s\"") % e.args[0]) from e
+        finally:
+            importer.unlink()
+
+        # Raise any errors from the import
+        if msgs:
+            raise UserError('\n'.join(x['message'] for x in msgs))
+
+        # Return imported recordset
+        return Model.browse(ids)
 
     @api.model
     def prepare(self, doc):
         """Prepare document"""
         super().prepare(doc)
 
-        # Check that input file can be parsed to produce a header list
-        importer = self.importer(doc)
-        self.headers(importer)
-
-        # Delete importer
-        importer.unlink()
+        # Perform a trial import to validate input file
+        self.import_data(doc, trial=TRIAL_COUNT)
 
     @api.model
     def execute(self, doc):
@@ -82,29 +110,15 @@ class EdiRawDocument(models.AbstractModel):
         IrModel = self.env['ir.model']
         EdiRawRecord = self.env['edi.raw.record']
 
-        # Parse import file
-        importer = self.importer(doc)
-        model = IrModel._get(importer.res_model)
-        headers = self.headers(importer)
-        raw, fields = importer._convert_import_data(headers, OPTIONS)
-        assert fields == headers
-        raw = importer._parse_import_data(raw, fields, OPTIONS)
-
-        # Import raw data
-        res = self.env[model.model].load(fields, raw)
-        msgs = res.get('messages')
-        res_ids = res.get('ids')
-        if msgs:
-            raise UserError('\n'.join(x['message'] for x in msgs))
+        # Import data
+        recs = self.import_data(doc)
 
         # Create EDI records for imported records
-        for index, res_id in enumerate(res_ids, start=1):
+        model = IrModel._get(recs._name)
+        for index, rec in enumerate(recs, start=1):
             EdiRawRecord.create({
                 'doc_id': doc.id,
                 'name': '%05d' % index,
                 'model_id': model.id,
-                'res_id': res_id,
+                'res_id': rec.id,
             })
-
-        # Delete importer
-        importer.unlink()
