@@ -39,7 +39,7 @@ class EdiRawDocument(models.AbstractModel):
         """Calculate model name from input filename"""
         m = MODEL_PATTERN.match(pathlib.Path(fname).stem)
         if m:
-            return self.env.get(m['model'])
+            return self.env.get(m.group('model'))
 
     @api.model
     def autotype(self, inputs):
