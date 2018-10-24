@@ -1,12 +1,15 @@
 """EDI documents"""
 
 from base64 import b64decode, b64encode
+from collections import namedtuple
 import logging
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
 
 _logger = logging.getLogger(__name__)
+
+AutodetectDocument = namedtuple('AutodetectDocument', ['type', 'inputs'])
 
 
 class IrModel(models.Model):
@@ -81,25 +84,27 @@ class EdiDocumentType(models.Model):
             'res_field': 'input_ids',
         })
         input_ids = inputs.ids
-        docs = Document.browse()
+        autodetects = []
         for doc_type in self or self.search([]):
             Model = self.env[doc_type.model_id.model]
             if not hasattr(Model, 'autotype'):
                 continue
             for consume in Model.autotype(inputs):
-                doc = Document.create({'doc_type_id': doc_type.id})
-                consume.write({'res_id': doc.id})
+                autodetects.append(AutodetectDocument(doc_type, consume))
                 inputs -= consume
-                docs += doc
         if inputs:
             if len(self) == 1:
                 doc_type_unknown = self
             else:
                 doc_type_unknown = self.env.ref('edi.document_type_unknown')
-            doc = Document.create({'doc_type_id': doc_type_unknown.id})
-            inputs.write({'res_id': doc.id})
+            autodetects.append(AutodetectDocument(doc_type_unknown, inputs))
+        docs = Document.browse()
+        by_first_input = lambda x: input_ids.index(min(x.inputs.ids))
+        for autodetect in sorted(autodetects, key=by_first_input):
+            doc = Document.create({'doc_type_id': autodetect.type.id})
+            autodetect.inputs.write({'res_id': doc.id})
             docs += doc
-        return docs.sorted(lambda x: input_ids.index(min(x.input_ids.ids)))
+        return docs
 
     @api.multi
     def autoemit(self):

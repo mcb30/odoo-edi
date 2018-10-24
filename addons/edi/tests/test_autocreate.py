@@ -41,6 +41,7 @@ class TestAutocreate(EdiCase):
 
     def test02_order(self):
         """Order of autocreated documents"""
+        EdiDocument = self.env['edi.document']
         docs = self.autocreate('dummy.txt', 'res.users.csv', 'hello_world.txt')
         self.assertEqual(len(docs), 2)
         self.assertEqual(docs[0].input_ids.sorted('id').mapped('datas_fname'),
@@ -53,6 +54,8 @@ class TestAutocreate(EdiCase):
                          ['res.users.csv'])
         self.assertEqual(docs[1].input_ids.sorted('id').mapped('datas_fname'),
                          ['dummy.txt', 'hello_world.txt'])
+        self.assertEqual(list(docs),
+                         list(EdiDocument.search([('id', 'in', docs.ids)])))
 
     def test03_wizard_create(self):
         """Autocreate via wizard"""
