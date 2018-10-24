@@ -98,25 +98,3 @@ class TestRaw(EdiCase):
         attachment.datas_fname = 'res.users-broken.csv'
         with self.assertRaisesIssue(doc):
             doc.action_prepare()
-
-    def test08_autocreate_order(self):
-        """Order of autocreated documents"""
-        EdiDocumentType = self.env['edi.document.type']
-        filenames = ['dummy.txt', 'res.users.csv', 'hello_world.txt']
-        attachments = self.create_attachment(*filenames)
-        self.assertEqual(attachments.mapped('datas_fname'), filenames)
-        docs = EdiDocumentType.autocreate(attachments)
-        self.assertEqual(len(docs), 2)
-        self.assertEqual(docs[0].input_ids.sorted('id').mapped('datas_fname'),
-                         ['dummy.txt', 'hello_world.txt'])
-        self.assertEqual(docs[1].input_ids.sorted('id').mapped('datas_fname'),
-                         ['res.users.csv'])
-        filenames = ['res.users.csv', 'dummy.txt', 'hello_world.txt']
-        attachments = self.create_attachment(*filenames)
-        self.assertEqual(attachments.mapped('datas_fname'), filenames)
-        docs = EdiDocumentType.autocreate(attachments)
-        self.assertEqual(len(docs), 2)
-        self.assertEqual(docs[0].input_ids.sorted('id').mapped('datas_fname'),
-                         ['res.users.csv'])
-        self.assertEqual(docs[1].input_ids.sorted('id').mapped('datas_fname'),
-                         ['dummy.txt', 'hello_world.txt'])
