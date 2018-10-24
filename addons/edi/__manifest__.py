@@ -53,6 +53,7 @@ Key Features
         'views/ir_cron_views.xml',
         'views/mail_views.xml',
         'views/project_issue_views.xml',
+        'wizard/edi_autocreate.xml',
     ],
     'qweb': [
         'static/src/xml/thread.xml'

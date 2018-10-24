@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- Form view -->
+    <record id="document_autocreate_form" model="ir.ui.view">
+      <field name="name">edi.document.autocreate.form</field>
+      <field name="model">edi.document.autocreate</field>
+      <field name="arch" type="xml">
+	<form string="Autocreate EDI Documents">
+	  <sheet>
+	    <group>
+	      <field name="input_ids" widget="many2many_binary"/>
+	      <field name="doc_type_ids" widget="many2many_tags"
+		     options="{'no_create': True}"/>
+	    </group>
+	  </sheet>
+	  <footer>
+	    <button name="action_create" type="object" string="Create"/>
+	    <button name="action_prepare" type="object" string="Prepare"/>
+	    <button name="action_execute" type="object" string="Execute"
+		    class="btn-primary"/>
+	    <button string="Discard" special="cancel"/>
+	  </footer>
+	</form>
+      </field>
+    </record>
+
+    <!-- Action window -->
+    <record id="document_autocreate_action" model="ir.actions.act_window">
+      <field name="name">EDI Document Autocreation</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.document.autocreate</field>
+      <field name="view_type">form</field>
+      <field name="view_mode">form</field>
+      <field name="view_id" ref="document_autocreate_form"/>
+      <field name="target">new</field>
+    </record>
+
+    <!-- Menu item -->
+    <menuitem id="document_autocreate_menu" name="Autocreate"
+	      action="document_autocreate_action"
+	      parent="document_menu" sequence="30"/>
+
+  </data>
+</odoo>
