@@ -115,6 +115,16 @@ class EdiCase(common.SavepointCase):
         })
         return attachments
 
+    @classmethod
+    def autoexec(cls, *filenames):
+        """Autocreate and execute input document(s) from attachment(s)"""
+        EdiDocumentType = cls.env['edi.document.type']
+        attachments = cls.create_attachment(*filenames)
+        docs = EdiDocumentType.autocreate(attachments)
+        for doc in docs:
+            doc.action_execute()
+        return docs
+
     def assertAttachment(self, attachment, filename=None, pattern=None):
         """Assert that attachment filename and content is as expected"""
         if filename is None:
