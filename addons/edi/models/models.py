@@ -28,14 +28,12 @@ def batched(self, size=models.PREFETCH_MAX):
     return tools.ranged(self.sliced(size=size))
 
 @add_if_not_exists(models.BaseModel)
-def groupby(self, key=None, sort=True):
+def groupby(self, key, sort=True):
     """Return the recordset ``self`` grouped by ``key``"""
     recs = self
-    if sort:
-        recs = recs.sorted(key=key)
-    if key is None:
-        return recs
     if isinstance(key, str):
         key = itemgetter(key)
+    if sort:
+        recs = recs.sorted(key=key)
     return ((k, self.browse(x.id for x in v))
             for k, v in itertools.groupby(recs, key=key))
