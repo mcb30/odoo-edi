@@ -142,8 +142,8 @@ class EdiMoveRequestRecord(models.Model):
 
         # Associate moves to pickings.  Do this as a bulk operation to
         # avoid triggering updates on the picking for each new move.
-        for pick_id, recs in self.groupby(lambda x: x.pick_id.id):
-            recs.mapped('move_id').write({'picking_id': pick_id})
+        for pick, recs in self.groupby(lambda x: x.pick_id):
+            recs.mapped('move_id').write({'picking_id': pick.id})
 
         # Cancel moves in bulk
         cancel._action_cancel()

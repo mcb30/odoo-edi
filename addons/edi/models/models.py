@@ -29,11 +29,24 @@ def batched(self, size=models.PREFETCH_MAX):
 
 @add_if_not_exists(models.BaseModel)
 def groupby(self, key, sort=True):
-    """Return the recordset ``self`` grouped by ``key``"""
+    """Return the recordset ``self`` grouped by ``key``
+
+    The recordset will automatically be sorted using ``key`` as the
+    sorting key, unless ``sort`` is explicitly set to ``False``.
+
+    ``key`` is permitted to produce a singleton recordset object, in
+    which case the sort order will be well-defined but arbitrary.  If
+    a non-arbitrary ordering is required, then use :meth:`~.sorted` to
+    sort the recordset first, then pass to :meth:`~.groupby` with
+    ``sort=False``.
+    """
     recs = self
     if isinstance(key, str):
         key = itemgetter(key)
     if sort:
-        recs = recs.sorted(key=key)
+        if recs and isinstance(key(recs[0]), models.BaseModel):
+            recs = recs.sorted(key=lambda x: key(x).id)
+        else:
+            recs = recs.sorted(key=key)
     return ((k, self.browse(x.id for x in v))
             for k, v in itertools.groupby(recs, key=key))

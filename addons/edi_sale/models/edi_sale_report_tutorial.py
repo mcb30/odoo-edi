@@ -101,9 +101,9 @@ class EdiSaleReportTutorialDocument(models.AbstractModel):
         """
         return (
             product_lines.with_context(default_name='%04d' % index)
-            for _order_id, order_lines in lines.groupby(lambda x: x.order_id.id)
-            for index, (_product_id, product_lines) in enumerate(
-                order_lines.groupby(lambda x: x.product_id.id)
+            for _order, order_lines in lines.groupby(lambda x: x.order_id)
+            for index, (_product, product_lines) in enumerate(
+                order_lines.groupby(lambda x: x.product_id)
             )
         )
 

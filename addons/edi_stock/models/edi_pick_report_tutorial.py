@@ -82,9 +82,9 @@ class EdiPickReportTutorialDocument(models.AbstractModel):
         """
         return (
             product_moves.with_context(default_name='%04d' % index)
-            for _pick_id, pick_moves in moves.groupby(lambda x: x.picking_id.id)
-            for index, (_product_id, product_moves) in enumerate(
-                pick_moves.groupby(lambda x: x.product_id.id)
+            for _pick, pick_moves in moves.groupby(lambda x: x.picking_id)
+            for index, (_product, product_moves) in enumerate(
+                pick_moves.groupby(lambda x: x.product_id)
             )
         )
 
