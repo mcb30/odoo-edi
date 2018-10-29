@@ -74,6 +74,8 @@ class EdiSaleRequestTutorialDocument(models.AbstractModel):
     _inherit = ['edi.partner.document', 'edi.sale.request.document']
     _description = "Tutorial sale request CSV file"""
 
+    _auto_confirm = True
+
     @api.model
     def prepare(self, doc):
         """Prepare document"""

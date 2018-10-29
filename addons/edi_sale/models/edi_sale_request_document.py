@@ -1,6 +1,10 @@
 """EDI sale order request documents"""
 
+import logging
 from odoo import api, models
+from odoo.tools.translate import _
+
+_logger = logging.getLogger(__name__)
 
 
 class EdiSaleRequestDocument(models.AbstractModel):
@@ -23,6 +27,13 @@ class EdiSaleRequestDocument(models.AbstractModel):
     _name = 'edi.sale.request.document'
     _inherit = 'edi.document.model'
     _description = "Sale Requests"
+
+    _auto_confirm = False
+    """Automatically confirm sale orders
+
+    Derived models may set this to true in order to automatically
+    confirm sale orders as part of document execution.
+    """
 
     @api.model
     def sale_request_record_model(self, doc,
@@ -49,3 +60,16 @@ class EdiSaleRequestDocument(models.AbstractModel):
         super().prepare(doc)
         # Ensure that at least one input file exists
         doc.inputs()
+
+    @api.model
+    def execute(self, doc):
+        """Execute document"""
+        super().execute(doc)
+
+        # Automatically confirm sale orders, if applicable
+        if self._auto_confirm:
+            SaleRequestRecord = self.sale_request_record_model(doc)
+            reqs = SaleRequestRecord.search([('doc_id', '=', doc.id)])
+            for sale in reqs.mapped('sale_id'):
+                _logger.info(_("%s confirming %s"), doc.name, sale.name)
+                sale.action_confirm()

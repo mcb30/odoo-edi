@@ -29,6 +29,8 @@ class TestTutorial(EdiSaleCase):
         sales = doc.mapped('sale_request_tutorial_ids.sale_id')
         self.assertEqual(len(sales), 3)
         self.assertEqual(doc.sale_ids, sales)
+        for sale in sales:
+            self.assertEqual(sale.state, 'sale')
         sales_by_name = {x.name: x for x in sales}
         self.assertEqual(sales_by_name['ORD01'].partner_id.name, 'Alice')
         self.assertEqual(len(sales_by_name['ORD01'].order_line), 2)
