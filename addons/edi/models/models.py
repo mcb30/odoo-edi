@@ -45,7 +45,7 @@ def groupby(self, key, sort=True):
         key = itemgetter(key)
     if sort:
         if recs and isinstance(key(recs[0]), models.BaseModel):
-            recs = recs.sorted(key=lambda x: key(x).id)
+            recs = recs.sorted(key=lambda x: key(x).ids)
         else:
             recs = recs.sorted(key=key)
     return ((k, self.browse(x.id for x in v))
