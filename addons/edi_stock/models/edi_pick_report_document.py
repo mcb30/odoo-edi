@@ -48,6 +48,14 @@ class EdiPickReportDocument(models.AbstractModel):
     _inherit = 'edi.document.model'
     _description = "Stock Transfer Reports"
 
+    _edi_report_via = 'edi_pick_report_id'
+    """Report record field
+
+    This field is used to record the EDI document used to report upon
+    a ``stock.picking``.  It may be overridden if there is a need to
+    report more than once upon a single ``stock.picking`` record.
+    """
+
     @api.model
     def pick_report_record_model(self, doc,
                                  supermodel='edi.pick.report.record'):
@@ -75,7 +83,7 @@ class EdiPickReportDocument(models.AbstractModel):
         has not yet been generated.
         """
         return [
-            ('edi_pick_report_id', '=', False),
+            (self._edi_report_via, '=', False),
             ('state', '=', 'done'),
             ('picking_type_id', 'in', doc.doc_type_id.pick_type_ids.ids),
         ]
@@ -115,7 +123,7 @@ class EdiPickReportDocument(models.AbstractModel):
         Move = self.env['stock.move']
         # Lock pickings to prevent concurrent report generation attempts
         picks = Picking.search(self.pick_report_domain(doc))
-        picks.write({'edi_pick_report_id': False})
+        picks.write({self._edi_report_via: False})
         # Construct move list
         moves = Move.search(self.move_report_domain(doc, picks))
         movelist = self.move_report_list(doc, moves)
@@ -132,8 +140,8 @@ class EdiPickReportDocument(models.AbstractModel):
         PickReport = self.pick_report_record_model(doc)
         pick_reports = PickReport.search([('doc_id', '=', doc.id)])
         picks = pick_reports.mapped('pick_id')
-        reported_picks = picks.filtered(lambda x: x.edi_pick_report_id)
+        reported_picks = picks.filtered(self._edi_report_via)
         if reported_picks:
             raise UserError(_("Report already generated for %s") %
                             ", ".join(reported_picks.mapped('name')))
-        picks.write({'edi_pick_report_id': doc.id})
+        picks.write({self._edi_report_via: doc.id})
