@@ -51,7 +51,8 @@ class EdiQuantReportRecord(models.Model):
         """
         product = quants.mapped('product_id').ensure_one()
         return {
-            'name': product.default_code,
+            'name': quants.env.context.get('default_name',
+                                           product.default_code),
             'product_id': product.id,
             'qty': sum(x.quantity for x in quants),
         }
