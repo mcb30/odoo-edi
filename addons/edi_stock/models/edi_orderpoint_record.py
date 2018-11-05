@@ -65,3 +65,13 @@ class EdiOrderpointRecord(models.Model):
             'product_max_qty': record_vals['product_max_qty'],
         })
         return orderpoint_vals
+
+class EdiInactiveOrderpointRecord(models.Model):
+    """EDI inactive orderpoint record"""
+
+    _name = 'edi.inactive.orderpoint.record'
+    _inherit = 'edi.record.deactivator'
+    _description = "???"
+
+    target_id = fields.Many2one('stock.warehouse.orderpoint',
+                                string="Minimum Inventory Rule")

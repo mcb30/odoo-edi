@@ -31,3 +31,12 @@ class EdiMoveTrackerRecord(models.Model):
     tracker_id = fields.Many2one('edi.move.tracker', string="Tracker",
                                  required=False, readonly=True, index=True,
                                  auto_join=True)
+
+class EdiInactiveMoveTrackerRecord(models.Model):
+    """EDI inactive prtner record"""
+
+    _name = 'edi.inactive.move.tracker.record'
+    _inherit = 'edi.record.deactivator'
+    _description = "???"
+
+    target_id = fields.Many2one('edi.move.tracker', string="Tracker")

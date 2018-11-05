@@ -101,3 +101,12 @@ class EdiPartnerTitleRecord(models.Model):
             'shortcut': record_vals['shortcut'],
         })
         return title_vals
+    
+class EdiInactivePartnerRecord(models.Model):
+    """EDI inactive prtner record"""
+
+    _name = 'edi.inactive.partner.record'
+    _inherit = 'edi.record.deactivator'
+    _description = "???"
+
+    target_id = fields.Many2one('res.partner', string="Partner")
