@@ -112,10 +112,11 @@ class EdiSaleReportDocument(models.AbstractModel):
         SaleOrder = self.env['sale.order']
         SaleOrderLine = self.env['sale.order.line']
         # Lock sale orders to prevent concurrent report generation attempts
-        sales = SaleOrder.search(self.sale_report_domain(doc))
+        sales = SaleOrder.search(self.sale_report_domain(doc), order='id')
         sales.write({self._edi_sale_report_via: False})
         # Construct sale order line list
-        lines = SaleOrderLine.search(self.sale_line_report_domain(doc, sales))
+        lines = SaleOrderLine.search(self.sale_line_report_domain(doc, sales),
+                                     order='order_id, id')
         linelist = self.sale_line_report_list(doc, lines)
         # Prepare records
         SaleReport.prepare(doc, sales)
