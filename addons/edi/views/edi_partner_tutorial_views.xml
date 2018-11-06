@@ -6,7 +6,7 @@
     <record id="partner_tutorial_record_form" model="ir.ui.view">
       <field name="name">edi.partner.tutorial.record.form</field>
       <field name="model">edi.partner.tutorial.record</field>
-      <field name="inherit_id" ref="partner_record_form"/>
+      <field name="inherit_id" ref="edi.partner_record_form"/>
       <field name="mode">primary</field>
       <field name="arch" type="xml">
 	<xpath expr="//group[@name='detail']" position="inside">
@@ -19,7 +19,7 @@
     <record id="partner_tutorial_record_tree" model="ir.ui.view">
       <field name="name">edi.partner.tutorial.record.tree</field>
       <field name="model">edi.partner.tutorial.record</field>
-      <field name="inherit_id" ref="partner_record_tree"/>
+      <field name="inherit_id" ref="edi.partner_record_tree"/>
       <field name="mode">primary</field>
       <field name="arch" type="xml">
 	<xpath expr="//tree" position="inside">

@@ -6,7 +6,7 @@
     <record id="sale_request_tutorial_record_form" model="ir.ui.view">
       <field name="name">edi.sale.request.tutorial.record.form</field>
       <field name="model">edi.sale.request.tutorial.record</field>
-      <field name="inherit_id" ref="sale_request_record_form"/>
+      <field name="inherit_id" ref="edi_sale.sale_request_record_form"/>
       <field name="mode">primary</field>
       <field name="arch" type="xml">
 	<xpath expr="//group[@name='basic']" position="inside"/>
@@ -17,7 +17,7 @@
     <record id="sale_line_request_tutorial_record_form" model="ir.ui.view">
       <field name="name">edi.sale.line.request.tutorial.record.form</field>
       <field name="model">edi.sale.line.request.tutorial.record</field>
-      <field name="inherit_id" ref="sale_line_request_record_form"/>
+      <field name="inherit_id" ref="edi_sale.sale_line_request_record_form"/>
       <field name="mode">primary</field>
       <field name="arch" type="xml">
 	<xpath expr="//group[@name='basic']" position="inside"/>
@@ -28,7 +28,7 @@
     <record id="sale_request_tutorial_record_tree" model="ir.ui.view">
       <field name="name">edi.sale.request.tutorial.record.tree</field>
       <field name="model">edi.sale.request.tutorial.record</field>
-      <field name="inherit_id" ref="sale_request_record_tree"/>
+      <field name="inherit_id" ref="edi_sale.sale_request_record_tree"/>
       <field name="mode">primary</field>
       <field name="arch" type="xml">
 	<xpath expr="//tree" position="inside"/>
@@ -39,7 +39,7 @@
     <record id="sale_line_request_tutorial_record_tree" model="ir.ui.view">
       <field name="name">edi.sale.line.request.tutorial.record.tree</field>
       <field name="model">edi.sale.line.request.tutorial.record</field>
-      <field name="inherit_id" ref="sale_line_request_record_tree"/>
+      <field name="inherit_id" ref="edi_sale.sale_line_request_record_tree"/>
       <field name="mode">primary</field>
       <field name="arch" type="xml">
 	<xpath expr="//tree" position="inside"/>
