@@ -114,13 +114,16 @@ class EdiSaleReportDocument(models.AbstractModel):
         # Lock sale orders to prevent concurrent report generation attempts
         sales = SaleOrder.search(self.sale_report_domain(doc), order='id')
         sales.write({self._edi_sale_report_via: False})
-        # Construct sale order line list
-        lines = SaleOrderLine.search(self.sale_line_report_domain(doc, sales),
-                                     order='order_id, id')
-        linelist = self.sale_line_report_list(doc, lines)
+        # Construct sale order line list, if applicable
+        if SaleLineReport is not None:
+            lines = SaleOrderLine.search(
+                self.sale_line_report_domain(doc, sales), order='order_id, id'
+            )
+            linelist = self.sale_line_report_list(doc, lines)
         # Prepare records
         SaleReport.prepare(doc, sales)
-        SaleLineReport.prepare(doc, linelist)
+        if SaleLineReport is not None:
+            SaleLineReport.prepare(doc, linelist)
 
     @api.model
     def execute(self, doc):

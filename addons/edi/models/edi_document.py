@@ -459,6 +459,8 @@ class EdiDocumentModel(models.AbstractModel):
     def record_model(self, doc, supermodel='edi.record'):
         """Get EDI record model class"""
         Models = self.record_models(doc, supermodel=supermodel)
+        if not Models:
+            return None
         if len(Models) != 1:
             raise ValueError(_("Expected singleton record model: %s") %
                              ','.join(x._name for x in Models))

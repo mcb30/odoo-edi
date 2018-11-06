@@ -124,13 +124,15 @@ class EdiPickReportDocument(models.AbstractModel):
         # Lock pickings to prevent concurrent report generation attempts
         picks = Picking.search(self.pick_report_domain(doc), order='id')
         picks.write({self._edi_pick_report_via: False})
-        # Construct move list
-        moves = Move.search(self.move_report_domain(doc, picks),
-                            order='picking_id, id')
-        movelist = self.move_report_list(doc, moves)
+        # Construct move list, if applicable
+        if MoveReport is not None:
+            moves = Move.search(self.move_report_domain(doc, picks),
+                                order='picking_id, id')
+            movelist = self.move_report_list(doc, moves)
         # Prepare records
         PickReport.prepare(doc, picks)
-        MoveReport.prepare(doc, movelist)
+        if MoveReport is not None:
+            MoveReport.prepare(doc, movelist)
 
     @api.model
     def execute(self, doc):
