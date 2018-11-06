@@ -3,6 +3,25 @@
 from odoo import api, fields, models
 
 
+class EdiDocument(models.Model):
+    """Extend ``edi.document`` to include sale order request records"""
+
+    _inherit = 'edi.document'
+
+    sale_request_ids = fields.One2many(
+        'edi.sale.request.record', 'doc_id',
+        string="Sale Requests",
+    )
+
+    @api.multi
+    @api.depends('sale_request_ids',
+                 'sale_request_ids.sale_id')
+    def _compute_sale_ids(self):
+        super()._compute_sale_ids()
+        for doc in self:
+            doc.sale_ids += doc.mapped('sale_request_ids.sale_id')
+
+
 class EdiSaleRequestRecord(models.Model):
     """EDI sale order request record
 

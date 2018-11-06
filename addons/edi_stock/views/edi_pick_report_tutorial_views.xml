@@ -86,7 +86,7 @@
       <field name="model">edi.document</field>
       <field name="inherit_id" ref="edi.document_form"/>
       <field name="arch" type="xml">
-	<xpath expr="//notebook[@name='records']" position="inside">
+	<xpath expr="//page[@name='pick_report']" position="after">
 	  <page name="pick_report_tutorial" string="Stock Transfers"
 		attrs="{'invisible':['!',('rec_type_names','ilike',
 		       '/edi.pick.report.tutorial.record/')]}">
@@ -97,6 +97,8 @@
 	      </tree>
 	    </field>
 	  </page>
+	</xpath>
+	<xpath expr="//page[@name='move_report']" position="after">
 	  <page name="move_report_tutorial" string="Stock Moves"
 		attrs="{'invisible':['!',('rec_type_names','ilike',
 		       '/edi.move.report.tutorial.record/')]}">

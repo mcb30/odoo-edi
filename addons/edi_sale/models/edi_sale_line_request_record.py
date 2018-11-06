@@ -8,6 +8,17 @@ from odoo.tools.translate import _
 _logger = logging.getLogger(__name__)
 
 
+class EdiDocument(models.Model):
+    """Extend ``edi.document`` to include sale line request records"""
+
+    _inherit = 'edi.document'
+
+    sale_line_request_ids = fields.One2many(
+        'edi.sale.line.request.record', 'doc_id',
+        string="Sale Line Requests",
+    )
+
+
 class EdiSaleLineRequestRecord(models.Model):
     """EDI sale line request record
 

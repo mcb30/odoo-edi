@@ -3,6 +3,17 @@
 from odoo import api, fields, models
 
 
+class EdiDocument(models.Model):
+    """Extend ``edi.document`` to include stock transfer report records"""
+
+    _inherit = 'edi.document'
+
+    pick_report_ids = fields.One2many(
+        'edi.pick.report.record', 'doc_id',
+        string="Stock Transfer Reports",
+    )
+
+
 class EdiPickReportRecord(models.Model):
     """EDI stock transfer report record
 

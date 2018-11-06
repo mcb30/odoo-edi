@@ -9,6 +9,17 @@ from odoo.exceptions import UserError
 _logger = logging.getLogger(__name__)
 
 
+class EdiDocument(models.Model):
+    """Extend ``edi.document`` to include stock move request records"""
+
+    _inherit = 'edi.document'
+
+    move_request_ids = fields.One2many(
+        'edi.move.request.record', 'doc_id',
+        string="Stock Moves",
+    )
+
+
 class EdiMoveRequestRecord(models.Model):
     """EDI stock move request record
 

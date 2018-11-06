@@ -3,6 +3,25 @@
 from odoo import api, fields, models
 
 
+class EdiDocument(models.Model):
+    """Extend ``edi.document`` to include stock transfer request records"""
+
+    _inherit = 'edi.document'
+
+    pick_request_ids = fields.One2many(
+        'edi.pick.request.record', 'doc_id',
+        string="Stock Transfer Requests",
+    )
+
+    @api.multi
+    @api.depends('pick_request_ids',
+                 'pick_request_ids.pick_id')
+    def _compute_pick_ids(self):
+        super()._compute_pick_ids()
+        for doc in self:
+            doc.pick_ids += doc.mapped('pick_request_ids.pick_id')
+
+
 class EdiPickRequestRecord(models.Model):
     """EDI stock transfer request record
 

@@ -74,5 +74,27 @@
       <field name="context">{'create': False}</field>
     </record>
 
+    <!-- EDI stock transfer request records field -->
+    <record id="pick_request_document_form" model="ir.ui.view">
+      <field name="name">edi.pick.request.document.form</field>
+      <field name="model">edi.document</field>
+      <field name="inherit_id" ref="edi.document_form"/>
+      <field name="arch" type="xml">
+	<xpath expr="//notebook[@name='records']" position="inside">
+	  <page name="pick_request" string="Stock Transfers"
+		attrs="{'invisible':['!',('rec_type_names','ilike',
+		       '/edi.pick.request.record/')]}">
+	    <field name="pick_request_ids" readonly="1">
+	      <tree>
+		<field name="name"/>
+		<field name="pick_type_id"/>
+		<field name="pick_id"/>
+	      </tree>
+	    </field>
+	  </page>
+	</xpath>
+      </field>
+    </record>
+
   </data>
 </odoo>

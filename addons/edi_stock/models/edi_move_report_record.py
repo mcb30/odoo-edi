@@ -4,6 +4,17 @@ from odoo import api, fields, models
 from odoo.addons import decimal_precision as dp
 
 
+class EdiDocument(models.Model):
+    """Extend ``edi.document`` to include stock move report records"""
+
+    _inherit = 'edi.document'
+
+    move_report_ids = fields.One2many(
+        'edi.move.report.record', 'doc_id',
+        string="Stock Moves",
+    )
+
+
 class EdiMoveReportRecord(models.Model):
     """EDI stock move report record
 

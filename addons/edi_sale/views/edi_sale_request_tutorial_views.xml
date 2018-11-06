@@ -84,7 +84,7 @@
       <field name="model">edi.document</field>
       <field name="inherit_id" ref="edi.document_form"/>
       <field name="arch" type="xml">
-	<xpath expr="//notebook[@name='records']" position="inside">
+	<xpath expr="//page[@name='sale_request']" position="after">
 	  <page name="sale_request_tutorial" string="Sales"
 		attrs="{'invisible':['!',('rec_type_names','ilike',
 		       '/edi.sale.request.tutorial.record/')]}">
