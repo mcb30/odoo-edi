@@ -52,7 +52,7 @@
 	  <group>
 	    <filter string="Document" name="by_doc_id" domain="[]"
 		    context="{'group_by':'doc_id'}"/>
-	    <filter string="Transfer" name="by_sale_id" domain="[]"
+	    <filter string="Sale Order" name="by_sale_id" domain="[]"
 		    context="{'group_by':'sale_id'}"/>
 	  </group>
 	</search>

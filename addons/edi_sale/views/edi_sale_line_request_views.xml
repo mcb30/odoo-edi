@@ -68,8 +68,8 @@
 	  <group>
 	    <filter string="Document" name="by_doc_id" domain="[]"
 		    context="{'group_by':'doc_id'}"/>
-	    <filter string="Stock Transfer" name="by_pick_id"
-		    domain="[]" context="{'group_by':'pick_id'}"/>
+	    <filter string="Sale Order" name="by_order_id"
+		    domain="[]" context="{'group_by':'order_id'}"/>
 	    <filter string="Product" name="by_product_id"
 		    domain="[]" context="{'group_by':'product_id'}"/>
 	    <filter string="Order" name="by_order_id"
