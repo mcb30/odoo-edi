@@ -20,6 +20,7 @@
 		<field name="doc_id"/>
 		<field name="pick_id"/>
 	      </group>
+	      <group name="detail"/>
 	    </group>
 	  </sheet>
 	</form>

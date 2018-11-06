@@ -21,6 +21,7 @@
 		<field name="product_id"/>
 		<field name="description"/>
 	      </group>
+	      <group name="detail"/>
 	    </group>
 	  </sheet>
 	</form>

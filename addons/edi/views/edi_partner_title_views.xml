@@ -21,6 +21,7 @@
 		<field name="title_id"/>
 		<field name="shortcut"/>
 	      </group>
+	      <group name="detail"/>
 	    </group>
 	  </sheet>
 	</form>

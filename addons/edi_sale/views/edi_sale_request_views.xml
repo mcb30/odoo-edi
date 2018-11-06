@@ -22,6 +22,7 @@
 		<field name="customer_key"/>
 		<field name="customer_id"/>
 	      </group>
+	      <group name="detail"/>
 	    </group>
 	  </sheet>
 	</form>

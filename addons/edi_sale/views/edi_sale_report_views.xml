@@ -20,6 +20,7 @@
 		<field name="doc_id"/>
 		<field name="sale_id"/>
 	      </group>
+	      <group name="detail"/>
 	    </group>
 	  </sheet>
 	</form>

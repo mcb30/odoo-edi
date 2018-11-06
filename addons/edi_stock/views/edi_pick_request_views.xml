@@ -21,6 +21,7 @@
 		<field name="pick_type_id"/>
 		<field name="pick_id"/>
 	      </group>
+	      <group name="detail"/>
 	    </group>
 	  </sheet>
 	</form>
