@@ -30,12 +30,22 @@ class EdiSaleLineReportRecord(models.Model):
     _inherit = 'edi.record'
     _description = "Sale Order Line Report"
 
-    line_ids = fields.Many2many('sale.order.line', string="Lines",
-                                required=True, readonly=True, index=True)
-    product_id = fields.Many2one('product.product', string="Product",
-                                 required=False, readonly=True, index=True)
-    qty = fields.Float(string="Quantity", readonly=True, required=True,
-                       digits=dp.get_precision('Product Unit of Measure'))
+    line_ids = fields.Many2many(
+        'sale.order.line', string="Lines",
+        required=True, readonly=True, index=True,
+    )
+    product_id = fields.Many2one(
+        'product.product', string="Product",
+        required=False, readonly=True, index=True,
+    )
+    qty_ordered = fields.Float(
+        string="Ordered", readonly=True, required=True,
+        digits=dp.get_precision('Product Unit of Measure'),
+    )
+    qty_delivered = fields.Float(
+        string="Delivered", readonly=True, required=True,
+        digits=dp.get_precision('Product Unit of Measure'),
+    )
 
     @api.model
     def record_values(self, lines):
@@ -50,7 +60,8 @@ class EdiSaleLineReportRecord(models.Model):
             'name': lines.env.context.get('default_name', product.default_code),
             'line_ids': [(6, 0, lines.ids)],
             'product_id': product.id,
-            'qty': sum(x.qty_delivered for x in lines),
+            'qty_ordered': sum(x.product_uom_qty for x in lines),
+            'qty_delivered': sum(x.qty_delivered for x in lines),
         }
 
     @api.model

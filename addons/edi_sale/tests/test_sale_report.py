@@ -62,8 +62,8 @@ class TestSaleReport(EdiSaleCase):
                          self.sale.order_line)
         line_reports_by_product = {x.product_id.default_code: x
                                    for x in line_reports}
-        self.assertEqual(line_reports_by_product['APPLE'].qty, 5)
-        self.assertEqual(line_reports_by_product['BANANA'].qty, 7)
+        self.assertEqual(line_reports_by_product['APPLE'].qty_delivered, 5)
+        self.assertEqual(line_reports_by_product['BANANA'].qty_delivered, 7)
 
     def test03_duplicate(self):
         """Test attempt to create duplicate sale order report"""

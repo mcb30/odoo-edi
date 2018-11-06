@@ -109,7 +109,8 @@
 		<field name="name"/>
 		<field name="line_ids" widget="many2many_tags"/>
 		<field name="product_id"/>
-		<field name="qty"/>
+		<field name="qty_ordered"/>
+		<field name="qty_delivered"/>
 		<field name="price_subtotal"/>
 		<field name="price_total"/>
 	      </tree>

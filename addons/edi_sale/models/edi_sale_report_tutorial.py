@@ -131,7 +131,8 @@ class EdiSaleReportTutorialDocument(models.AbstractModel):
                                     quoting=csv.QUOTE_MINIMAL)
                 for rec in recs:
                     writer.writerow([sale.partner_id.name, sale.name,
-                                     rec.product_id.default_code, int(rec.qty),
+                                     rec.product_id.default_code,
+                                     int(rec.qty_delivered),
                                      '%.2f' % rec.price_subtotal,
                                      '%.2f' % rec.price_total])
                 data = output.getvalue().encode()

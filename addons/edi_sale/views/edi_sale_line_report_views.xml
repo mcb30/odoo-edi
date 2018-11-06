@@ -22,7 +22,8 @@
 	      </group>
 	      <group name="detail">
 		<field name="product_id"/>
-		<field name="qty"/>
+		<field name="qty_ordered"/>
+		<field name="qty_delivered"/>
 	      </group>
 	    </group>
 	  </sheet>
@@ -40,7 +41,8 @@
 	  <field name="name"/>
 	  <field name="line_ids" widget="many2many_tags"/>
 	  <field name="product_id"/>
-	  <field name="qty"/>
+	  <field name="qty_ordered"/>
+	  <field name="qty_delivered"/>
 	</tree>
       </field>
     </record>
@@ -92,7 +94,8 @@
 		<field name="name"/>
 		<field name="line_ids" widget="many2many_tags"/>
 		<field name="product_id"/>
-		<field name="qty"/>
+		<field name="qty_ordered"/>
+		<field name="qty_delivered"/>
 	      </tree>
 	    </field>
 	  </page>
