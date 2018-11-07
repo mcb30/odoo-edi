@@ -21,11 +21,12 @@ class EdiSaleRequestDocument(models.AbstractModel):
       turn, each represent a line item within one of the above sale
       orders
 
-    Derived models should implement :meth:`~.prepare`.
+    Derived models should implement either :meth:`~.prepare` or
+    :meth:`~.sale_request_record_values`.
     """
 
     _name = 'edi.sale.request.document'
-    _inherit = 'edi.document.model'
+    _inherit = 'edi.document.sync'
     _description = "Sale Requests"
 
     _auto_confirm = False
@@ -55,11 +56,24 @@ class EdiSaleRequestDocument(models.AbstractModel):
         return self.record_model(doc, supermodel=supermodel)
 
     @api.model
+    def sale_request_record_values(self, _data):
+        """Construct EDI sale request record value dictionaries
+
+        Must return an iterable of dictionaries, each of which could
+        passed to :meth:`~odoo.models.Model.create` in order to create
+        an EDI sale request record.
+        """
+        return self.no_record_values()
+
+    @api.model
     def prepare(self, doc):
         """Prepare document"""
         super().prepare(doc)
-        # Ensure that at least one input file exists
-        doc.inputs()
+        self.sale_request_record_model(doc).prepare(doc, (
+            record_vals
+            for _fname, data in doc.inputs()
+            for record_vals in self.sale_request_record_values(data)
+        ))
 
     @api.model
     def execute(self, doc):
