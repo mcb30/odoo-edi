@@ -37,7 +37,7 @@ class EdiSaleLineRequestRecord(models.Model):
                                    readonly=True, index=True)
     order_key = fields.Char(string="Order Key", required=True,
                             readonly=True, index=True,
-                            edi_relates='order_id.name')
+                            edi_relates='order_id.origin')
     order_id = fields.Many2one('sale.order', string="Order",
                                required=False, readonly=True, index=True)
     product_key = fields.Char(string="Product Key", required=True,

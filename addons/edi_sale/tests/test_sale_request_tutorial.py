@@ -31,7 +31,7 @@ class TestTutorial(EdiSaleCase):
         self.assertEqual(doc.sale_ids, sales)
         for sale in sales:
             self.assertEqual(sale.state, 'sale')
-        sales_by_name = {x.name: x for x in sales}
+        sales_by_name = {x.origin: x for x in sales}
         self.assertEqual(sales_by_name['ORD01'].partner_id.name, 'Alice')
         self.assertEqual(len(sales_by_name['ORD01'].order_line), 2)
         self.assertEqual(len(sales_by_name['ORD02'].order_line), 1)

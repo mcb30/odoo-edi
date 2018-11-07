@@ -41,7 +41,7 @@ class EdiSaleRequestRecord(models.Model):
     _description = "Sale Request"
 
     _edi_sync_target = 'sale_id'
-    _edi_sync_via = 'name'
+    _edi_sync_via = 'origin'
     _edi_sync_domain = [('state', '!=', 'cancel')]
 
     sale_id = fields.Many2one('sale.order', string="Sale",
@@ -59,7 +59,7 @@ class EdiSaleRequestRecord(models.Model):
         """Construct ``sale.order`` value dictionary"""
         sale_vals = super().target_values(record_vals)
         sale_vals.update({
-            'name': record_vals['name'],
+            'origin': record_vals['name'],
             'partner_id': record_vals['customer_id'],
         })
         return sale_vals
