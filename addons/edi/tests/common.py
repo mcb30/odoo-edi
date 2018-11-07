@@ -127,20 +127,6 @@ class EdiCase(common.SavepointCase):
             doc.action_execute()
         return docs
 
-        if filename is None:
-            filename = attachment.datas_fname
-        data = self.files.joinpath(filename).read_bytes()
-        if pattern is None:
-            self.assertEqual(attachment.datas_fname, filename)
-        else:
-            self.assertRegex(attachment.datas_fname, pattern)
-        try:
-            maxDiff = self.maxDiff
-            self.maxDiff = None
-            self.assertEqual(base64.b64decode(attachment.datas), data)
-        finally:
-            self.maxDiff = maxDiff
-
     def assertAttachment(self, attachment, filename=None, pattern=None,
                          decode=bytes.decode):
         """Assert that attachment filename and content is as expected"""
