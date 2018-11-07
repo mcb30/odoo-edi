@@ -54,6 +54,16 @@ class EdiPickRequestDocument(models.AbstractModel):
         return self.no_record_values()
 
     @api.model
+    def move_request_record_values(self, _data):
+        """Construct EDI move request record value dictionaries
+
+        Must return an iterable of dictionaries, each of which could
+        passed to :meth:`~odoo.models.Model.create` in order to create
+        an EDI move request record.
+        """
+        return self.no_record_values()
+
+    @api.model
     def prepare(self, doc):
         """Prepare document"""
         super().prepare(doc)
@@ -61,4 +71,9 @@ class EdiPickRequestDocument(models.AbstractModel):
             record_vals
             for _fname, data in doc.inputs()
             for record_vals in self.pick_request_record_values(data)
+        ))
+        self.move_request_record_model(doc).prepare(doc, (
+            record_vals
+            for _fname, data in doc.inputs()
+            for record_vals in self.move_request_record_values(data)
         ))

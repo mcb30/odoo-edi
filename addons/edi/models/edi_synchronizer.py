@@ -9,23 +9,6 @@ from ..tools import batched, Comparator
 _logger = logging.getLogger(__name__)
 
 
-class NoRecordValuesError(NotImplementedError):
-    """Method for constructing EDI record value dictionaries is not used
-
-    This exception can be raised by document models derived from
-    ``edi.document.sync`` to indicate that the method for constructing
-    EDI record value dictionaries has not been implemented and should
-    not be used.
-
-    This allows a record model derived from ``edi.record.sync`` to
-    identify situations in which the document model has chosen not to
-    use the convenience methods for constructing EDI record value
-    dictionaries, and so abandon the record preparation without any
-    side effects (such as deactivating any unmatched records).
-    """
-    pass
-
-
 class EdiSyncDocumentModel(models.AbstractModel):
     """EDI synchronizer document model
 
@@ -47,17 +30,6 @@ class EdiSyncDocumentModel(models.AbstractModel):
     _name = 'edi.document.sync'
     _inherit = 'edi.document.model'
     _description = "EDI Synchronizer Document"
-
-    @api.model
-    def no_record_values(self):
-        """Indicate that this record value generator is not implemented
-
-        This method should be called by any empty placeholder
-        convenience methods for constructing EDI record value
-        dictionaries (such as are typically found in the base models
-        for an EDI synchronizer document type).
-        """
-        raise NoRecordValuesError
 
 
 class EdiSyncRecord(models.AbstractModel):
@@ -166,16 +138,31 @@ class EdiSyncRecord(models.AbstractModel):
 
     @api.model
     def prepare(self, doc, vlist):
-        """Prepare records
+        """Prepare records"""
+        super().prepare(doc, self.elide(doc, vlist))
 
-        Accepts an EDI document ``doc`` and an iterable ``vlist``
-        yielding value dictionaries that could be passed to
-        :meth:`~odoo.models.Model.create` in order to create an EDI
-        record.
+    @api.model
+    def elide(self, doc, vlist):
+        """Elide records that would not result in a modification
 
-        Any EDI records that would not result in a modification to the
-        corresponding target Odoo record will be automatically elided
-        from the document.
+        Filters the iterable ``vlist`` of value dictionaries to elide
+        any entries that would not result in a modification to the
+        corresponding target Odoo record.
+
+        The result is that any EDI records that would not result in a
+        modification to the corresponding target Odoo record will be
+        automatically elided from the document.
+
+        After elision has completed, :meth:`~.matched` will be called
+        with a list of the matched target records (if any).  This
+        allows subclasses such as ``edi.record.sync.active`` to
+        perform further processing (e.g. automatically deactivating
+        any unmatched records).
+
+        Note that the iterable ``vlist`` may choose to call
+        :meth:`~.no_record_values` to indicate that the iterable is
+        unimplemented; in this case the call to :meth:`~.matched` will
+        be bypassed.
         """
 
         # Get target model
@@ -185,46 +172,36 @@ class EdiSyncRecord(models.AbstractModel):
         # Construct comparator for target model
         comparator = Comparator(Target)
 
-        # Check for unimplemented values dictionary iterable
-        try:
+        # Process records in batches for efficiency
+        for r, vbatch in batched(vlist, self.BATCH_SIZE):
 
-            # Process records in batches for efficiency
-            for r, vbatch in batched(vlist, self.BATCH_SIZE):
+            _logger.info(_("%s preparing %s %d-%d"),
+                         doc.name, self._name, r[0], r[-1])
 
-                _logger.info(_("%s preparing %s %d-%d"),
-                             doc.name, self._name, r[0], r[-1])
+            # Add EDI lookup relationship target IDs where known
+            self._add_edi_relates_vlist(vbatch)
 
-                # Add EDI lookup relationship target IDs where known
-                self._add_edi_relates_vlist(vbatch)
+            # Look up existing target records
+            targets_by_key = self.targets_by_key(vbatch)
 
-                # Look up existing target records
-                targets_by_key = self.targets_by_key(vbatch)
+            # Add to list of matched target record IDs
+            matched_ids |= set(x.id for x in targets_by_key.values())
 
-                # Add to list of matched target record IDs
-                matched_ids |= set(x.id for x in targets_by_key.values())
+            # Create EDI records
+            for record_vals in vbatch:
 
-                # Create EDI records
-                for record_vals in vbatch:
+                # Omit EDI records that would not change the target record
+                target = targets_by_key.get(record_vals['name'])
+                if target:
+                    target_vals = self.target_values(record_vals)
+                    if all(comparator[k](target[k], v)
+                           for k, v in target_vals.items()):
+                        continue
 
-                    # Omit EDI records that would not change the target record
-                    target = targets_by_key.get(record_vals['name'])
-                    if target:
-                        target_vals = self.target_values(record_vals)
-                        if all(comparator[k](target[k], v)
-                               for k, v in target_vals.items()):
-                            continue
-
-                    # Create EDI record
-                    record_vals['doc_id'] = doc.id
-                    if target:
-                        record_vals[self._edi_sync_target] = target.id
-                    self.create(record_vals)
-
-        except NoRecordValuesError:
-            # Values dictionary iterable was not implemented (most
-            # likely because the document model has chosen not to use
-            # a convenience method): skip all further processing.
-            return
+                # Create EDI record
+                if target:
+                    record_vals[self._edi_sync_target] = target.id
+                yield record_vals
 
         # Process all matched target records
         self.matched(doc, Target.browse(matched_ids))

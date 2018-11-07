@@ -6,6 +6,7 @@ from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
 from odoo.osv import expression
+from ..tools import NoRecordValuesError
 
 _logger = logging.getLogger(__name__)
 
@@ -190,6 +191,25 @@ class EdiRecord(models.AbstractModel):
             for vals in missing:
                 target = targets_by_key.get(vals[rel.key])
                 vals[rel.target] = target.id if target else False
+
+    @api.model
+    def prepare(self, doc, vlist):
+        """Prepare records
+
+        Accepts an EDI document ``doc`` and an iterable ``vlist``
+        yielding value dictionaries that could be passed to
+        :meth:`~odoo.models.Model.create` in order to create an EDI
+        record.
+        """
+        try:
+            for record_vals in vlist:
+                record_vals['doc_id'] = doc.id
+                self.create(record_vals)
+        except NoRecordValuesError:
+            # Values dictionary iterable was not implemented (most
+            # likely because the document model has chosen not to use
+            # a convenience method)
+            pass
 
     @api.multi
     def execute(self):

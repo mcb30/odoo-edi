@@ -6,6 +6,7 @@ import logging
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
+from ..tools import NoRecordValuesError
 
 _logger = logging.getLogger(__name__)
 
@@ -465,6 +466,17 @@ class EdiDocumentModel(models.AbstractModel):
             raise ValueError(_("Expected singleton record model: %s") %
                              ','.join(x._name for x in Models))
         return Models[0]
+
+    @api.model
+    def no_record_values(self):
+        """Indicate that a record value generator is not implemented
+
+        This method should be called by any empty placeholder
+        convenience methods for constructing EDI record value
+        dictionaries (such as are typically found in the base models
+        for an EDI document type).
+        """
+        raise NoRecordValuesError
 
     @api.model
     def prepare(self, _doc):
