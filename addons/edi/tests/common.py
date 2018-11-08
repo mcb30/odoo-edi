@@ -147,8 +147,8 @@ class EdiCase(common.SavepointCase):
 
     def assertBinaryAttachment(self, attachment, filename=None, pattern=None):
         """Assert that attachment filename and content is as expected"""
-        self.assertAttachment(self, attachment, filename=filename,
-                              pattern=pattern, decode=lambda x: x)
+        self.assertAttachment(attachment, filename=filename, pattern=pattern,
+                              decode=lambda x: x)
 
     @contextmanager
     def assertRaisesIssue(self, entity, exception=UserError):
