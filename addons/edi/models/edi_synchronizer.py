@@ -48,6 +48,8 @@ class EdiSyncRecord(models.AbstractModel):
     number of kilograms.
     """
 
+    _edi_relates_required = False
+
     _edi_sync_target = None
     """EDI synchronizer target field
 
@@ -233,23 +235,33 @@ class EdiSyncRecord(models.AbstractModel):
                 if rec.name in targets_by_key:
                     rec[target] = targets_by_key[rec.name]
 
-        # Update existing target records
-        existing = self.filtered(lambda x: x[target])
-        for r, batch in existing.batched(self.BATCH_SIZE):
-            _logger.info(_("%s updating %s %d-%d"),
-                         doc.name, Target._name, r[0], r[-1])
-            for rec in batch:
-                target_vals = rec.target_values(rec._record_values())
-                rec[target].write(target_vals)
+        # Process records in order of lookup relationship readiness
+        remaining = self
+        while remaining:
 
-        # Create new target records
-        new = self.filtered(lambda x: not x[target])
-        for r, batch in new.batched(self.BATCH_SIZE):
-            _logger.info(_("%s creating %s %d-%d"),
-                         doc.name, Target._name, r[0], r[-1])
-            for rec in batch:
-                target_vals = rec.target_values(rec._record_values())
-                rec[target] = Target.create(target_vals)
+            # Identify records for which all lookup relationships are ready
+            ready = remaining._add_edi_relates(required=False)
+            if remaining and not ready:
+                remaining._add_edi_relates(required=True)
+            remaining -= ready
+
+            # Update existing target records
+            existing = ready.filtered(lambda x: x[target])
+            for r, batch in existing.batched(self.BATCH_SIZE):
+                _logger.info(_("%s updating %s %d-%d"),
+                             doc.name, Target._name, r[0], r[-1])
+                for rec in batch:
+                    target_vals = rec.target_values(rec._record_values())
+                    rec[target].write(target_vals)
+
+            # Create new target records
+            new = ready.filtered(lambda x: not x[target])
+            for r, batch in new.batched(self.BATCH_SIZE):
+                _logger.info(_("%s creating %s %d-%d"),
+                             doc.name, Target._name, r[0], r[-1])
+                for rec in batch:
+                    target_vals = rec.target_values(rec._record_values())
+                    rec[target] = Target.create(target_vals)
 
 
 class EdiDeactivatorRecord(models.AbstractModel):
