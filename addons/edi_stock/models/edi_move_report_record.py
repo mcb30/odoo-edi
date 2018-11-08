@@ -56,7 +56,4 @@ class EdiMoveReportRecord(models.Model):
     @api.model
     def prepare(self, doc, movelist):
         """Prepare records"""
-        for moves in movelist:
-            record_vals = self.record_values(moves)
-            record_vals['doc_id'] = doc.id
-            self.create(record_vals)
+        super().prepare(doc, (self.record_values(moves) for moves in movelist))

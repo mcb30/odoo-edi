@@ -57,7 +57,4 @@ class EdiSaleReportRecord(models.Model):
     @api.model
     def prepare(self, doc, sales):
         """Prepare records"""
-        for sale in sales:
-            record_vals = self.record_values(sale)
-            record_vals['doc_id'] = doc.id
-            self.create(record_vals)
+        super().prepare(doc, (self.record_values(sale) for sale in sales))

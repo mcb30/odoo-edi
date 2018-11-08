@@ -67,7 +67,4 @@ class EdiSaleLineReportRecord(models.Model):
     @api.model
     def prepare(self, doc, linelist):
         """Prepare records"""
-        for lines in linelist:
-            record_vals = self.record_values(lines)
-            record_vals['doc_id'] = doc.id
-            self.create(record_vals)
+        super().prepare(doc, (self.record_values(lines) for lines in linelist))

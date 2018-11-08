@@ -60,7 +60,5 @@ class EdiQuantReportRecord(models.Model):
     @api.model
     def prepare(self, doc, quantlist):
         """Prepare records"""
-        for quants in quantlist:
-            record_vals = self.record_values(quants)
-            record_vals['doc_id'] = doc.id
-            self.create(record_vals)
+        super().prepare(doc, (self.record_values(quants)
+                              for quants in quantlist))

@@ -58,7 +58,4 @@ class EdiPickReportRecord(models.Model):
     @api.model
     def prepare(self, doc, picks):
         """Prepare records"""
-        for pick in picks:
-            record_vals = self.record_values(pick)
-            record_vals['doc_id'] = doc.id
-            self.create(record_vals)
+        super().prepare(doc, (self.record_values(pick) for pick in picks))
