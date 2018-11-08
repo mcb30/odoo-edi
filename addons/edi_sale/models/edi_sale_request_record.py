@@ -47,7 +47,7 @@ class EdiSaleRequestRecord(models.Model):
     sale_id = fields.Many2one('sale.order', string="Sale",
                               required=False, readonly=True, index=True)
     customer_key = fields.Char('Customer Name', required=True, readonly=True,
-                               index=True, edi_relates='customer_id.name')
+                               index=True, edi_relates='customer_id.ref')
     customer_id = fields.Many2one('res.partner', string='Customer',
                                   required=False, readonly=True, index=True)
 
