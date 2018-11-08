@@ -1,3 +1,7 @@
-LOC001,Location One,10
-LOC002,Location Two,20
-LOC003,Location Three,30
+LOC001,Location One,,10
+LOC002,Location Two,,20
+LOC003,Location Three,,30
+LOC101,Zoned Location One,ZONE01,10
+LOC102,Zoned Location Two,ZONE01,20
+LOC103,Zoned Location Three,ZONE01,30
+ZONE01,Zone,,0

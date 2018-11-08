@@ -11,6 +11,8 @@
       <field name="arch" type="xml">
 	<xpath expr="//group[@name='detail']" position="inside">
 	  <field name="shelf"/>
+	  <field name="parent_key"/>
+	  <field name="parent_id"/>
 	</xpath>
       </field>
     </record>
@@ -24,6 +26,26 @@
       <field name="arch" type="xml">
 	<xpath expr="//tree" position="inside">
 	  <field name="shelf"/>
+	  <field name="parent_key"/>
+	  <field name="parent_id"/>
+	</xpath>
+      </field>
+    </record>
+
+    <!-- EDI location tutorial record search filter -->
+    <record id="location_tutorial_record_search" model="ir.ui.view">
+      <field name="name">edi.location.tutorial.record.search</field>
+      <field name="model">edi.location.tutorial.record</field>
+      <field name="inherit_id" ref="edi_stock.location_record_search"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+	<xpath expr="//field[@name='description']" position="after">
+	  <field name="parent_key"/>
+	  <field name="parent_id"/>
+	</xpath>
+	<xpath expr="//group" position="inside">
+	  <filter string="Parent Location" name="by_parent_id"
+		  domain="[]" context="{'group_by':'parent_id'}"/>
 	</xpath>
       </field>
     </record>
@@ -36,7 +58,7 @@
       <field name="res_model">edi.location.tutorial.record</field>
       <field name="view_type">form</field>
       <field name="view_id" ref="location_tutorial_record_tree"/>
-      <field name="search_view_id" ref="location_record_search"/>
+      <field name="search_view_id" ref="location_tutorial_record_search"/>
       <field name="context">{'create': False}</field>
     </record>
 
@@ -61,6 +83,8 @@
 		<field name="location_id"/>
 		<field name="description"/>
 		<field name="shelf"/>
+		<field name="parent_key"/>
+		<field name="parent_id"/>
 	      </tree>
 	    </field>
 	  </page>

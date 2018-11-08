@@ -6,6 +6,7 @@ columns:
 
 * Location barcode
 * Location name
+* Parent location barcode (optional)
 * Shelf number
 """
 
@@ -31,6 +32,10 @@ class EdiLocationTutorialRecord(models.Model):
     _inherit = 'edi.location.record'
     _description = "Stock Location"
 
+    parent_key = fields.Char(string="Parent Key", required=False,
+                             readonly=True, edi_relates='parent_id.barcode')
+    parent_id = fields.Many2one('stock.location', string="Parent Location",
+                                required=False, readonly=True, index=True)
     shelf = fields.Integer(string="Shelf", required=True, readonly=True,
                            help="Shelf number")
 
@@ -39,6 +44,7 @@ class EdiLocationTutorialRecord(models.Model):
         """Construct ``stock.location`` field value dictionary"""
         loc_vals = super().target_values(record_vals)
         loc_vals.update({
+            'location_id': record_vals.get('parent_id', False),
             'posy': record_vals['shelf'],
         })
         return loc_vals
@@ -57,5 +63,6 @@ class EdiLocationTutorialDocument(models.AbstractModel):
         return ({
             'name': barcode,
             'description': name,
+            'parent_key': parent,
             'shelf': int(shelf),
-        } for barcode, name, shelf in reader)
+        } for barcode, name, parent, shelf in reader)
