@@ -277,20 +277,6 @@ class EdiDeactivatorRecord(models.AbstractModel):
     target_id = fields.Many2one('_unknown', string="Target", required=True,
                                 readonly=True, index=True)
 
-    @api.model
-    def prepare(self, doc, targets):
-        """Prepare records
-
-        Accepts an EDI document ``doc`` and a list of target records
-        to be deactivated.
-        """
-        for target in targets:
-            self.create({
-                'doc_id': doc.id,
-                'target_id': target.id,
-                'name': target[self._edi_deactivator_name],
-            })
-
     @api.multi
     def execute(self):
         """Execute records"""
@@ -327,4 +313,7 @@ class EdiActiveSyncRecord(models.AbstractModel):
         if self._edi_sync_deactivator is not None:
             Deactivator = self.env[self._edi_sync_deactivator]
             unmatched = (targets.search(self._edi_sync_domain()) - targets)
-            Deactivator.prepare(doc, unmatched)
+            Deactivator.prepare(doc, ({
+                'target_id': target.id,
+                'name': target[Deactivator._edi_deactivator_name],
+            } for target in unmatched))
