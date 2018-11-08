@@ -82,6 +82,17 @@ class EdiRecord(models.AbstractModel):
     _edi_relates = ()
     """EDI lookup relationships"""
 
+    _edi_relates_required = True
+    """EDI lookup relationships must succeed prior to execution
+
+    Derived models may set this to ``False`` to indicate that EDI
+    lookup relationships need not succeed prior to execution of the
+    document.  This allows derived models to implement multi-stage
+    execution with repeated calls to :meth:`~._add_edi_relates`,
+    thereby allowing for lookup keys that refer to target records
+    created within the same document.
+    """
+
     _name = 'edi.record'
     _description = "EDI Record"
     _order = 'doc_id, id'
@@ -106,14 +117,16 @@ class EdiRecord(models.AbstractModel):
                 cls._edi_relates.append(rel)
 
     @api.multi
-    def _add_edi_relates(self):
+    def _add_edi_relates(self, required=True):
         """Add EDI lookup relationship target IDs to records
 
         Fill in any missing target IDs based on the EDI lookup
         relationships, where possible.
         """
+        # pylint: disable=too-many-locals
         Record = self.browse()
         doc = self.mapped('doc_id')
+        ready = self
         for rel in self._edi_relates:
             # pylint: disable=cell-var-from-loop
 
@@ -138,9 +151,13 @@ class EdiRecord(models.AbstractModel):
                 # Update target fields
                 for key, recs in batch.groupby(keygetter):
                     target = targets_by_key.get(key)
-                    if not target:
+                    if required and not target:
                         target = recs.missing_edi_relates(rel, key)
-                    recs.write({rel.target: target.id})
+                    if target:
+                        recs.write({rel.target: target.id})
+                    else:
+                        ready -= recs
+        return ready
 
     @api.multi
     def missing_edi_relates(self, rel, key):
@@ -222,4 +239,4 @@ class EdiRecord(models.AbstractModel):
         # the execution of earlier EDI records has created objects to
         # which this EDI record refers via a lookup relationship.
         #
-        self._add_edi_relates()
+        self._add_edi_relates(required=self._edi_relates_required)
