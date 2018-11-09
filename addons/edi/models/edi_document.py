@@ -317,12 +317,12 @@ class EdiDocument(models.Model):
         try:
             # pylint: disable=broad-except
             with self.env.cr.savepoint():
+                self.prepare_date = fields.Datetime.now()
                 DocModel.prepare(self)
         except Exception as err:
             self.raise_issue(_("Preparation failed: %s"), err)
             return False
         # Mark as prepared
-        self.prepare_date = fields.Datetime.now()
         self.state = 'prep'
         _logger.info("Prepared %s", self.name)
         return True
