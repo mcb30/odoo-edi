@@ -72,10 +72,10 @@ class EdiSaleReportDocument(models.AbstractModel):
         The default implementation returns all completed sale orders
         for which a report has not yet been generated.
         """
-        return [
-            (self._edi_sale_report_via, '=', False),
-            ('state', '=', 'done'),
-        ]
+        domain = [('state', '=', 'done')]
+        if self._edi_sale_report_via is not None:
+            domain.append((self._edi_sale_report_via, '=', False))
+        return domain
 
     @api.model
     def sale_line_report_domain(self, _doc, sales):
@@ -113,7 +113,8 @@ class EdiSaleReportDocument(models.AbstractModel):
         SaleOrderLine = self.env['sale.order.line']
         # Lock sale orders to prevent concurrent report generation attempts
         sales = SaleOrder.search(self.sale_report_domain(doc), order='id')
-        sales.write({self._edi_sale_report_via: False})
+        if self._edi_sale_report_via is not None:
+            sales.write({self._edi_sale_report_via: False})
         # Construct sale order line list, if applicable
         if SaleLineReport is not None:
             lines = SaleOrderLine.search(
@@ -134,8 +135,9 @@ class EdiSaleReportDocument(models.AbstractModel):
         SaleReport = self.sale_report_record_model(doc)
         sale_reports = SaleReport.search([('doc_id', '=', doc.id)])
         sales = sale_reports.mapped('sale_id')
-        reported_sales = sales.filtered(self._edi_sale_report_via)
-        if reported_sales:
-            raise UserError(_("Report already generated for %s") %
-                            ", ".join(reported_sales.mapped('name')))
-        sales.write({self._edi_sale_report_via: doc.id})
+        if self._edi_sale_report_via is not None:
+            reported_sales = sales.filtered(self._edi_sale_report_via)
+            if reported_sales:
+                raise UserError(_("Report already generated for %s") %
+                                ", ".join(reported_sales.mapped('name')))
+            sales.write({self._edi_sale_report_via: doc.id})
