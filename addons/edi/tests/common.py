@@ -94,7 +94,6 @@ class EdiCase(common.SavepointCase):
         """Create document"""
         EdiDocument = cls.env['edi.document']
         doc = EdiDocument.create({
-            'name': "Test %s" % doc_type.name,
             'doc_type_id': doc_type.id,
         })
         return doc
