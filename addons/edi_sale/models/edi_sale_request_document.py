@@ -2,7 +2,6 @@
 
 import logging
 from odoo import api, models
-from odoo.tools.translate import _
 
 _logger = logging.getLogger(__name__)
 
@@ -100,5 +99,5 @@ class EdiSaleRequestDocument(models.AbstractModel):
             SaleRequestRecord = self.sale_request_record_model(doc)
             reqs = SaleRequestRecord.search([('doc_id', '=', doc.id)])
             for sale in reqs.mapped('sale_id'):
-                _logger.info(_("%s confirming %s"), doc.name, sale.name)
+                _logger.info("%s confirming %s", doc.name, sale.name)
                 sale.action_confirm()

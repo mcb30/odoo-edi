@@ -3,7 +3,6 @@
 import logging
 from odoo import api, fields, models
 from odoo.addons import decimal_precision as dp
-from odoo.tools.translate import _
 
 _logger = logging.getLogger(__name__)
 
@@ -74,7 +73,7 @@ class EdiSaleLineRequestRecord(models.Model):
         # Process records in batches for efficiency
         for r, batch in self.batched(self.BATCH_SIZE):
 
-            _logger.info(_("%s executing %s %d-%d"),
+            _logger.info("%s executing %s %d-%d",
                          doc.name, self._name, r[0], r[-1])
 
             # Cache related records for this batch to reduce

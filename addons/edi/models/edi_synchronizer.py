@@ -2,7 +2,6 @@
 
 import logging
 from odoo import api, fields, models
-from odoo.tools.translate import _
 from odoo.osv import expression
 from ..tools import batched, Comparator
 
@@ -192,7 +191,7 @@ class EdiSyncRecord(models.AbstractModel):
         # Process records in batches for efficiency
         for r, vbatch in batched(vlist, self.BATCH_SIZE):
 
-            _logger.info(_("%s preparing %s %d-%d"),
+            _logger.info("%s preparing %s %d-%d",
                          doc.name, self._name, r[0], r[-1])
 
             # Add EDI lookup relationship target IDs where known
@@ -253,7 +252,7 @@ class EdiSyncRecord(models.AbstractModel):
         # Identify any missing existing target records
         new = self.filtered(lambda x: not x[target])
         for r, batch in new.batched(self.BATCH_SIZE):
-            _logger.info(_("%s rechecking %s %d-%d"),
+            _logger.info("%s rechecking %s %d-%d",
                          doc.name, Target._name, r[0], r[-1])
             targets_by_key = self.targets_by_key(batch)
             for rec in batch:
@@ -273,7 +272,7 @@ class EdiSyncRecord(models.AbstractModel):
             # Update existing target records
             existing = ready.filtered(lambda x: x[target])
             for r, batch in existing.batched(self.BATCH_SIZE):
-                _logger.info(_("%s updating %s %d-%d"),
+                _logger.info("%s updating %s %d-%d",
                              doc.name, Target._name, r[0], r[-1])
                 for rec in batch:
                     target_vals = rec.target_values(rec._record_values())
@@ -282,7 +281,7 @@ class EdiSyncRecord(models.AbstractModel):
             # Create new target records
             new = ready.filtered(lambda x: not x[target])
             for r, batch in new.batched(self.BATCH_SIZE):
-                _logger.info(_("%s creating %s %d-%d"),
+                _logger.info("%s creating %s %d-%d",
                              doc.name, Target._name, r[0], r[-1])
                 for rec in batch:
                     target_vals = rec.target_values(rec._record_values())
