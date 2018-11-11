@@ -192,7 +192,8 @@ class EdiRecord(models.AbstractModel):
             # pylint: disable=cell-var-from-loop
 
             # Find values with a defined key but missing a target, if any
-            missing = [x for x in vlist if rel.key in x and rel.target not in x]
+            missing = [x for x in vlist
+                       if x.get(rel.key) and rel.target not in x]
             if not missing:
                 continue
 
