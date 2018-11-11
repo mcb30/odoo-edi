@@ -33,4 +33,4 @@ class Comparator(UserDict):
         elif isinstance(field, fields.Float) and field.digits:
             (_precision, scale) = field.digits
             return lambda x, y: float_compare(x, y, precision_digits=scale) == 0
-        return lambda x, y: x == y
+        return lambda x, y: (not x and not y) or (x == y)

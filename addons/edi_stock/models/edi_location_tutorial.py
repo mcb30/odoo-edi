@@ -44,7 +44,7 @@ class EdiLocationTutorialRecord(models.Model):
         """Construct ``stock.location`` field value dictionary"""
         loc_vals = super().target_values(record_vals)
         loc_vals.update({
-            'location_id': record_vals.get('parent_id', False),
+            'location_id': record_vals.get('parent_id'),
             'posy': record_vals['shelf'],
         })
         return loc_vals

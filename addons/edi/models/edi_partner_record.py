@@ -55,7 +55,7 @@ class EdiPartnerRecord(models.Model):
         partner_vals = super().target_values(record_vals)
         partner_vals.update({
             'name': record_vals['full_name'],
-            'title': record_vals.get('title_id', False),
+            'title': record_vals.get('title_id'),
         })
         return partner_vals
 
