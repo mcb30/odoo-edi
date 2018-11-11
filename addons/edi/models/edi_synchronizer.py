@@ -71,6 +71,18 @@ class EdiSyncRecord(models.AbstractModel):
     model when identifying the corresponding target record.
     """
 
+    _edi_sync_dedupe = True
+    """Automatically elide duplicate record values
+
+    Elide any duplicate EDI records (in addition to eliding any EDI
+    records that would not result in a new or modified Odoo record).
+
+    This is enabled by default.  Derived models that do not require a
+    deduplication check (e.g. because the corresponding document model
+    guarantees never to attempt to create duplicate EDI records) may
+    set this to ``False`` to gain a slight improvement in performance.
+    """
+
     _name = 'edi.record.sync'
     _inherit = 'edi.record'
     _description = "EDI Synchronizer Record"
@@ -174,6 +186,9 @@ class EdiSyncRecord(models.AbstractModel):
         # Construct comparator for target model
         comparator = Comparator(Target)
 
+        # Construct produced values cache for deduplication
+        produced = set() if self._edi_sync_dedupe else None
+
         # Process records in batches for efficiency
         for r, vbatch in batched(vlist, self.BATCH_SIZE):
 
@@ -192,17 +207,27 @@ class EdiSyncRecord(models.AbstractModel):
             # Create EDI records
             for record_vals in vbatch:
 
-                # Omit EDI records that would not change the target record
+                # Look up existing target record (if any)
                 target = targets_by_key.get(record_vals['name'])
                 if target:
+
+                    # Elide EDI records that would not change the target record
                     target_vals = self.target_values(record_vals)
                     if all(comparator[k](target[k], v)
                            for k, v in target_vals.items()):
                         continue
 
-                # Create EDI record
-                if target:
+                    # Add target to EDI record
                     record_vals[self._edi_sync_target] = target.id
+
+                # Elide EDI records that are duplicates of earlier records
+                if produced is not None:
+                    frozen_record_vals = frozenset(record_vals.items())
+                    if frozen_record_vals in produced:
+                        continue
+                    produced.add(frozen_record_vals)
+
+                # Create EDI record
                 yield record_vals
 
         # Process all matched target records
