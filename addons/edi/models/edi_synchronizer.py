@@ -177,6 +177,7 @@ class EdiSyncRecord(models.AbstractModel):
         unimplemented; in this case the call to :meth:`~.matched` will
         be bypassed.
         """
+        # pylint: disable=too-many-locals
 
         # Get target model
         Target = self.browse()[self._edi_sync_target]
@@ -188,11 +189,16 @@ class EdiSyncRecord(models.AbstractModel):
         # Construct produced values cache for deduplication
         produced = set() if self._edi_sync_dedupe else None
 
+        # Initialise statistics
+        total = 0
+        count = 0
+
         # Process records in batches for efficiency
         for r, vbatch in batched(vlist, self.BATCH_SIZE):
 
             _logger.info("%s preparing %s %d-%d",
                          doc.name, self._name, r[0], r[-1])
+            total += len(r)
 
             # Add EDI lookup relationship target IDs where known
             self._add_edi_relates_vlist(vbatch)
@@ -227,10 +233,15 @@ class EdiSyncRecord(models.AbstractModel):
                     produced.add(frozen_record_vals)
 
                 # Create EDI record
+                count += 1
                 yield record_vals
 
         # Process all matched target records
         self.matched(doc, Target.browse(matched_ids))
+
+        # Log statistics
+        _logger.info("%s prepared %s elided %d of %d",
+                     doc.name, self._name, (total - count), total)
 
     @api.model
     def matched(self, _doc, _targets):
@@ -252,8 +263,8 @@ class EdiSyncRecord(models.AbstractModel):
         # Identify any missing existing target records
         new = self.filtered(lambda x: not x[target])
         for r, batch in new.batched(self.BATCH_SIZE):
-            _logger.info("%s rechecking %s %d-%d",
-                         doc.name, Target._name, r[0], r[-1])
+            _logger.info("%s rechecking %s %d-%d of %d",
+                         doc.name, Target._name, r[0], r[-1], len(new))
             targets_by_key = self.targets_by_key(batch)
             for rec in batch:
                 if rec.name in targets_by_key:
@@ -261,6 +272,7 @@ class EdiSyncRecord(models.AbstractModel):
 
         # Process records in order of lookup relationship readiness
         remaining = self
+        offset = 0
         while remaining:
 
             # Identify records for which all lookup relationships are ready
@@ -272,8 +284,10 @@ class EdiSyncRecord(models.AbstractModel):
             # Update existing target records
             existing = ready.filtered(lambda x: x[target])
             for r, batch in existing.batched(self.BATCH_SIZE):
-                _logger.info("%s updating %s %d-%d",
-                             doc.name, Target._name, r[0], r[-1])
+                _logger.info("%s updating %s %d-%d of %d", doc.name,
+                             Target._name, (offset + r[0]), (offset + r[-1]),
+                             len(self))
+                offset += len(r)
                 for rec in batch:
                     target_vals = rec.target_values(rec._record_values())
                     rec[target].write(target_vals)
@@ -281,8 +295,10 @@ class EdiSyncRecord(models.AbstractModel):
             # Create new target records
             new = ready.filtered(lambda x: not x[target])
             for r, batch in new.batched(self.BATCH_SIZE):
-                _logger.info("%s creating %s %d-%d",
-                             doc.name, Target._name, r[0], r[-1])
+                _logger.info("%s creating %s %d-%d of %d", doc.name,
+                             Target._name, (offset + r[0]), (offset + r[-1]),
+                             len(self))
+                offset += len(r)
                 for rec in batch:
                     target_vals = rec.target_values(rec._record_values())
                     rec[target] = Target.create(target_vals)

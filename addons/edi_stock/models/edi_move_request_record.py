@@ -107,8 +107,8 @@ class EdiMoveRequestRecord(models.Model):
         cancel = Move.browse()
         for r, batch in self.batched(self.BATCH_SIZE):
 
-            _logger.info("%s executing %s %d-%d",
-                         doc.name, self._name, r[0], r[-1])
+            _logger.info("%s executing %s %d-%d of %d",
+                         doc.name, self._name, r[0], r[-1], len(self))
 
             # Cache all products, product templates, picks, tracking
             # identities, and existing moves for this batch to reduce

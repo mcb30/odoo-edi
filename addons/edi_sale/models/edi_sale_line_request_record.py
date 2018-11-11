@@ -73,8 +73,8 @@ class EdiSaleLineRequestRecord(models.Model):
         # Process records in batches for efficiency
         for r, batch in self.batched(self.BATCH_SIZE):
 
-            _logger.info("%s executing %s %d-%d",
-                         doc.name, self._name, r[0], r[-1])
+            _logger.info("%s executing %s %d-%d of %d",
+                         doc.name, self._name, r[0], r[-1], len(self))
 
             # Cache related records for this batch to reduce
             # per-record database lookups

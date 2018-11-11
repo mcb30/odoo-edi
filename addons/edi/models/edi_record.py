@@ -136,8 +136,8 @@ class EdiRecord(models.AbstractModel):
             # Process records in batches to minimise database lookups
             keygetter = itemgetter(rel.key)
             for r, batch in missing.batched(self.BATCH_SIZE):
-                _logger.info("%s recording %s.%s %d-%d",
-                             doc.name, self._name, rel.target, r[0], r[-1])
+                _logger.info("%s recording %s.%s %d-%d of %d", doc.name,
+                             self._name, rel.target, r[0], r[-1], len(missing))
 
                 # Search for target records by key
                 Target = Record[rel.target]
