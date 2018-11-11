@@ -7,6 +7,21 @@ from ..tools import batched, Comparator
 
 _logger = logging.getLogger(__name__)
 
+PRECACHE_WARNING_THRESHOLD = 50
+"""Minimum threshold for precache warning message
+
+A warning message will be displayed for EDI synchronizer record models
+that do not precache records appropriately.  The warning is displayed
+if the number of queries is greater than the number of records (prior
+to elision), since this would indicate that a fresh query had to be
+performed for each record.
+
+For very small numbers of records, the fixed number of queries
+required to perform precaching may be greater than the actual number
+of records.  The warning is therefore disabled below this threshold
+value.
+"""
+
 
 class EdiSyncDocumentModel(models.AbstractModel):
     """EDI synchronizer document model
@@ -192,6 +207,7 @@ class EdiSyncRecord(models.AbstractModel):
         # Initialise statistics
         total = 0
         count = 0
+        sql_start = self.env.cr.sql_log_count
 
         # Process records in batches for efficiency
         for r, vbatch in batched(vlist, self.BATCH_SIZE):
@@ -240,8 +256,12 @@ class EdiSyncRecord(models.AbstractModel):
         self.matched(doc, Target.browse(matched_ids))
 
         # Log statistics
-        _logger.info("%s prepared %s elided %d of %d",
-                     doc.name, self._name, (total - count), total)
+        sql_count = (self.env.cr.sql_log_count - sql_start - count)
+        _logger.info("%s prepared %s elided %d of %d, %d queries",
+                     doc.name, self._name, (total - count), total, sql_count)
+        if sql_count >= total and total > PRECACHE_WARNING_THRESHOLD:
+            _logger.warning("%s missing precaching for %s: %d records, %d "
+                            "queries", doc.name, self._name, total, sql_count)
 
     @api.model
     def matched(self, _doc, _targets):
