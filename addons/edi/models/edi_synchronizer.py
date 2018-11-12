@@ -278,7 +278,7 @@ class EdiSyncRecord(models.AbstractModel):
 
         # Get target model
         target = self._edi_sync_target
-        Target = self.browse()[target].with_context(tracking_disable=True)
+        Target = self.browse()[target]
 
         # Identify any missing existing target records
         new = self.filtered(lambda x: not x[target])

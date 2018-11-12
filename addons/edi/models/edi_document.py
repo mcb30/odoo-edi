@@ -318,7 +318,9 @@ class EdiDocument(models.Model):
             # pylint: disable=broad-except
             with self.env.cr.savepoint():
                 self.prepare_date = fields.Datetime.now()
-                DocModel.prepare(self)
+                DocModel.with_context(tracking_disable=True).prepare(
+                    self.with_context(tracking_disable=True)
+                )
         except Exception as err:
             self.raise_issue(_("Preparation failed: %s"), err)
             return False
@@ -376,7 +378,9 @@ class EdiDocument(models.Model):
         try:
             # pylint: disable=broad-except
             with self.env.cr.savepoint():
-                DocModel.execute(self)
+                DocModel.with_context(tracking_disable=True).execute(
+                    self.with_context(tracking_disable=True)
+                )
         except Exception as err:
             self.raise_issue(_("Execution failed: %s"), err)
             return False
