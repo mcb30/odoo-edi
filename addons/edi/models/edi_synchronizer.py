@@ -112,7 +112,9 @@ class EdiSyncRecord(models.AbstractModel):
         super()._setup_complete()
         cls = type(self)
         domain = cls._edi_sync_domain
-        cls._edi_sync_domain = (
+        if domain is None and cls._edi_sync_target is not None:
+            domain = getattr(cls._fields[cls._edi_sync_target], 'domain', None)
+        cls._edi_sync_domain_call = (
             domain if callable(domain) else
             (lambda self: domain) if domain else
             (lambda self: [])
@@ -127,7 +129,7 @@ class EdiSyncRecord(models.AbstractModel):
         key = self._edi_sync_via
         targets = Target.search(expression.AND([
             [(key, 'in', [x['name'] for x in vlist])],
-            self._edi_sync_domain()
+            self._edi_sync_domain_call()
         ]))
         return {k: v.ensure_one() for k, v in targets.groupby(key)}
 
@@ -384,7 +386,7 @@ class EdiActiveSyncRecord(models.AbstractModel):
         """Process matched target records"""
         if self._edi_sync_deactivator is not None:
             Deactivator = self.env[self._edi_sync_deactivator]
-            unmatched = (targets.search(self._edi_sync_domain()) - targets)
+            unmatched = (targets.search(self._edi_sync_domain_call()) - targets)
             Deactivator.prepare(doc, ({
                 'target_id': target.id,
                 'name': target[Deactivator._edi_deactivator_name],

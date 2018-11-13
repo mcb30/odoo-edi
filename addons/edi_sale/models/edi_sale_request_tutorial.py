@@ -49,7 +49,7 @@ class EdiSaleRequestTutorialRecord(models.Model):
     _inherit = 'edi.sale.request.record'
     _description = "Sale Request"
 
-    _edi_sync_domain = [('state', 'not in', ('done', 'cancel'))]
+    sale_id = fields.Many2one(domain=[('state', 'not in', ('done', 'cancel'))])
 
 
 class EdiSaleLineRequestTutorialRecord(models.Model):

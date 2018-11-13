@@ -42,9 +42,9 @@ class EdiSaleRequestRecord(models.Model):
 
     _edi_sync_target = 'sale_id'
     _edi_sync_via = 'origin'
-    _edi_sync_domain = [('state', '!=', 'cancel')]
 
     sale_id = fields.Many2one('sale.order', string="Sale",
+                              domain=[('state', '!=', 'cancel')],
                               required=False, readonly=True, index=True)
     customer_key = fields.Char('Customer Name', required=True, readonly=True,
                                index=True, edi_relates='customer_id.ref')

@@ -44,11 +44,11 @@ class EdiPickRequestRecord(models.Model):
 
     _edi_sync_target = 'pick_id'
     _edi_sync_via = 'origin'
-    _edi_sync_domain = [('state', '!=', 'cancel')]
 
     pick_type_id = fields.Many2one('stock.picking.type', string="Type",
                                    required=True, readonly=True, index=True)
     pick_id = fields.Many2one('stock.picking', string="Transfer",
+                              domain=[('state', '!=', 'cancel')],
                               required=False, readonly=True, index=True)
 
     _sql_constraints = [('doc_name_uniq', 'unique (doc_id, name)',

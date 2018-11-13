@@ -57,7 +57,7 @@ class EdiPickRequestTutorialRecord(models.Model):
     _inherit = 'edi.pick.request.record'
     _description = "Stock Transfer Request"
 
-    _edi_sync_domain = [('state', 'not in', ('done', 'cancel'))]
+    pick_id = fields.Many2one(domain=[('state', 'not in', ('done', 'cancel'))])
 
 
 class EdiMoveRequestTutorialRecord(models.Model):
