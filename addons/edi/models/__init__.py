@@ -17,6 +17,7 @@ from . import edi_gateway
 from . import edi_record
 from . import edi_synchronizer
 from . import edi_transfer
+from . import mail_thread
 
 from . import edi_partner_document
 from . import edi_partner_record
