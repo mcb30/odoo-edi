@@ -318,15 +318,17 @@ class EdiDocument(models.Model):
             # pylint: disable=broad-except
             with self.env.cr.savepoint():
                 self.prepare_date = fields.Datetime.now()
+                sql_start = self.env.cr.sql_log_count
                 DocModel.with_context(tracking_disable=True).prepare(
                     self.with_context(tracking_disable=True)
                 )
+                sql_count = (self.env.cr.sql_log_count - sql_start)
         except Exception as err:
             self.raise_issue(_("Preparation failed: %s"), err)
             return False
         # Mark as prepared
         self.state = 'prep'
-        _logger.info("Prepared %s", self.name)
+        _logger.info("Prepared %s, %d queries", self.name, sql_count)
         return True
 
     @api.multi
@@ -378,9 +380,11 @@ class EdiDocument(models.Model):
         try:
             # pylint: disable=broad-except
             with self.env.cr.savepoint():
+                sql_start = self.env.cr.sql_log_count
                 DocModel.with_context(tracking_disable=True).execute(
                     self.with_context(tracking_disable=True)
                 )
+                sql_count = (self.env.cr.sql_log_count - sql_start)
         except Exception as err:
             self.raise_issue(_("Execution failed: %s"), err)
             return False
@@ -391,7 +395,7 @@ class EdiDocument(models.Model):
         # Mark as processed
         self.execute_date = fields.Datetime.now()
         self.state = 'done'
-        _logger.info("Executed %s", self.name)
+        _logger.info("Executed %s, %d queries", self.name, sql_count)
         return True
 
     @api.multi
