@@ -290,7 +290,15 @@ class EdiDocument(models.Model):
         self.ensure_one()
         for rec_type in self.doc_type_id.rec_type_ids:
             RecModel = self.env[rec_type.model_id.model]
-            RecModel.search([('doc_id', '=', self.id)]).execute()
+            recs = RecModel.search([('doc_id', '=', self.id)])
+            sql_start = self.env.cr.sql_log_count
+            recs.execute()
+            sql_count = (self.env.cr.sql_log_count - sql_start)
+            count = len(recs)
+            if count:
+                _logger.info("%s executed %s %d records, %d queries "
+                             "(%d per record)", self.name, RecModel._name,
+                             count, sql_count, (sql_count / count))
 
     @api.multi
     def action_prepare(self):
