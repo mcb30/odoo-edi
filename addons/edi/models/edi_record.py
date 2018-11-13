@@ -113,6 +113,8 @@ class EdiRecord(models.AbstractModel):
             if hasattr(field, 'edi_relates'):
                 (target, _sep, via) = field.edi_relates.partition('.')
                 domain = getattr(field, 'edi_relates_domain', None)
+                if domain is None:
+                    domain = getattr(cls._fields[target], 'domain', None)
                 rel = EdiLookupRelationship(name, target, via, domain)
                 cls._edi_relates.append(rel)
 

@@ -35,9 +35,9 @@ class EdiMoveRequestRecord(models.Model):
     _description = "Stock Move Request"
 
     pick_key = fields.Char(string="Transfer key", required=True, readonly=True,
-                           index=True, edi_relates='pick_id.origin',
-                           edi_relates_domain=[('state', '!=', 'cancel')])
+                           index=True, edi_relates='pick_id.origin')
     pick_id = fields.Many2one('stock.picking', string="Transfer",
+                              domain=[('state', '!=', 'cancel')],
                               required=False, readonly=True, index=True)
     tracker_key = fields.Char(string="Tracker Key", required=False,
                               readonly=True, index=True,

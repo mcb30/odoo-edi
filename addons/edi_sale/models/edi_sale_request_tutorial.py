@@ -63,8 +63,7 @@ class EdiSaleLineRequestTutorialRecord(models.Model):
     _inherit = 'edi.sale.line.request.record'
     _description = "Sale Line Request"
 
-    order_key = fields.Char(edi_relates_domain=[('state', 'not in',
-                                                 ('done', 'cancel'))])
+    order_id = fields.Many2one(domain=[('state', 'not in', ('done', 'cancel'))])
 
 
 class EdiSaleRequestTutorialDocument(models.AbstractModel):

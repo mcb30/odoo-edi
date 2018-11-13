@@ -71,8 +71,7 @@ class EdiMoveRequestTutorialRecord(models.Model):
     _inherit = 'edi.move.request.record'
     _description = "Stock Move Request"
 
-    pick_key = fields.Char(edi_relates_domain=[('state', 'not in',
-                                                ('done', 'cancel'))])
+    pick_id = fields.Many2one(domain=[('state', 'not in', ('done', 'cancel'))])
     action = fields.Selection(string="Action", required=True, readonly=True,
                               index=True, selection=[('C', 'Create'),
                                                      ('U', 'Update'),
