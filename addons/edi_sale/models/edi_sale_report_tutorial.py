@@ -119,10 +119,9 @@ class EdiSaleReportTutorialDocument(models.AbstractModel):
         line_reports = EdiSaleLineReportRecord.search([('doc_id', '=', doc.id)])
         by_sale = lambda x: x.line_ids.mapped('order_id')
         for sale, recs in line_reports.groupby(by_sale, sort=False):
-            # pylint: disable=cell-var-from-loop
 
             # Get corresponding sale report record
-            sale_report = sale_reports.filtered(lambda x: x.sale_id == sale)
+            sale_report = sale_reports.filtered(lambda x, s=sale: x.sale_id == s)
             sale_report.ensure_one()
 
             # Construct CSV file
