@@ -23,7 +23,7 @@ class ServerActions(models.Model):
                                      index=True, ondelete='cascade')
 
     @api.model
-    def run_action_edi(self, action, eval_context=None):
+    def run_action_edi_multi(self, action, eval_context=None):
         """Run EDI server action"""
         # pylint: disable=unused-argument
         action.edi_gateway_id.action_transfer()
