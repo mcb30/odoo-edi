@@ -177,7 +177,8 @@ class EdiDocument(models.Model):
                                   compute='_compute_output_count', store=True)
 
     # Issues (i.e. asynchronously reported errors)
-    project_id = fields.Many2one(related='doc_type_id.project_id')
+    project_id = fields.Many2one(related='doc_type_id.project_id',
+                                 readonly=True)
     issue_ids = fields.One2many(inverse_name='edi_doc_id')
 
     # Record type names (solely for use by views)
