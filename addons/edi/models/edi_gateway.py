@@ -127,6 +127,7 @@ class EdiGateway(models.Model):
         database backups, XML-RPC calls, etc.
         """,
     )
+    port = fields.Integer(string="Port")
     ssh_host_key = fields.Binary(string="SSH Host Key")
     ssh_host_key_filename = fields.Char(default=SSH_KNOWN_HOSTS)
     ssh_host_fingerprint = fields.Char(string="SSH Host Fingerprint",
@@ -251,6 +252,8 @@ class EdiGateway(models.Model):
             if self.timeout:
                 kwargs['timeout'] = self.timeout
                 kwargs['banner_timeout'] = self.timeout
+            if self.port:
+                kwargs['port'] = self.port
             ssh.connect(self.server, **kwargs)
         except paramiko.SSHException as err:
             raise UserError(err) from err

@@ -86,6 +86,7 @@
 	      <group name="conn" string="Connection">
 		<field name="model_id"/>
 		<field name="server"/>
+		<field name="port"/>
 		<field name="safety"/>
 	      </group>
 	      <group name="history" string="History">
@@ -123,6 +124,7 @@
 	  <field name="name"/>
 	  <field name="model_id"/>
 	  <field name="server"/>
+	  <field name="port"/>
 	  <field name="username"/>
 	  <field name="issue_count"/>
 	  <field name="last_transfer_id"/>
