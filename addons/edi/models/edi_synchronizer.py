@@ -258,12 +258,14 @@ class EdiSyncRecord(models.AbstractModel):
         self.matched(doc, Target.browse(matched_ids))
 
         # Log statistics
-        sql_count = (self.env.cr.sql_log_count - sql_start - count)
-        _logger.info("%s prepared %s elided %d of %d, %d queries",
-                     doc.name, self._name, (total - count), total, sql_count)
-        if sql_count >= total and total > PRECACHE_WARNING_THRESHOLD:
+        sql_count = (self.env.cr.sql_log_count - sql_start)
+        excess = (sql_count - count)
+        _logger.info("%s prepared %s elided %d of %d, %d excess queries",
+                     doc.name, self._name, (total - count), total, excess)
+        if excess >= total and total > PRECACHE_WARNING_THRESHOLD:
             _logger.warning("%s missing precaching for %s: %d records, %d "
-                            "queries", doc.name, self._name, total, sql_count)
+                            "excess queries", doc.name, self._name, total,
+                            excess)
 
     @api.model
     def matched(self, _doc, _targets):
