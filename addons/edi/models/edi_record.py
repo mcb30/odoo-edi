@@ -233,6 +233,7 @@ class EdiRecord(models.AbstractModel):
                     record_vals['doc_id'] = doc.id
                     self.create(record_vals)
                     count += 1
+                self.recompute()
             except NoRecordValuesError:
                 # Values dictionary iterable was not implemented (most
                 # likely because the document model has chosen not to

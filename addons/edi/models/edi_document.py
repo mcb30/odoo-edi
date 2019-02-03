@@ -294,6 +294,7 @@ class EdiDocument(models.Model):
             recs = RecModel.search([('doc_id', '=', self.id)])
             with self.statistics() as stats:
                 recs.execute()
+                self.recompute()
             count = len(recs)
             if count:
                 _logger.info("%s executed %s in %.2fs, %d records, %d queries "
@@ -323,13 +324,13 @@ class EdiDocument(models.Model):
         # Prepare document
         _logger.info("Preparing %s", self.name)
         DocModel = self.env[self.doc_type_id.model_id.model]
+        env = self.with_context(tracking_disable=True, recompute=False).env
         try:
             # pylint: disable=broad-except
             with self.statistics() as stats, self.env.cr.savepoint():
                 self.prepare_date = fields.Datetime.now()
-                DocModel.with_context(tracking_disable=True).prepare(
-                    self.with_context(tracking_disable=True)
-                )
+                DocModel.with_env(env).prepare(self.with_env(env))
+                self.recompute()
         except Exception as err:
             self.raise_issue(_("Preparation failed: %s"), err)
             return False
@@ -385,12 +386,12 @@ class EdiDocument(models.Model):
         # Execute document
         _logger.info("Executing %s", self.name)
         DocModel = self.env[self.doc_type_id.model_id.model]
+        env = self.with_context(tracking_disable=True, recompute=False).env
         try:
             # pylint: disable=broad-except
             with self.statistics() as stats, self.env.cr.savepoint():
-                DocModel.with_context(tracking_disable=True).execute(
-                    self.with_context(tracking_disable=True)
-                )
+                DocModel.with_env(env).execute(self.with_env(env))
+                self.recompute()
         except Exception as err:
             self.raise_issue(_("Execution failed: %s"), err)
             return False
