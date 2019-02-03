@@ -209,7 +209,7 @@ class EdiSyncRecord(models.AbstractModel):
         # Initialise statistics
         total = 0
         count = 0
-        sql_start = self.env.cr.sql_log_count
+        stats = self.statistics()
 
         # Process records in batches for efficiency
         for r, vbatch in batched(vlist, self.BATCH_SIZE):
@@ -258,8 +258,8 @@ class EdiSyncRecord(models.AbstractModel):
         self.matched(doc, Target.browse(matched_ids))
 
         # Log statistics
-        sql_count = (self.env.cr.sql_log_count - sql_start)
-        excess = (sql_count - count)
+        stats.stop()
+        excess = (stats.count - count)
         _logger.info("%s prepared %s elided %d of %d, %d excess queries",
                      doc.name, self._name, (total - count), total, excess)
         if excess >= total and total > PRECACHE_WARNING_THRESHOLD:

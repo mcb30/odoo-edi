@@ -50,3 +50,8 @@ def groupby(self, key, sort=True):
             recs = recs.sorted(key=key)
     return ((k, self.browse(x.id for x in v))
             for k, v in itertools.groupby(recs, key=key))
+
+@add_if_not_exists(models.BaseModel)
+def statistics(self):
+    """Gather profiling statistics for an operation"""
+    return tools.EdiStatistics(self.env)

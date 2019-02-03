@@ -292,14 +292,14 @@ class EdiDocument(models.Model):
         for rec_type in self.doc_type_id.rec_type_ids:
             RecModel = self.env[rec_type.model_id.model]
             recs = RecModel.search([('doc_id', '=', self.id)])
-            sql_start = self.env.cr.sql_log_count
-            recs.execute()
-            sql_count = (self.env.cr.sql_log_count - sql_start)
+            with self.statistics() as stats:
+                recs.execute()
             count = len(recs)
             if count:
-                _logger.info("%s executed %s %d records, %d queries "
+                _logger.info("%s executed %s in %.2fs, %d records, %d queries "
                              "(%d per record)", self.name, RecModel._name,
-                             count, sql_count, (sql_count / count))
+                             stats.elapsed, count, stats.count,
+                             (stats.count / count))
 
     @api.multi
     def action_prepare(self):
@@ -325,19 +325,18 @@ class EdiDocument(models.Model):
         DocModel = self.env[self.doc_type_id.model_id.model]
         try:
             # pylint: disable=broad-except
-            with self.env.cr.savepoint():
+            with self.statistics() as stats, self.env.cr.savepoint():
                 self.prepare_date = fields.Datetime.now()
-                sql_start = self.env.cr.sql_log_count
                 DocModel.with_context(tracking_disable=True).prepare(
                     self.with_context(tracking_disable=True)
                 )
-                sql_count = (self.env.cr.sql_log_count - sql_start)
         except Exception as err:
             self.raise_issue(_("Preparation failed: %s"), err)
             return False
         # Mark as prepared
         self.state = 'prep'
-        _logger.info("Prepared %s, %d queries", self.name, sql_count)
+        _logger.info("Prepared %s in %.2fs, %d queries",
+                     self.name, stats.elapsed, stats.count)
         return True
 
     @api.multi
@@ -388,12 +387,10 @@ class EdiDocument(models.Model):
         DocModel = self.env[self.doc_type_id.model_id.model]
         try:
             # pylint: disable=broad-except
-            with self.env.cr.savepoint():
-                sql_start = self.env.cr.sql_log_count
+            with self.statistics() as stats, self.env.cr.savepoint():
                 DocModel.with_context(tracking_disable=True).execute(
                     self.with_context(tracking_disable=True)
                 )
-                sql_count = (self.env.cr.sql_log_count - sql_start)
         except Exception as err:
             self.raise_issue(_("Execution failed: %s"), err)
             return False
@@ -404,7 +401,8 @@ class EdiDocument(models.Model):
         # Mark as processed
         self.execute_date = fields.Datetime.now()
         self.state = 'done'
-        _logger.info("Executed %s, %d queries", self.name, sql_count)
+        _logger.info("Executed %s in %.2fs, %d queries",
+                     self.name, stats.elapsed, stats.count)
         return True
 
     @api.multi

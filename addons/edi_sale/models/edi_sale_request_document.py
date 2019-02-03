@@ -100,8 +100,7 @@ class EdiSaleRequestDocument(models.AbstractModel):
             reqs = SaleRequestRecord.search([('doc_id', '=', doc.id)])
             for sale in reqs.mapped('sale_id'):
                 _logger.info("%s confirming %s", doc.name, sale.name)
-                sql_start = self.env.cr.sql_log_count
-                sale.action_confirm()
-                sql_count = (self.env.cr.sql_log_count - sql_start)
-                _logger.info("%s confirmed %s, %d queries",
-                             doc.name, sale.name, sql_count)
+                with self.statistics() as stats:
+                    sale.action_confirm()
+                _logger.info("%s confirmed %s in %.2fs, %d queries", doc.name,
+                             sale.name, stats.elapsed, stats.count)
