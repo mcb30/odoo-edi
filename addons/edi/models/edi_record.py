@@ -221,15 +221,27 @@ class EdiRecord(models.AbstractModel):
         :meth:`~odoo.models.Model.create` in order to create an EDI
         record.
         """
-        try:
-            for record_vals in vlist:
-                record_vals['doc_id'] = doc.id
-                self.create(record_vals)
-        except NoRecordValuesError:
-            # Values dictionary iterable was not implemented (most
-            # likely because the document model has chosen not to use
-            # a convenience method)
-            pass
+
+        # Initialise statistics
+        count = 0
+        _logger.info("%s preparing %s", doc.name, self._name)
+
+        # Create records
+        with self.statistics() as stats:
+            try:
+                for record_vals in vlist:
+                    record_vals['doc_id'] = doc.id
+                    self.create(record_vals)
+                    count += 1
+            except NoRecordValuesError:
+                # Values dictionary iterable was not implemented (most
+                # likely because the document model has chosen not to
+                # use a convenience method)
+                pass
+
+        # Log statistics
+        _logger.info("%s prepared %s in %.2fs, %d excess queries", doc.name,
+                     self._name, stats.elapsed, (stats.count - count))
 
     @api.multi
     def execute(self):
