@@ -306,24 +306,26 @@ class EdiSyncRecord(models.AbstractModel):
             # Update existing target records
             existing = ready.filtered(lambda x: x[target])
             for r, batch in existing.batched(self.BATCH_SIZE):
+                count = len(r)
                 _logger.info("%s updating %s %d-%d of %d", doc.name,
-                             Target._name, (offset + r[0]), (offset + r[-1]),
+                             Target._name, offset, (offset + count - 1),
                              len(self))
-                offset += len(r)
                 for rec in batch:
                     target_vals = rec.target_values(rec._record_values())
                     rec[target].write(target_vals)
+                offset += count
 
             # Create new target records
             new = ready.filtered(lambda x: not x[target])
             for r, batch in new.batched(self.BATCH_SIZE):
+                count = len(r)
                 _logger.info("%s creating %s %d-%d of %d", doc.name,
-                             Target._name, (offset + r[0]), (offset + r[-1]),
+                             Target._name, offset, (offset + count - 1),
                              len(self))
-                offset += len(r)
                 for rec in batch:
                     target_vals = rec.target_values(rec._record_values())
                     rec[target] = Target.create(target_vals)
+                offset += count
 
 
 class EdiDeactivatorRecord(models.AbstractModel):
