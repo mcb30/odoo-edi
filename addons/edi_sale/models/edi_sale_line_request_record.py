@@ -73,8 +73,8 @@ class EdiSaleLineRequestRecord(models.Model):
         # Process records in batches for efficiency
         for r, batch in self.batched(self.BATCH_SIZE):
 
-            _logger.info("%s executing %s %d-%d of %d",
-                         doc.name, self._name, r[0], r[-1], len(self))
+            _logger.info("%s creating %s %d-%d of %d",
+                         doc.name, SaleLine._name, r[0], r[-1], len(self))
 
             # Cache related records for this batch to reduce
             # per-record database lookups
@@ -85,6 +85,11 @@ class EdiSaleLineRequestRecord(models.Model):
             templates.mapped('name')
 
             # Create order lines
-            for rec in batch:
-                line_vals = rec.sale_line_values()
-                rec.sale_line_id = SaleLine.create(line_vals)
+            with self.statistics() as stats:
+                for rec in batch:
+                    line_vals = rec.sale_line_values()
+                    rec.sale_line_id = SaleLine.create(line_vals)
+                self.recompute()
+            _logger.info("%s created %s %d-%d in %.2fs, %d excess queries",
+                         doc.name, SaleLine._name, r[0], r[-1],
+                         stats.elapsed, (stats.count - 2 * len(batch)))
