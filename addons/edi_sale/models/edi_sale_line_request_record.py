@@ -64,9 +64,6 @@ class EdiSaleLineRequestRecord(models.Model):
         """Execute records"""
         super().execute()
         SaleLine = self.env['sale.order.line']
-        Sale = self.env['sale.order']
-        Product = self.env['product.product']
-        Template = self.env['product.template']
 
         # Identify containing EDI document
         doc = self.mapped('doc_id')
@@ -79,11 +76,10 @@ class EdiSaleLineRequestRecord(models.Model):
 
             # Cache related records for this batch to reduce
             # per-record database lookups
-            sales = Sale.browse(batch.mapped('order_id.id'))
+            sales = batch.mapped('order_id')
             sales.mapped('name')
-            products = Product.browse(batch.mapped('product_id.id'))
-            templates = Template.browse(products.mapped('product_tmpl_id.id'))
-            templates.mapped('name')
+            products = batch.mapped('product_id')
+            products.mapped('name')
 
             # Create order lines
             with self.statistics() as stats:
