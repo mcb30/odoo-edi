@@ -54,6 +54,7 @@ class EdiSaleLineRequestRecord(models.Model):
         return {
             'name': self.name,
             'product_id': self.product_id.id,
+            'product_uom': self.product_id.uom_id.id,
             'product_uom_qty': self.qty,
             'order_id': self.order_id.id,
         }
