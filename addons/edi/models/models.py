@@ -55,3 +55,8 @@ def groupby(self, key, sort=True):
 def statistics(self):
     """Gather profiling statistics for an operation"""
     return tools.EdiStatistics(self.env)
+
+@add_if_not_exists(models.BaseModel)
+def trace(self, filter=None, max=None):
+    """Trace database queries"""
+    return tools.EdiTracer(self.env.cr, filter=filter, max=max)
