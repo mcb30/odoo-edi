@@ -78,6 +78,8 @@ class EdiSaleLineRequestRecord(models.Model):
             # per-record database lookups
             sales = batch.mapped('order_id')
             sales.mapped('name')
+            partners = sales.mapped('partner_id')
+            partners.mapped('name')
             products = batch.mapped('product_id')
             products.mapped('name')
 
