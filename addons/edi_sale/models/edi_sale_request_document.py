@@ -35,6 +35,9 @@ class EdiSaleRequestDocument(models.AbstractModel):
     confirm sale orders as part of document execution.
     """
 
+    BATCH_CONFIRM = 10
+    """Batch size for sale order confirmation"""
+
     @api.model
     def sale_request_record_model(self, doc,
                                   supermodel='edi.sale.request.record'):
@@ -98,10 +101,10 @@ class EdiSaleRequestDocument(models.AbstractModel):
         if self._auto_confirm:
             SaleRequestRecord = self.sale_request_record_model(doc)
             reqs = SaleRequestRecord.search([('doc_id', '=', doc.id)])
-            for sale in reqs.mapped('sale_id'):
-                _logger.info("%s confirming %s", doc.name, sale.name)
+            for r, sales in reqs.mapped('sale_id').batched(self.BATCH_CONFIRM):
+                _logger.info("%s confirming %d-%d", doc.name, r[0], r[-1])
                 with self.statistics() as stats:
-                    sale.action_confirm()
+                    sales.action_confirm()
                     self.recompute()
-                _logger.info("%s confirmed %s in %.2fs, %d queries", doc.name,
-                             sale.name, stats.elapsed, stats.count)
+                _logger.info("%s confirmed %d-%d in %.2fs, %d queries",
+                             doc.name, r[0], r[-1], stats.elapsed, stats.count)
