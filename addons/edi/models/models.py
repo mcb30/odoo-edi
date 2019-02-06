@@ -52,9 +52,9 @@ def groupby(self, key, sort=True):
             for k, v in itertools.groupby(recs, key=key))
 
 @add_if_not_exists(models.BaseModel)
-def statistics(self):
+def statistics(self, cache=False):
     """Gather profiling statistics for an operation"""
-    return tools.EdiStatistics(self.env)
+    return tools.EdiStatistics(self.env, cache=cache)
 
 @add_if_not_exists(models.BaseModel)
 def trace(self, filter=None, max=None):

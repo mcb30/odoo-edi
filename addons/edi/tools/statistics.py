@@ -1,9 +1,24 @@
 """Profiling statistics for EDI"""
 
-from collections import namedtuple
+from collections import defaultdict, namedtuple
 import time
 
-EdiMetrics = namedtuple('EdiMetrics', ('time', 'count'))
+EdiMetrics = namedtuple('EdiMetrics', ('time', 'count', 'cache'))
+
+
+class EdiCacheMetrics(set):
+    """EDI cache usage metrics"""
+
+    def __str__(self):
+        return ", ".join(
+            "%s:%d" % (recs._name, len(recs))
+            for recs in sorted(list(self), key=lambda x: x._name)
+            if recs
+        )
+
+    def __sub__(self, other):
+        others = {x._name: x for x in other}
+        return type(self)(x - others.get(x._name, x.browse()) for x in self)
 
 
 class EdiStatistics(object):
@@ -14,8 +29,9 @@ class EdiStatistics(object):
     object or as a context manager.
     """
 
-    def __init__(self, env):
+    def __init__(self, env, cache=False):
         self.env = env
+        self.cache = cache
         self.start()
         self.stop()
 
@@ -28,7 +44,13 @@ class EdiStatistics(object):
 
     def metrics(self):
         """Get current profiling metrics"""
-        return EdiMetrics(time=time.time(), count=self.env.cr.sql_log_count)
+        ids = defaultdict(set)
+        if self.cache:
+            for field, records in self.env.cache._data.items():
+                ids[field.model_name].update(k for k, v in records.items() if v)
+        cache = EdiCacheMetrics(self.env[k].browse(v) for k, v in ids.items())
+        return EdiMetrics(time=time.time(), count=self.env.cr.sql_log_count,
+                          cache=cache)
 
     def start(self):
         """Start profiling"""
@@ -47,3 +69,8 @@ class EdiStatistics(object):
     def count(self):
         """Query count"""
         return (self.stopped.count - self.started.count)
+
+    @property
+    def cached(self):
+        """Newly cached records"""
+        return (self.stopped.cache - self.started.cache)
