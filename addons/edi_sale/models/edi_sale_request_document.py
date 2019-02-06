@@ -102,5 +102,6 @@ class EdiSaleRequestDocument(models.AbstractModel):
                 _logger.info("%s confirming %s", doc.name, sale.name)
                 with self.statistics() as stats:
                     sale.action_confirm()
+                    self.recompute()
                 _logger.info("%s confirmed %s in %.2fs, %d queries", doc.name,
                              sale.name, stats.elapsed, stats.count)
