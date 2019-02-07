@@ -78,6 +78,17 @@ class EdiSaleRequestDocument(models.AbstractModel):
         return self.no_record_values()
 
     @api.model
+    def sale_request_split_cancel_and_confirm(self, all_sales, _doc_name):
+        """Splits `all_sales` in two recordsets: requests that
+        should be cancelled and those that should be confirmed
+
+        In case `_auto_confirm` is flagged, subclasses should
+        override this method in order determine the subset of the
+        document sale requests that must be cancelled immediately.
+        """
+        return None, all_sales
+
+    @api.model
     def prepare(self, doc):
         """Prepare document"""
         super().prepare(doc)
@@ -97,14 +108,32 @@ class EdiSaleRequestDocument(models.AbstractModel):
         """Execute document"""
         super().execute(doc)
 
-        # Automatically confirm sale orders, if applicable
         if self._auto_confirm:
+            # Automatically confirm sale orders
             SaleRequestRecord = self.sale_request_record_model(doc)
             reqs = SaleRequestRecord.search([('doc_id', '=', doc.id)])
-            for r, sales in reqs.mapped('sale_id').batched(self.BATCH_CONFIRM):
-                _logger.info("%s confirming %d-%d", doc.name, r[0], r[-1])
-                with self.statistics() as stats:
-                    sales.action_confirm()
-                    self.recompute()
-                _logger.info("%s confirmed %d-%d in %.2fs, %d queries",
-                             doc.name, r[0], r[-1], stats.elapsed, stats.count)
+            all_sales = reqs.mapped('sale_id')
+            sales_to_cancel, sales_to_confirm = \
+                self.sale_request_split_cancel_and_confirm(all_sales, doc.name)
+
+            if sales_to_cancel:
+                for r, sales in sales_to_cancel.batched(self.BATCH_CONFIRM):
+                    _logger.info("%s cancelling %d-%d",
+                                    doc.name, r[0], r[-1])
+                    with self.statistics() as stats:
+                        sales.action_cancel()
+                        self.recompute()
+                    _logger.info("%s cancelled  %d-%d in %.2fs, %d queries",
+                                    doc.name, r[0], r[-1], stats.elapsed,
+                                    stats.count)
+
+            if sales_to_confirm:
+                for r, sales in sales_to_confirm.batched(self.BATCH_CONFIRM):
+                    _logger.info("%s confirming %d-%d", doc.name, r[0], r[-1])
+                    with self.statistics() as stats:
+                        sales.action_confirm()
+                        self.recompute()
+                    _logger.info("%s confirmed %d-%d in %.2fs, %d queries",
+                                 doc.name, r[0], r[-1], stats.elapsed,
+                                 stats.count)
+
