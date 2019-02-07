@@ -386,7 +386,7 @@ class EdiDocument(models.Model):
         # Execute document
         _logger.info("Executing %s", self.name)
         DocModel = self.env[self.doc_type_id.model_id.model]
-        env = self.with_context(tracking_disable=True, recompute=False).env
+        env = self.with_context(tracking_disable=True, recompute=True).env
         try:
             # pylint: disable=broad-except
             with self.statistics() as stats, self.env.cr.savepoint():
