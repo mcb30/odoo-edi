@@ -131,7 +131,8 @@ class EdiPickReportDocument(models.AbstractModel):
         if MoveReport is not None:
             moves = Move.search(self.move_report_domain(doc, picks),
                                 order='picking_id, id')
-            movelist = self.move_report_list(doc, moves)
+            movelist = (x.with_prefetch(moves._prefetch) for x in
+                        self.move_report_list(doc, moves))
         # Prepare records
         PickReport.prepare(doc, picks)
         if MoveReport is not None:

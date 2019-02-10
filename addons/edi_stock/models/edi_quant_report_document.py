@@ -62,5 +62,6 @@ class EdiQuantReportDocument(models.AbstractModel):
         Quant = self.env['stock.quant']
         # Construct quant list
         quants = Quant.search(self.quant_report_domain(doc), order='id')
-        quantlist = self.quant_report_list(doc, quants)
+        quantlist = (x.with_prefetch(quants._prefetch) for x in
+                     self.quant_report_list(doc, quants))
         QuantReport.prepare(doc, quantlist)

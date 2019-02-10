@@ -120,7 +120,8 @@ class EdiSaleReportDocument(models.AbstractModel):
             lines = SaleOrderLine.search(
                 self.sale_line_report_domain(doc, sales), order='order_id, id'
             )
-            linelist = self.sale_line_report_list(doc, lines)
+            linelist = (x.with_prefetch(lines._prefetch) for x in
+                        self.sale_line_report_list(doc, lines))
         # Prepare records
         SaleReport.prepare(doc, sales)
         if SaleLineReport is not None:
