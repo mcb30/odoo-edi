@@ -31,9 +31,9 @@ class EdiMoveTracker(models.Model):
 
     # For searching use only
     pick_id = fields.Many2one('stock.picking', string="Transfer",
-                              related='move_ids.picking_id')
+                              related='move_ids.picking_id', readonly=True)
     product_id = fields.Many2one('product.product', string="Product",
-                                 related='move_ids.product_id')
+                                 related='move_ids.product_id', readonly=True)
 
     @api.multi
     @api.depends('move_ids', 'move_ids.picking_id')

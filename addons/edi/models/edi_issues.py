@@ -24,7 +24,8 @@ class ProjectTask(models.Model):
 
     _inherit = 'project.task'
 
-    use_edi_fields = fields.Boolean(related='project_id.use_edi_fields')
+    use_edi_fields = fields.Boolean(related='project_id.use_edi_fields',
+                                    readonly=True)
     edi_doc_id = fields.Many2one('edi.document', string="EDI Document",
                                  index=True, ondelete='cascade')
     edi_gateway_id = fields.Many2one('edi.gateway', string="EDI Gateway",

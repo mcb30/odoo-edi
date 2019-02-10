@@ -56,7 +56,8 @@ class EdiTransfer(models.Model):
                                   compute='_compute_output_count', store=True)
 
     # Issue tracking used for asynchronously reporting errors
-    project_id = fields.Many2one(related='gateway_id.project_id')
+    project_id = fields.Many2one(related='gateway_id.project_id',
+                                 readonly=True)
     issue_ids = fields.One2many(inverse_name='edi_transfer_id')
 
     @api.depends('doc_ids')
