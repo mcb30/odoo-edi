@@ -55,15 +55,6 @@ class EdiQuantReportTutorialDocument(models.AbstractModel):
         Quants are grouped by product and assigned a reporting name
         based on the order within the report.
         """
-
-        # Cache product templates to minimise subsequent database lookups
-        Product = self.env['product.product']
-        Template = self.env['product.template']
-        products = Product.browse(quants.mapped('product_id.id'))
-        templates = Template.browse(products.mapped('product_tmpl_id.id'))
-        templates.mapped('name')
-
-        # Sort, group, and index by product code
         return (v.with_context(default_name='%05d' % i) for i, (k, v) in
                 enumerate(quants.groupby(lambda x: x.product_id.default_code)))
 
