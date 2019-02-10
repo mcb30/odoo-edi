@@ -314,9 +314,10 @@ class EdiSyncRecord(models.AbstractModel):
                              Target._name, offset, (offset + count - 1),
                              len(self))
                 with self.statistics() as stats:
-                    for rec in batch:
-                        target_vals = rec.target_values(rec._record_values())
-                        rec[target].write(target_vals)
+                    vals_list = [rec.target_values(rec._record_values())
+                                 for rec in batch]
+                    for rec, vals in zip(batch, vals_list):
+                        rec[target].write(vals)
                     self.recompute()
                 _logger.info("%s updated %s %d-%d in %.2fs, %d excess queries",
                              doc.name, Target._name, offset,
@@ -332,9 +333,11 @@ class EdiSyncRecord(models.AbstractModel):
                              Target._name, offset, (offset + count - 1),
                              len(self))
                 with self.statistics() as stats:
-                    for rec in batch:
-                        target_vals = rec.target_values(rec._record_values())
-                        rec[target] = Target.create(target_vals)
+                    vals_list = [rec.target_values(rec._record_values())
+                                 for rec in batch]
+                    targets = [Target.create(vals) for vals in vals_list]
+                    for rec, created in zip(batch, targets):
+                        rec[target] = created
                     self.recompute()
                 _logger.info("%s created %s %d-%d in %.2fs, %d excess queries",
                              doc.name, Target._name, offset,
