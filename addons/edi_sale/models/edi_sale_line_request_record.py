@@ -74,15 +74,6 @@ class EdiSaleLineRequestRecord(models.Model):
             _logger.info("%s creating %s %d-%d of %d",
                          doc.name, SaleLine._name, r[0], r[-1], len(self))
 
-            # Cache related records for this batch to reduce
-            # per-record database lookups
-            sales = batch.mapped('order_id')
-            sales.mapped('name')
-            partners = sales.mapped('partner_id')
-            partners.mapped('name')
-            products = batch.mapped('product_id')
-            products.mapped('name')
-
             # Create order lines
             with self.statistics() as stats:
                 for rec in batch:

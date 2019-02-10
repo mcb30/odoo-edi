@@ -110,19 +110,6 @@ class EdiMoveRequestRecord(models.Model):
             _logger.info("%s executing %s %d-%d of %d",
                          doc.name, self._name, r[0], r[-1], len(self))
 
-            # Cache all products, product templates, picks, tracking
-            # identities, and existing moves for this batch to reduce
-            # per-record database lookups
-            picks = Picking.browse(batch.mapped('pick_id.id'))
-            picks.mapped('name')
-            products = Product.browse(batch.mapped('product_id.id'))
-            templates = Template.browse(products.mapped('product_tmpl_id.id'))
-            templates.mapped('name')
-            trackers = EdiMoveTracker.browse(batch.mapped('tracker_id.id'))
-            trackers.mapped('name')
-            moves = Move.browse(trackers.mapped('move_ids.id'))
-            moves.mapped('name')
-
             # Create, update, or cancel moves
             for rec in batch:
 
