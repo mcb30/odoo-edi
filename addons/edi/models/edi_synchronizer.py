@@ -131,7 +131,8 @@ class EdiSyncRecord(models.AbstractModel):
             [(key, 'in', [x['name'] for x in vlist])],
             self._edi_sync_domain_call()
         ]))
-        return {k: v.ensure_one() for k, v in targets.groupby(key)}
+        return {k: v.with_prefetch(targets._prefetch).ensure_one()
+                for k, v in targets.groupby(key)}
 
     @api.model
     def target_values(self, record_vals):
