@@ -44,7 +44,7 @@ def groupby(self, key, sort=True):
     if isinstance(key, str):
         key = itemgetter(key)
     if sort:
-        if recs and isinstance(key(recs[0]), models.BaseModel):
+        if recs and isinstance(key(next(iter(recs))), models.BaseModel):
             recs = recs.sorted(key=lambda x: key(x).ids)
         else:
             recs = recs.sorted(key=key)
