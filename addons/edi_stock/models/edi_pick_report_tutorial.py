@@ -37,6 +37,7 @@ class EdiDocument(models.Model):
                  'pick_report_tutorial_ids.pick_id')
     def _compute_pick_ids(self):
         super()._compute_pick_ids()
+        self.mapped('pick_report_tutorial_ids.pick_id')
         for doc in self:
             doc.pick_ids += doc.mapped('pick_report_tutorial_ids.pick_id')
 

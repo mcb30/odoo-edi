@@ -34,6 +34,7 @@ class EdiDocument(models.Model):
                  'sale_line_request_tutorial_ids.order_id')
     def _compute_sale_ids(self):
         super()._compute_sale_ids()
+        self.mapped('sale_request_tutorial_ids.sale_id')
         for doc in self:
             doc.sale_ids += doc.mapped('sale_request_tutorial_ids.sale_id')
 

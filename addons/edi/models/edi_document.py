@@ -216,6 +216,7 @@ class EdiDocument(models.Model):
         domain syntax allowed us to express the concept of "visible if
         ``rec_type_ids`` contains <value>".
         """
+        self.mapped('doc_type_id.rec_type_ids.model_id.model')
         for doc in self:
             rec_models = doc.mapped('doc_type_id.rec_type_ids.model_id.model')
             doc.rec_type_names = '/%s/' % '/'.join(rec_models)

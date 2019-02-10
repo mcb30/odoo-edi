@@ -44,5 +44,6 @@ class EdiMoveTracker(models.Model):
         related field that traverses a Many2many followed by a
         Many2one.
         """
+        self.mapped('move_ids.picking_id')
         for tracker in self:
             tracker.pick_ids = tracker.mapped('move_ids.picking_id')
