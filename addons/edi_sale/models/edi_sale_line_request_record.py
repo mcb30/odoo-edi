@@ -69,7 +69,7 @@ class EdiSaleLineRequestRecord(models.Model):
         doc = self.mapped('doc_id')
 
         # Process records in batches for efficiency
-        for r, batch in self.batched(self.BATCH_SIZE):
+        for r, batch in self.batched(self.BATCH_CREATE):
 
             _logger.info("%s creating %s %d-%d of %d",
                          doc.name, SaleLine._name, r[0], r[-1], len(self))

@@ -1,7 +1,7 @@
 """EDI records"""
 
 import logging
-from operator import itemgetter
+from operator import attrgetter, itemgetter
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
@@ -78,6 +78,12 @@ class EdiRecord(models.AbstractModel):
     number of database queries and the number of records returned in
     each query.
     """
+
+    BATCH_CREATE = property(attrgetter('BATCH_SIZE'))
+    """Batch size for creating new records"""
+
+    BATCH_UPDATE = property(attrgetter('BATCH_SIZE'))
+    """Batch size for updating existing records"""
 
     _edi_relates = ()
     """EDI lookup relationships"""

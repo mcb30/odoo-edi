@@ -310,7 +310,7 @@ class EdiSyncRecord(models.AbstractModel):
 
             # Update existing target records
             existing = ready.filtered(lambda x: x[target])
-            for r, batch in existing.batched(self.BATCH_SIZE):
+            for r, batch in existing.batched(self.BATCH_UPDATE):
                 count = len(r)
                 _logger.info("%s updating %s %d-%d of %d", doc.name,
                              Target._name, offset, (offset + count - 1),
@@ -329,7 +329,7 @@ class EdiSyncRecord(models.AbstractModel):
 
             # Create new target records
             new = ready.filtered(lambda x: not x[target])
-            for r, batch in new.batched(self.BATCH_SIZE):
+            for r, batch in new.batched(self.BATCH_CREATE):
 
                 # Construct default values (at most once)
                 if defaults is None:

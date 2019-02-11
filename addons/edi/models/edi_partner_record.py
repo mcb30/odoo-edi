@@ -38,6 +38,9 @@ class EdiPartnerRecord(models.Model):
     _edi_sync_target = 'partner_id'
     _edi_sync_via = 'ref'
 
+    BATCH_CREATE = 100
+    """Batch size for creating new records"""
+
     name = fields.Char(string="Internal Reference")
     partner_id = fields.Many2one('res.partner', string="Partner",
                                  required=False, readonly=True, index=True,
