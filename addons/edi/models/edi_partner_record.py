@@ -74,6 +74,11 @@ class EdiPartnerRecord(models.Model):
         Target = Record[rel.target]
         return Target.create({rel.via: key})
 
+    @api.multi
+    def execute(self):
+        """Execute records"""
+        super(EdiPartnerRecord, self.with_context(recompute=True)).execute()
+
 
 class EdiPartnerTitleRecord(models.Model):
     """EDI partner title record
