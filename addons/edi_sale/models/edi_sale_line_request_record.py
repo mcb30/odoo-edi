@@ -76,9 +76,12 @@ class EdiSaleLineRequestRecord(models.Model):
 
             # Create order lines
             with self.statistics() as stats:
-                for rec in batch:
-                    line_vals = rec.sale_line_values()
-                    rec.sale_line_id = SaleLine.create(line_vals)
+                vals_list = list(self.add_edi_defaults(
+                    SaleLine,
+                    (rec.sale_line_values() for rec in batch)
+                ))
+                for rec, vals in zip(batch, vals_list):
+                    rec.sale_line_id = SaleLine.create(vals)
                 self.recompute()
             _logger.info("%s created %s %d-%d in %.2fs, %d excess queries",
                          doc.name, SaleLine._name, r[0], r[-1],
