@@ -1,6 +1,7 @@
 """EDI records"""
 
 import logging
+from itertools import chain
 from operator import attrgetter, itemgetter
 from odoo import api, fields, models
 from odoo.exceptions import UserError
@@ -217,6 +218,33 @@ class EdiRecord(models.AbstractModel):
             for vals in missing:
                 target = targets_by_key.get(vals[rel.key])
                 vals[rel.target] = target.id if target else False
+
+    @api.model
+    def add_edi_defaults(self, target, vlist):
+        """Add default values
+
+        Add default values for the ``target`` model to each entry in
+        the iterable ``vlist`` of value dictionaries that could be
+        passed to :meth:`~odoo.models.Model.create` in order to create
+        a record in the target model.
+
+        Each value dictionary within the list must contain the same
+        keys.  This allows the missing default values to be calculated
+        only once, and so avoids incurring the typically high cost of
+        adding missing default values for each newly created record.
+        """
+        iterator = iter(vlist)
+        try:
+            first = next(iterator)
+        except StopIteration:
+            return ()
+        defaults = tuple(
+            (k, v) for k, v in
+            target._add_missing_default_values(first).items()
+            if k not in first
+        )
+        return (dict(chain(defaults, vals.items()))
+                for vals in chain((first,), iterator))
 
     @api.model
     def prepare(self, doc, vlist):

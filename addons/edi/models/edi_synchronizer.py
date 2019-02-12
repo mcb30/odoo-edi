@@ -1,6 +1,5 @@
 """EDI synchronizer documents"""
 
-from itertools import chain
 import logging
 from odoo import api, fields, models
 from odoo.osv import expression
@@ -299,7 +298,6 @@ class EdiSyncRecord(models.AbstractModel):
         # Process records in order of lookup relationship readiness
         remaining = self
         offset = 0
-        defaults = None
         while remaining:
 
             # Identify records for which all lookup relationships are ready
@@ -330,27 +328,16 @@ class EdiSyncRecord(models.AbstractModel):
             # Create new target records
             new = ready.filtered(lambda x: not x[target])
             for r, batch in new.batched(self.BATCH_CREATE):
-
-                # Construct default values (at most once)
-                if defaults is None:
-                    rec = batch[0]
-                    vals = rec.target_values(rec._record_values())
-                    defaults = [
-                        (k, v) for k, v in
-                        Target._add_missing_default_values(vals).items()
-                        if k not in vals
-                    ]
-
-                # Create records
                 count = len(r)
                 _logger.info("%s creating %s %d-%d of %d", doc.name,
                              Target._name, offset, (offset + count - 1),
                              len(self))
                 with self.statistics() as stats:
-                    vals_list = [dict(chain(
-                        defaults,
-                        rec.target_values(rec._record_values()).items()
-                    )) for rec in batch]
+                    vals_list = list(self.add_edi_defaults(
+                        Target,
+                        (rec.target_values(rec._record_values())
+                         for rec in batch)
+                    ))
                     targets = [Target.create(vals) for vals in vals_list]
                     for rec, created in zip(batch, targets):
                         rec[target] = created
