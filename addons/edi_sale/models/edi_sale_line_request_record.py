@@ -48,6 +48,13 @@ class EdiSaleLineRequestRecord(models.Model):
                        digits=dp.get_precision('Product Unit of Measure'))
 
     @api.multi
+    def precache(self):
+        """Precache associated records"""
+        super().precache()
+        self.mapped('product_id.product_tmpl_id.name')
+        self.mapped('order_id.partner_id.name')
+
+    @api.multi
     def sale_line_values(self):
         """Construct ``sale.order.line`` value dictionary"""
         self.ensure_one()
@@ -76,6 +83,7 @@ class EdiSaleLineRequestRecord(models.Model):
 
             # Create order lines
             with self.statistics() as stats:
+                batch.precache()
                 vals_list = list(self.add_edi_defaults(
                     SaleLine,
                     (rec.sale_line_values() for rec in batch)

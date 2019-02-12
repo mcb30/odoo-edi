@@ -55,6 +55,13 @@ class EdiMoveRequestRecord(models.Model):
                        digits=dp.get_precision('Product Unit of Measure'))
 
     @api.multi
+    def precache(self):
+        """Precache associated records"""
+        super().precache()
+        self.mapped('product_id.product_tmpl_id.name')
+        self.mapped('tracker_id.move_ids.name')
+
+    @api.multi
     def move_values(self):
         """Construct ``stock.move`` value dictionary
 
@@ -106,7 +113,7 @@ class EdiMoveRequestRecord(models.Model):
         # Process records in batches for efficiency
         cancel = Move.browse()
         for r, batch in self.batched(self.BATCH_SIZE):
-
+            batch.precache()
             _logger.info("%s executing %s %d-%d of %d",
                          doc.name, self._name, r[0], r[-1], len(self))
 

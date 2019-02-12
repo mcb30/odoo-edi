@@ -121,6 +121,17 @@ class EdiSyncRecord(models.AbstractModel):
         )
 
     @api.model
+    def precache_targets(self, targets):
+        """Precache associated target records"""
+        targets.mapped(self._edi_sync_via)
+
+    @api.multi
+    def precache(self):
+        """Precache associated records"""
+        super().precache()
+        self.precache_targets(self.mapped(self._edi_sync_target))
+
+    @api.model
     def targets_by_key(self, vlist):
         """Construct lookup cache of target records indexed by key field"""
         Target = self.browse()[self._edi_sync_target].with_context(
@@ -131,6 +142,7 @@ class EdiSyncRecord(models.AbstractModel):
             [(key, 'in', [x['name'] for x in vlist])],
             self._edi_sync_domain_call()
         ]))
+        self.precache_targets(targets)
         return {k: v.with_prefetch(targets._prefetch).ensure_one()
                 for k, v in targets.groupby(key)}
 
@@ -309,6 +321,7 @@ class EdiSyncRecord(models.AbstractModel):
             # Update existing target records
             existing = ready.filtered(lambda x: x[target])
             for r, batch in existing.batched(self.BATCH_UPDATE):
+                batch.precache()
                 count = len(r)
                 _logger.info("%s updating %s %d-%d of %d", doc.name,
                              Target._name, offset, (offset + count - 1),
@@ -328,6 +341,7 @@ class EdiSyncRecord(models.AbstractModel):
             # Create new target records
             new = ready.filtered(lambda x: not x[target])
             for r, batch in new.batched(self.BATCH_CREATE):
+                batch.precache()
                 count = len(r)
                 _logger.info("%s creating %s %d-%d of %d", doc.name,
                              Target._name, offset, (offset + count - 1),

@@ -45,6 +45,12 @@ class EdiProductRecord(models.Model):
                               readonly=True, default="Unknown")
 
     @api.model
+    def precache_targets(self, targets):
+        """Precache associated target records"""
+        super().precache_targets(targets)
+        targets.mapped('product_tmpl_id.name')
+
+    @api.model
     def target_values(self, record_vals):
         """Construct ``product.product`` field value dictionary"""
         product_vals = super().target_values(record_vals)

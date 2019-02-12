@@ -246,6 +246,18 @@ class EdiRecord(models.AbstractModel):
         return (dict(chain(defaults, vals.items()))
                 for vals in chain((first,), iterator))
 
+    @api.multi
+    def precache(self):
+        """Precache associated records
+
+        Load any relevant associated records into the field value
+        cache, to ensure that a bulk operation does not experience a
+        cache miss that could potentially result in large numbers of
+        single-record queries.
+        """
+        for rel in self._edi_relates:
+            self.mapped('%s.%s' % (rel.target, rel.via))
+
     @api.model
     def prepare(self, doc, vlist):
         """Prepare records
