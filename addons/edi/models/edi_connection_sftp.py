@@ -111,7 +111,9 @@ class EdiConnectionSFTP(models.AbstractModel):
         """Send output attachments"""
         Document = self.env['edi.document']
         Attachment = self.env['ir.attachment']
+        Transfer = self.env['edi.transfer']
         outputs = Attachment.browse()
+        sent = Attachment.browse()
 
         # Get names and sizes of existing files
         files = {x.filename: x.st_size for x in conn.listdir_attr(path.path)}
@@ -122,6 +124,12 @@ class EdiConnectionSFTP(models.AbstractModel):
             ('execute_date', '>=', fields.Datetime.to_string(min_date)),
             ('doc_type_id', 'in', path.doc_type_ids.mapped('id'))
         ])
+
+        if not transfer.gateway_id.resend:
+            sent = Transfer.search([
+                ('create_date', '>', fields.Datetime.to_string(min_date)),
+                ('gateway_id', '=', transfer.gateway_id.id),
+            ]).mapped('output_ids')
 
         # Send attachments
         for attachment in docs.mapped('output_ids').sorted('id'):
@@ -141,6 +149,10 @@ class EdiConnectionSFTP(models.AbstractModel):
                 # not be possible due to access restrictions).
                 if attachment.file_size == files[attachment.datas_fname]:
                     continue
+
+            # Skip files already sent, if applicable
+            if not transfer.gateway_id.resend and attachment in sent:
+                continue
 
             # Send file with temporary filename
             temppath = os.path.join(path.path, ('.%s~' % uuid.uuid4().hex))

@@ -51,6 +51,16 @@ def skipUnlessCanSend(f):
     return wrapper
 
 
+def skipUnlessConfigurableResend(f):
+    def wrapper(self, *args, **kwargs):
+        # pylint: disable=missing-docstring
+        if self.can_configure_resend:
+            f(self, *args, **kwargs)
+        else:
+            self.skipTest("Connection can not use persist")
+    return wrapper
+
+
 class DummySSHServer(paramiko.ServerInterface):
     """Dummy SSH server"""
 
@@ -115,6 +125,7 @@ class EdiGatewayCase(EdiCase):
     can_initiate = False
     can_receive = False
     can_send = False
+    can_configure_resend = False
 
     @classmethod
     def setUpClass(cls):
@@ -467,6 +478,40 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
             self.assertEqual(len(transfer.output_ids), 0)
             self.assertSent(ctx, {})
             self.path_send.glob = '*.txt'
+            transfer = self.gateway.do_transfer()
+            self.assertEqual(len(transfer.input_ids), 0)
+            self.assertEqual(len(transfer.output_ids), 1)
+            self.assertIn(attachment, transfer.output_ids)
+            self.assertSent(ctx, {self.path_send: ['hello_world.txt']})
+
+    @skipUnlessCanInitiate
+    @skipUnlessCanSend
+    @skipUnlessConfigurableResend
+    def test12_transfer_send_once(self):
+        """Test persist flag stops file from being sent in second transfer"""
+        EdiDocument = self.env['edi.document']
+        EdiTransfer = self.env['edi.transfer']
+        today = fields.Datetime.now()
+        doc = EdiDocument.create({
+            'name': "Greeting",
+            'doc_type_id': self.doc_type_unknown.id,
+            'state': 'done',
+            'prepare_date': today,
+            'execute_date': today,
+        })
+        attachment = self.create_output_attachment(doc, 'hello_world.txt')
+        blocking_transfer = EdiTransfer.create({
+            'gateway_id': self.gateway.id,
+            'output_ids': [(6, 0, attachment.ids)]
+        })
+        with self.patch_paths({self.path_send: []}) as ctx:
+            self.path_send.glob = '*.txt'
+            self.gateway.resend = False
+            transfer = self.gateway.do_transfer()
+            self.assertEqual(len(transfer.input_ids), 0)
+            self.assertEqual(len(transfer.output_ids), 0)
+            self.assertSent(ctx, {})
+            self.gateway.resend = True
             transfer = self.gateway.do_transfer()
             self.assertEqual(len(transfer.input_ids), 0)
             self.assertEqual(len(transfer.output_ids), 1)

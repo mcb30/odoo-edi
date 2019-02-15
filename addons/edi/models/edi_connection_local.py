@@ -89,7 +89,9 @@ class EdiConnectionLocal(models.AbstractModel):
         """Send output attachments"""
         Document = self.env['edi.document']
         Attachment = self.env['ir.attachment']
+        Transfer = self.env['edi.transfer']
         outputs = Attachment.browse()
+        sent = Attachment.browse()
         directory = conn.joinpath(path.path)
 
         # Get list of output documents
@@ -98,6 +100,12 @@ class EdiConnectionLocal(models.AbstractModel):
             ('execute_date', '>=', fields.Datetime.to_string(min_date)),
             ('doc_type_id', 'in', path.doc_type_ids.mapped('id'))
         ])
+
+        if not transfer.gateway_id.resend:
+            sent = Transfer.search([
+                ('create_date', '>', fields.Datetime.to_string(min_date)),
+                ('gateway_id', '=', transfer.gateway_id.id),
+            ]).mapped('output_ids')
 
         # Send attachments
         for attachment in docs.mapped('output_ids').sorted('id'):
@@ -114,6 +122,10 @@ class EdiConnectionLocal(models.AbstractModel):
                     continue
             except OSError:
                 pass
+
+            # Skip files already sent, if applicable
+            if not transfer.gateway_id.resend and attachment in sent:
+                continue
 
             # Write file with temporary filename
             _logger.info("%s writing %s", transfer.gateway_id.name, filepath)

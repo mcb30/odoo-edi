@@ -114,6 +114,7 @@ class EdiGateway(models.Model):
         connections.
         """,
     )
+    resend = fields.Boolean(string="Resend missing files", default=True)
 
     # Authentication
     username = fields.Char(string="Username")

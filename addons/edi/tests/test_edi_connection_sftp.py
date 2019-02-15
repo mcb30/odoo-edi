@@ -59,6 +59,7 @@ class TestEdiConnectionSFTP(test_edi_gateway.EdiGatewayFileSystemCase):
     can_initiate = True
     can_receive = True
     can_send = True
+    can_configure_resend = True
 
     @classmethod
     def setUpClass(cls):

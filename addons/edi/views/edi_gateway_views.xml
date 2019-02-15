@@ -88,6 +88,7 @@
 		<field name="server"/>
 		<field name="port"/>
 		<field name="safety"/>
+		<field name="resend"/>
 	      </group>
 	      <group name="history" string="History">
 		<field name="project_id"/>

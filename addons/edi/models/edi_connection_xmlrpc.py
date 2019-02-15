@@ -68,6 +68,13 @@ class EdiConnectionXMLRPC(models.AbstractModel):
             lambda x: fnmatch.fnmatch(x.datas_fname, path.glob)
         )
 
+        # Skip files already sent, if applicable
+        if not transfer.gateway_id.resend:
+            outputs -= self.env['edi.transfer'].search([
+                ('output_ids', 'in', outputs.ids),
+                ('gateway_id', '=', transfer.gateway_id.id),
+            ]).mapped('output_ids')
+
         # Create output files from attachments
         conn[path.path] += [{'name': x.datas_fname, 'data': x.datas}
                             for x in outputs]
