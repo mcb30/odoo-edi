@@ -57,6 +57,12 @@ def statistics(self, cache=False):
     return tools.EdiStatistics(self.env, cache=cache)
 
 @add_if_not_exists(models.BaseModel)
-def trace(self, filter=None, max=None):
+def trace(self, filter=None, max=None, time_queries=False, breakpoint=None):
     """Trace database queries"""
-    return tools.EdiTracer(self.env.cr, filter=filter, max=max)
+    return tools.EdiTracer(
+        self.env.cr,
+        filter=filter,
+        max=max,
+        time_queries=time_queries,
+        breakpoint=breakpoint,
+    )

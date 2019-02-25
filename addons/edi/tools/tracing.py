@@ -1,11 +1,23 @@
 """Query tracing"""
 
+import time
 from itertools import takewhile
 import logging
 import re
 import traceback
 from odoo import models
 from odoo.sql_db import Cursor
+
+try:
+    import ipdb
+    DEBUGGER = ipdb
+except ImportError:
+    try:
+        import pdb
+        DEBUGGER = pdb
+    except ImportError:
+        DEBUGGER = None
+
 
 _logger = logging.getLogger(__name__)
 
@@ -57,6 +69,14 @@ class EdiTracer(object):
     The optional ``max`` parameter may be used to limit the total
     number of queries that are logged.
 
+    The optional ``time_queries`` parameter is used to specify if the duration
+    of queries should be logged.
+
+    The optional ``breakpoint`` parameter takes a function which
+    accepts the keyword arguemnts query, params (query parameters) and
+    duration. If the function returns true then set_trace will be called on
+    the debugger, assuming a debugger (ipdb or pdb) can be imported
+
     The query tracer may either be used as a context manager, in which
     case query tracing will be stopped automatically.
 
@@ -65,7 +85,8 @@ class EdiTracer(object):
 
     """
 
-    def __init__(self, cr, filter=None, max=None):
+    def __init__(self, cr, filter=None, max=None, time_queries=False,
+                 breakpoint=None):
         self.cr = cr
         self.execute = cr.execute
         if filter is None:
@@ -78,6 +99,8 @@ class EdiTracer(object):
             self.filter = filter
         self.max = max
         self.count = 0
+        self.time_queries = time_queries
+        self.breakpoint = breakpoint
         self.tb = traceback.extract_stack()
         self.start()
 
@@ -100,12 +123,32 @@ class EdiTracer(object):
             skip = max((len(list(common)) - 1), 0)
             tb = full_tb[skip:]
 
+        if self.time_queries:
+            start = time.time()
+        else:
             # Log query, parameters, and incremental traceback
             _logger.info("query: %s : %s\n%s", query, params,
                          ''.join(traceback.format_list(tb)))
 
-        return self.execute(query, params=params,
-                            log_exceptions=log_exceptions)
+        res = self.execute(query, params=params, log_exceptions=log_exceptions)
+
+        if self.time_queries:
+            duration = time.time() - start
+            # Log query, parameters, duration and incremental traceback
+            _logger.info(
+                "query: %s : %s\nduration: %s\n%s",
+                query, params, duration, ''.join(traceback.format_list(tb))
+            )
+
+        if DEBUGGER is not None and callable(self.breakpoint):
+            if self.breakpoint(
+                duration=duration,
+                query=query,
+                params=params,
+            ):
+                DEBUGGER.set_trace()
+
+        return res
 
     def start(self):
         """Start tracing queries"""
