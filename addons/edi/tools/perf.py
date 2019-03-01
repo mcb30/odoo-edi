@@ -4,6 +4,7 @@
 
 import re
 from argparse import ArgumentParser
+from collections import defaultdict
 
 QUERY = re.compile(r'^.*query:\s+(SELECT|INSERT|UPDATE|DELETE)\s+(.*)$')
 TNAME = r'(?:(' + r'\"[A-Za-z0-9_]+\"|[A-Za-z0-9_]+' + r'))'
@@ -14,19 +15,27 @@ QUERIES = {
     'DELETE': re.compile(r'^FROM\s+' + TNAME),
 }
 
+QUERY_FINDER = re.compile(r'(query:\s+.*?)\s*\n?\s+File')
+
+
 class Perf(object):
     '''Performance data extracted from lines of trace output.'''
+
     def __init__(self):
         self._lines = 0
-        self._query = {}
+        self._query = defaultdict(lambda: defaultdict(int))
+
     def __str__(self):
         lines = ['lines: {}'.format(self._lines)]
         for query in self._query:
             lines += ['', '[{}]'.format(query), '']
             table = self._query[query]
-            for tname in sorted(table, key=lambda k, t=table: t[k], reverse=True):
+            for tname in sorted(
+                table, key=lambda k, t=table: t[k], reverse=True
+            ):
                 lines.append('{}: {}'.format(tname, table[tname]))
         return '\n'.join(lines)
+
     def line(self, line):
         '''Extract data from `line`.'''
         self._lines += 1
@@ -44,14 +53,8 @@ class Perf(object):
             raise
         else:
             tname = tname.strip('"')
-        try:
-            table = self._query[query]
-        except KeyError:
-            table = self._query[query] = {}
-        try:
-            table[tname] += 1
-        except KeyError:
-            table[tname] = 1
+        self._query[query][tname] += 1
+
 
 def main():
     '''Extract performance data from trace output in logfile.'''
@@ -60,8 +63,8 @@ def main():
     args = aparser.parse_args()
     perf = Perf()
     with open('/dev/stdin' if args.logfile == '-' else args.logfile) as fid:
-        for line in fid:
-            perf.line(line)
+        for query in QUERY_FINDER.finditer(fid.read()):
+            perf.line(query.group(1))
     print(perf)
 
 if __name__ == '__main__':
