@@ -304,6 +304,7 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
     @skipUnlessCanReceive
     def test04_transfer_receive(self):
         """Test receiving attachments"""
+        self.gateway.automatic = False
         with self.patch_paths({self.path_receive: ['hello_world.txt']}):
             transfer = self.gateway.with_context({
                 'default_allow_process': False,
@@ -424,6 +425,20 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
             self.assertEqual(len(transfer.input_ids), 1)
             self.assertEqual(len(transfer.output_ids), 0)
             self.assertAttachment(transfer.input_ids, 'hello_world.txt')
+            self.assertEqual(len(transfer.doc_ids), 1)
+            doc = transfer.doc_ids
+            self.assertEqual(doc.doc_type_id, doc_type)
+            self.assertEqual(doc.state, 'done')
+        self.gateway.automatic = False
+        with self.patch_paths({self.path_receive: ['destroy_world.txt']}):
+            transfer = self.gateway.do_transfer()
+            self.assertEqual(len(transfer.input_ids), 1)
+            self.assertEqual(len(transfer.output_ids), 0)
+            self.assertAttachment(transfer.input_ids, 'destroy_world.txt')
+            self.assertEqual(len(transfer.doc_ids), 1)
+            doc = transfer.doc_ids
+            self.assertEqual(doc.doc_type_id, doc_type)
+            self.assertEqual(doc.state, 'draft')
 
     @skipUnlessCanInitiate
     def test09_action_test_fail(self):

@@ -114,6 +114,7 @@ class EdiGateway(models.Model):
         connections.
         """,
     )
+    automatic = fields.Boolean(string="Process automatically", default=True)
     resend = fields.Boolean(string="Resend missing files", default=True)
 
     # Authentication
@@ -330,7 +331,11 @@ class EdiGateway(models.Model):
     def do_transfer(self, conn=None):
         """Receive input attachments, process documents, send outputs"""
         self.ensure_one()
-        transfer = self.transfer_ids.create({'gateway_id': self.id})
+        transfer = self.transfer_ids.create({
+            'gateway_id': self.id,
+            'allow_process': self._context.get('default_allow_process',
+                                               self.automatic),
+        })
         self.lock_for_transfer(transfer)
         Model = self.env[self.model_id.model]
         try:
