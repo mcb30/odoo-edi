@@ -146,6 +146,14 @@ class EdiDocument(models.Model):
                              string="Status", readonly=True, index=True,
                              default='draft', copy=False,
                              track_visibility='onchange')
+    activity = fields.Selection([('none', "None"),
+                                 ('prep', "Preparing"),
+                                 ('exec', "Executing"),
+                                 ('unprep', "Unpreparing"),
+                                 ('cancel', "Cancelling")
+                                 ],
+                                string="Current Activity", readonly=True,
+                                default='none', copy=False)
     doc_type_id = fields.Many2one('edi.document.type', string="Document Type",
                                   required=True, readonly=True, index=True)
     prepare_date = fields.Datetime(string="Prepared on", readonly=True,
@@ -248,6 +256,19 @@ class EdiDocument(models.Model):
         return new
 
     @api.multi
+    def force_reset_activity(self):
+        """ Reset activity to none, uses own cursor to ensure this is committed
+        as method may be called in event of an exception. """
+        with self.pool.cursor() as temp_cr:
+            api.Environment(temp_cr, self.env.uid, {})['edi.document']\
+                .browse(self.ids).exists().write({'activity': 'none'})
+
+    @api.multi
+    def reset_activity(self):
+        """ Reset activity to none """
+        self.write({'activity': 'none'})
+
+    @api.multi
     def lock_for_action(self):
         """Lock document"""
         for doc in self:
@@ -303,7 +324,40 @@ class EdiDocument(models.Model):
                              stats.elapsed, count, stats.count,
                              (stats.count / count))
 
+    def set_activity(activity):
+        """This decorator sets the current activity of the document so that a
+         user can see the activity while decorated action is running"""
+        def wrapper(func):
+            def inner_wrapper(self, *args, **kwargs):
+                self.ensure_one()
+                try:
+                    # If automatically preparing as part of execution we
+                    # shouldn't update the activity
+                    set_activity = False
+                    if not (self.activity == 'exec' and activity == 'prep'):
+                        set_activity = True
+                        self.write({'activity': activity})
+                        self.env.cr.commit()
+
+                    with self.env.cr.savepoint():
+                        # Execute the decorated action
+                        ret = func(self, *args, **kwargs)
+                        # Action complete, reset the activity status if set
+                        if set_activity:
+                            self.reset_activity()
+                        return ret
+                # pylint: disable=bare-except
+                except:
+                    # Something failed - even CTRL-C should cause the activity
+                    # status to be set to none.
+                    if set_activity:
+                        self.force_reset_activity()
+                    raise
+            return inner_wrapper
+        return wrapper
+
     @api.multi
+    @set_activity('prep')
     def action_prepare(self):
         """Prepare document
 
@@ -342,6 +396,7 @@ class EdiDocument(models.Model):
         return True
 
     @api.multi
+    @set_activity('unprep')
     def action_unprepare(self):
         """Return Prepared document to Draft state"""
         self.ensure_one()
@@ -365,6 +420,7 @@ class EdiDocument(models.Model):
         return True
 
     @api.multi
+    @set_activity('exec')
     def action_execute(self):
         """Execute document
 
@@ -391,8 +447,9 @@ class EdiDocument(models.Model):
         try:
             # pylint: disable=broad-except
             with self.statistics() as stats, self.env.cr.savepoint():
-                DocModel.with_env(env).execute(self.with_env(env))
-                self.recompute()
+                with env.clear_upon_failure():
+                    DocModel.with_env(env).execute(self.with_env(env))
+                    self.recompute()
         except Exception as err:
             self.raise_issue(_("Execution failed: %s"), err)
             return False
@@ -408,6 +465,7 @@ class EdiDocument(models.Model):
         return True
 
     @api.multi
+    @set_activity('cancel')
     def action_cancel(self):
         """Cancel document"""
         self.ensure_one()
