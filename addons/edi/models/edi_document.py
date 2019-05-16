@@ -2,6 +2,7 @@
 
 from base64 import b64decode, b64encode
 from collections import namedtuple
+import contextlib
 import logging
 from odoo import api, fields, models
 from odoo.exceptions import UserError
@@ -146,6 +147,14 @@ class EdiDocument(models.Model):
                              string="Status", readonly=True, index=True,
                              default='draft', copy=False,
                              track_visibility='onchange')
+    activity = fields.Selection([('none', "None"),
+                                 ('prep', "Preparing"),
+                                 ('exec', "Executing"),
+                                 ('unprep', "Unpreparing"),
+                                 ('cancel', "Cancelling")
+                                 ],
+                                string="Current Activity", readonly=True,
+                                default='none', copy=False)
     doc_type_id = fields.Many2one('edi.document.type', string="Document Type",
                                   required=True, readonly=True, index=True)
     prepare_date = fields.Datetime(string="Prepared on", readonly=True,
@@ -303,12 +312,40 @@ class EdiDocument(models.Model):
                              stats.elapsed, count, stats.count,
                              (stats.count / count))
 
+    @contextlib.contextmanager
+    @api.multi
+    def manage_activity(self, activity):
+        """Sets the current activity of the document so that a
+        user can see the activity while the enclosed action is running."""
+        self.ensure_one()
+        try:
+            # Write activity status and commit it
+            self.write({'activity': activity})
+            self.env.cr.commit()
+            yield
+        # pylint: disable=broad-except
+        except:
+            # We cannot guarantee that the env cursor is valid, so use a
+            # different cursor to reset activity.
+            with self.pool.cursor() as temp_cr:
+                env = self.env(cr=temp_cr)
+                env['edi.document'].browse(self.ids).write({'activity': 'none'})
+            raise
+        else:
+            self.write({'activity': 'none'})
+            self.env.cr.commit()
+
     @api.multi
     def action_prepare(self):
         """Prepare document
 
         Parse input attachments and create corresponding EDI records.
         """
+        with self.manage_activity('prep'):
+            return self._action_prepare()
+
+    @api.multi
+    def _action_prepare(self):
         self.ensure_one()
         # Lock document
         self.lock_for_action()
@@ -344,6 +381,11 @@ class EdiDocument(models.Model):
     @api.multi
     def action_unprepare(self):
         """Return Prepared document to Draft state"""
+        with self.manage_activity('unprep'):
+            return self._action_unprepare()
+
+    @api.multi
+    def _action_unprepare(self):
         self.ensure_one()
         # Lock document
         self.lock_for_action()
@@ -370,12 +412,17 @@ class EdiDocument(models.Model):
 
         Parse EDI records and update database.
         """
+        with self.manage_activity('exec'):
+            return self._action_execute()
+
+    @api.multi
+    def _action_execute(self):
         self.ensure_one()
         # Lock document
         self.lock_for_action()
         # Automatically prepare document if needed
         if self.state == 'draft':
-            prepared = self.action_prepare()
+            prepared = self._action_prepare()
             if not prepared:
                 return False
         # Check document state
@@ -390,9 +437,10 @@ class EdiDocument(models.Model):
         env = self.with_context(tracking_disable=True, recompute=False).env
         try:
             # pylint: disable=broad-except
-            with self.statistics() as stats, self.env.cr.savepoint():
-                DocModel.with_env(env).execute(self.with_env(env))
-                self.recompute()
+            with self.statistics() as stats, self.env.cr.savepoint(),\
+                                             env.clear_upon_failure():
+                    DocModel.with_env(env).execute(self.with_env(env))
+                    self.recompute()
         except Exception as err:
             self.raise_issue(_("Execution failed: %s"), err)
             return False
@@ -410,6 +458,11 @@ class EdiDocument(models.Model):
     @api.multi
     def action_cancel(self):
         """Cancel document"""
+        with self.manage_activity('cancel'):
+            return self._action_cancel()
+
+    @api.multi
+    def _action_cancel(self):
         self.ensure_one()
         # Lock document
         self.lock_for_action()
