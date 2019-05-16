@@ -168,7 +168,10 @@ class EdiTransfer(models.Model):
 
         # Receive inputs, if applicable
         if self.allow_receive:
-            self.receive_inputs(conn)
+            with self.env.cr.savepoint():
+                self.receive_inputs(conn)
+            # Commit after receiving inputs, documents will now be visible in UI
+            self.env.cr.commit()
 
         # Prepare and execute documents, if applicable
         if self.allow_process:
@@ -177,6 +180,9 @@ class EdiTransfer(models.Model):
                              self.gateway_id.name, doc.name)
                 prepared = doc.action_prepare()
                 if prepared:
+                    # Document is prepared, we can commit this before beginning
+                    # execution.
+                    self.env.cr.commit()
                     _logger.info("%s executing %s",
                                  self.gateway_id.name, doc.name)
                     executed = doc.action_execute()
