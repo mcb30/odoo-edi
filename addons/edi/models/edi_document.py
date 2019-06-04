@@ -322,7 +322,10 @@ class EdiDocument(models.Model):
         try:
             self.write({'activity': activity})
             self.env.cr.commit()
-            yield
+            # Use a savepoint to ensure changes are rolled back before we reset
+            # activity on error.
+            with self.env.cr.savepoint():
+                yield
         # pylint: disable=bare-except
         except:
             # We cannot guarantee that the env cursor is valid, so use a
