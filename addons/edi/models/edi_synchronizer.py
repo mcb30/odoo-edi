@@ -161,6 +161,20 @@ class EdiSyncRecord(models.AbstractModel):
         return target_vals
 
     @api.multi
+    def target_comparison_values(self, _doc, _companion_records, record_vals):
+        """Construct target model field value dictionary which is used to
+           check if a target requires an update.
+        """
+        return self.target_values(record_vals)
+
+    @api.multi
+    def _get_companion_records(self, _doc):
+        """Get records which may be linked to the syncronizer which
+           have not been created yet
+        """
+        return None
+
+    @api.multi
     def _record_values(self):
         """Reconstruct record field value dictionary
 
@@ -240,6 +254,8 @@ class EdiSyncRecord(models.AbstractModel):
             # Add to list of matched target record IDs
             matched_ids |= set(x.id for x in targets_by_key.values())
 
+            companion_records = self._get_companion_records(doc)
+
             # Create EDI records
             for record_vals in vbatch:
 
@@ -248,7 +264,8 @@ class EdiSyncRecord(models.AbstractModel):
                 if target:
 
                     # Elide EDI records that would not change the target record
-                    target_vals = self.target_values(record_vals)
+                    target_vals = self.target_comparison_values(
+                        doc, companion_records, record_vals)
                     if all(comparator[k](target[k], v)
                            for k, v in target_vals.items()):
                         continue
