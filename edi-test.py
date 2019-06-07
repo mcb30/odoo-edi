@@ -71,5 +71,11 @@ for output in res[args.path]:
     filename = os.path.basename(output['name'])
     if args.verbose >= 1:
         print(filename)
-    with open(os.path.join(args.output, filename), 'xb') as f:
+    out_path = os.path.join(args.output, filename)
+    i = 0
+    while os.path.exists(out_path):
+        new_name = '%s.%0.2i' % (filename, i)
+        out_path = os.path.join(args.output, new_name)
+        i += 1
+    with open(out_path, 'xb') as f:
         f.write(base64.b64decode(output['data']))
