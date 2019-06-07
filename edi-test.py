@@ -72,4 +72,4 @@ for output in res[args.path]:
     if args.verbose >= 1:
         print(filename)
     with open(os.path.join(args.output, filename), 'xb') as f:
-        f.write(base64.b64decode(output['data'].data))
+        f.write(base64.b64decode(output['data']))
