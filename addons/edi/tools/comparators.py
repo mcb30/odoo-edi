@@ -1,7 +1,7 @@
 """Comparator helpers for EDI"""
 
 from collections import UserDict
-from odoo import fields
+from odoo import fields, models
 from odoo.tools import float_compare
 
 
@@ -29,7 +29,10 @@ class Comparator(UserDict):
     def comparator(self, field):
         """Construct comparator function"""
         if isinstance(field, fields.Many2one):
-            return lambda x, y: (not x and not y) or (x.id == y)
+            return lambda x, y: (
+                (not x and not y and not isinstance(y, models.NewId))
+                or (x.id == y)
+            )
         elif isinstance(field, fields.Float) and field.digits:
             (_precision, scale) = field.digits
             return lambda x, y: float_compare(x, y, precision_digits=scale) == 0

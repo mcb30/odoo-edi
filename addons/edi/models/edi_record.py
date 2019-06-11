@@ -217,7 +217,7 @@ class EdiRecord(models.AbstractModel):
             # Add target values where known
             for vals in missing:
                 target = targets_by_key.get(vals[rel.key])
-                vals[rel.target] = target.id if target else False
+                vals[rel.target] = target.id if target else models.NewId()
 
     @api.model
     def add_edi_defaults(self, target, vlist):

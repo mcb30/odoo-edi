@@ -52,3 +52,20 @@ class TestPartnerTutorial(EdiCase):
         self.assertEqual(len(partners), 1)
         self.assertEqual(partners.ref, 'E')
         self.assertEqual(partners.email, 'eve@example.com')
+
+    def test03_correction(self):
+        """Document and subsequent correction document"""
+        Title = self.env['res.partner.title']
+        doc1 = self.create_tutorial('friends.csv')
+        self.assertTrue(doc1.action_execute())
+        partners = doc1.mapped('partner_tutorial_ids.partner_id')
+        self.assertEqual(len(partners), 4)
+        doc2 = self.create_tutorial('update_untitled.csv')
+        self.assertTrue(doc2.action_prepare())
+        dame_title = Title.create({'name': 'Dame', 'shortcut': 'Dm'})
+        self.assertTrue(doc2.action_execute())
+        partners = doc2.mapped('partner_tutorial_ids.partner_id')
+        self.assertEqual(len(partners), 1)
+        self.assertEqual(partners.ref, 'U')
+        self.assertEqual(partners.email, 'untitled@example.com')
+        self.assertTrue(partners.title, dame_title)
