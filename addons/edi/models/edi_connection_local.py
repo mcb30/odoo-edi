@@ -6,6 +6,8 @@ import fnmatch
 import base64
 import uuid
 import logging
+import errno
+import os
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.translate import _
@@ -25,6 +27,17 @@ class EdiConnectionLocal(models.AbstractModel):
     _description = "EDI Local Connection"
 
     @api.model
+    def path_allowed(self, jail_directory, test_path):
+        """Is the path within the permitted jail directory?"""
+        if jail_directory is None:
+            return True
+
+        real_jail_directory = os.path.realpath(jail_directory)
+        return os.path.commonpath([real_jail_directory,
+                                   os.path.realpath(test_path)]) == real_jail_directory
+
+
+    @api.model
     def connect(self, _gateway):
         """Connect to local filesystem"""
         # Interestingly, this appears to be the only viably portable
@@ -38,6 +51,10 @@ class EdiConnectionLocal(models.AbstractModel):
         inputs = Attachment.browse()
         directory = conn.joinpath(path.path)
 
+        # Get the jail directory
+        gateway = transfer.gateway_id
+        jail_directory = gateway.get_jail_path()
+
         # List local directory
         min_date = (datetime.now() - timedelta(hours=path.age_window))
         for filepath in directory.iterdir():
@@ -45,6 +62,12 @@ class EdiConnectionLocal(models.AbstractModel):
             # Skip files not matching glob pattern
             if not fnmatch.fnmatch(filepath.name, path.glob):
                 continue
+
+            # Did the user try to escape the jail?
+            if not self.path_allowed(jail_directory, filepath):
+                raise PermissionError(errno.EACCES,
+                                      _("Tried to access a folder outside the jail directory %s")
+                                      % jail_directory)
 
             # Get file information
             stat = filepath.stat()
@@ -107,21 +130,33 @@ class EdiConnectionLocal(models.AbstractModel):
                 ('gateway_id', '=', transfer.gateway_id.id),
             ]).mapped('output_ids')
 
+        # Get the jail directory
+        gateway = transfer.gateway_id
+        jail_directory = gateway.get_jail_path()
+
         # Send attachments
         for attachment in docs.mapped('output_ids').sorted('id'):
+            filepath = directory.joinpath(attachment.datas_fname)
+
+            # Did the user try to escape the jail?
+            if not self.path_allowed(jail_directory, filepath):
+                raise PermissionError(errno.EACCES,
+                                      _("Tried to access a folder outside the jail directory %s")
+                                      % jail_directory)
 
             # Skip files not matching glob pattern
             if not fnmatch.fnmatch(attachment.datas_fname, path.glob):
                 continue
 
-            # Skip files already existing in local directory
-            filepath = directory.joinpath(attachment.datas_fname)
+            # Skip files of the same size already existing in local directory
             try:
                 stat = filepath.stat()
                 if stat.st_size == attachment.file_size:
                     continue
             except OSError:
                 pass
+            else:
+                os.unlink(filepath)
 
             # Skip files already sent, if applicable
             if not transfer.gateway_id.resend and attachment in sent:
