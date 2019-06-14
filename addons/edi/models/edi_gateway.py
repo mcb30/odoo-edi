@@ -2,6 +2,7 @@
 
 import base64
 import logging
+import os
 import paramiko
 from odoo import api, fields, models
 from odoo.exceptions import UserError, ValidationError
@@ -379,3 +380,14 @@ class EdiGateway(models.Model):
             conn['errors'] = [{'id': x.id, 'name': x.name}
                               for x in transfer.issue_ids]
         return conn
+
+    @api.model
+    def get_jail_path(self):
+        """Jail Path
+        Query the config file in order to get a path, to which the local filesystem access is restricted.
+        First, query jail_path. If it does not exist, return None.
+        *None must be handled at the point of use.*
+        """
+        jail_directory = config.get_misc('edi', 'jail_path', None)
+
+        return jail_directory
