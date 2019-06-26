@@ -177,9 +177,10 @@ class EdiGatewayCase(EdiCase):
 
     def tearDown(self):
         # Check for exceptions that have been caught and converted to issues
-        self.assertEqual(len(self.gateway.issue_ids), 0)
+        num_issues = len(self.gateway.issue_ids)
         super().tearDown()
         del self.ssh_server
+        self.assertEqual(num_issues, 0)
 
 
 class EdiGatewayCommonCase(EdiGatewayCase):
