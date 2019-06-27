@@ -13,7 +13,7 @@ Key Features
 * Report completed sales order to external EDI sources
     """,
     'version': '0.1',
-    'depends': ['edi', 'sale'],
+    'depends': ['edi', 'sale', 'stock'],
     'author': "Michael Brown <mbrown@fensystems.co.uk>",
     'category': "Extra Tools",
     'data': [
