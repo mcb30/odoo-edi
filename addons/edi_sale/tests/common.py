@@ -14,19 +14,16 @@ class EdiSaleCase(EdiCase):
         cls.apple = Product.create({
             'default_code': 'APPLE',
             'name': 'Apple',
-            'type': 'product',
             'list_price': 0.70,
         })
         cls.banana = Product.create({
             'default_code': 'BANANA',
             'name': 'Banana',
-            'type': 'product',
             'list_price': 0.20,
         })
         cls.cherry = Product.create({
             'default_code': 'CHERRY',
             'name': 'Cherry',
-            'type': 'product',
             'list_price': 0.04,
         })
 
