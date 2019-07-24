@@ -73,6 +73,10 @@ class EdiDocumentType(models.Model):
     project_id = fields.Many2one('project.project', string="Issue Tracker",
                                  required=True, default=_default_project_id)
 
+    # Control visibility in the UI.
+    active = fields.Boolean(default=True, string='Active',
+                            help='Display in list views or searches.')
+
     _sql_constraints = [('model_uniq', 'unique (model_id)',
                          "The document model must be unique")]
 
