@@ -258,7 +258,10 @@ class EdiSyncRecord(models.AbstractModel):
 
                 # Elide EDI records that are duplicates of earlier records
                 if produced is not None:
-                    frozen_record_vals = frozenset(record_vals.items())
+                    frozen_record_vals = frozenset(
+                        filter(lambda rv: not isinstance(rv[1], models.NewId),
+                        record_vals.items())
+                    )
                     if frozen_record_vals in produced:
                         continue
                     produced.add(frozen_record_vals)
