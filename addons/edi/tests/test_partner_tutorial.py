@@ -69,3 +69,15 @@ class TestPartnerTutorial(EdiCase):
         self.assertEqual(partners.ref, 'U')
         self.assertEqual(partners.email, 'untitled@example.com')
         self.assertTrue(partners.title, dame_title)
+
+    def test04_doppelganger(self):
+        """Test that if a partner is repeated it is correctly ingested"""
+        doc = self.create_tutorial('repeated_friend.csv')
+        self.assertTrue(doc.action_execute())
+        partners = doc.mapped('partner_tutorial_ids.partner_id')
+        self.assertEqual(len(partners), 4)
+        partners_by_ref = {x.ref: x for x in partners}
+        self.assertEqual(partners_by_ref['A'].name, 'Alice')
+        self.assertEqual(partners_by_ref['B'].email, 'bob@example.com')
+        self.assertEqual(partners_by_ref['E'].title.name, 'Ms')
+        self.assertFalse(partners_by_ref['U'].title)
