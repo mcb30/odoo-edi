@@ -7,6 +7,7 @@ import pathlib
 import sys
 from unittest.mock import patch
 from psycopg2 import DatabaseError
+import odoo
 from odoo.exceptions import UserError
 from odoo.modules.module import get_resource_from_path, get_resource_path
 from odoo.tools import mute_logger
@@ -39,9 +40,38 @@ class EdiTestFile(pathlib.PurePosixPath):
         return now if self.age is None else now - self.age
 
 
+class EdiSavepointCase(common.SavepointCase):
+    """A TestCase that can handle explicit commits in the code under test.
+
+    Puts the registry into test mode so that the cursor is a TestCursor
+    instance.  TestCursor replaces commits and rollbacks with savepoint
+    operations so any explicit commits do not commit the transaction.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        # The registry is a singleton so when the superclass retrieves
+        # it it will be in test mode.
+        cls.registry = odoo.registry(common.get_db_name())
+        cls.registry.enter_test_mode()
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        cls.registry.leave_test_mode()
+
+    def setUp(self):
+        super().setUp()
+        # The cursor releases its savepoint on commit: create a "base"
+        # savepoint so that it doesn't destroy the savepoint created by
+        # SavepointCase.
+        self.cr.execute("SAVEPOINT test_cursor")
+
+
 @common.at_install(False)
 @common.post_install(True)
-class EdiCase(common.SavepointCase):
+class EdiCase(EdiSavepointCase):
     """Base test case for EDI models"""
 
     @classmethod
