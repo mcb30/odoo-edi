@@ -332,7 +332,8 @@ class EdiDocument(models.Model):
         env = self.with_context(tracking_disable=True, recompute=False).env
         try:
             # pylint: disable=broad-except
-            with self.statistics() as stats, self.env.cr.savepoint():
+            with self.statistics() as stats, env.cr.savepoint(),\
+                                             env.clear_upon_failure():
                 self.prepare_date = fields.Datetime.now()
                 DocModel.with_env(env).prepare(self.with_env(env))
                 self.recompute()
@@ -394,7 +395,8 @@ class EdiDocument(models.Model):
         env = self.with_context(tracking_disable=True, recompute=False).env
         try:
             # pylint: disable=broad-except
-            with self.statistics() as stats, self.env.cr.savepoint():
+            with self.statistics() as stats, env.cr.savepoint(),\
+                                             env.clear_upon_failure():
                 DocModel.with_env(env).execute(self.with_env(env))
                 self.recompute()
         except Exception as err:
