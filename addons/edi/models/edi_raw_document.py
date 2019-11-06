@@ -84,7 +84,7 @@ class EdiRawDocument(models.AbstractModel):
         model = IrModel._get(importer.res_model)
         Model = self.env[model.model]
         try:
-            with self.env.cr.savepoint():
+            with self.env.cr.savepoint(), self.env.clear_upon_failure():
                 res = Model.load(fields, raw[:trial])
                 msgs = res.get('messages')
                 ids = res.get('ids')
