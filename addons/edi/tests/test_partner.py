@@ -1,6 +1,8 @@
 """EDI partner tests"""
 
 from .common import EdiCase
+from unittest.mock import patch
+from odoo.tools import mute_logger
 
 
 class TestPartner(EdiCase):
@@ -63,3 +65,43 @@ class TestPartner(EdiCase):
         self.assertEqual(len(titles), 1)
         self.assertEqual(titles.name, "Lieutenant")
         self.assertEqual(titles.shortcut, "Lt.")
+
+    def test03_partner_rollback(self):
+        """Test partner title document with a failure - ensure that the rollback
+         happens and the cache is properly cleared after a rollback
+         """
+        EdiDocument = self.env['edi.document']
+        EdiPartnerRecord = self.env['edi.partner.record']
+        Partner = self.env['res.partner']
+        # Create a partner that will be updated by an EDI record
+        test_partner = Partner.create({'name': 'Joe', 'ref': 'test_partner'})
+        # Create an EDI document
+        doc = EdiDocument.create({
+            'name': "Partner rollback test",
+            'doc_type_id': self.doc_type_partner.id,
+        })
+        # Create an edi partner record to modify the test partner's name
+        EdiPartnerRecord.create({
+            'doc_id': doc.id,
+            'name': "test_partner",
+            'full_name': "Dave",
+        })
+        # Use dummy input and prepare document
+        self.create_input_attachment(doc, 'dummy.txt')
+        self.assertTrue(doc.action_prepare())
+        # Patch execute to force a failure
+        DocModel = self.env[doc.doc_type_id.model_id.model]
+
+        def patched_execute(EdiDocumentModel):
+            EdiDocumentModel.execute_records()
+            raise ValueError()
+        patched_class = patch.object(
+            DocModel.__class__,
+            'execute',
+            side_effect=patched_execute
+        )
+        # Assert that document fails to execute with patch
+        with patched_class, mute_logger('odoo.addons.edi.models.edi_issues'):
+            self.assertFalse(doc.action_execute())
+        # After an execution failure, the test partner should still be Joe
+        self.assertEqual(test_partner.name, 'Joe')
