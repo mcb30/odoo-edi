@@ -153,7 +153,7 @@ class TestTutorial(EdiPickCase):
         self.assertEqual(move.product_uom_qty, 2)
         move.write({
             'product_uom_qty': 1,
-            'ordered_qty': 1,
+            'product_uom_qty': 1,
         })
         move.copy()
         doc2 = self.create_tutorial('out02.csv')
