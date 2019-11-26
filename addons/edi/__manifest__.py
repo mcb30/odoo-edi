@@ -23,7 +23,7 @@ Key Features
 * Handle errors via Odoo issue tracker
     """,
     'version': '0.1',
-    'depends': ['project', 'document'],
+    'depends': ['project'],
     'external_dependencies': {'python': ['paramiko', 'ply']},
     'author': "Michael Brown <mbrown@fensystems.co.uk>",
     'category': "Extra Tools",
