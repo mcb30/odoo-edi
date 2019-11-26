@@ -52,7 +52,7 @@
       <field name="name">Stock Transfer Reports</field>
       <field name="type">ir.actions.act_window</field>
       <field name="res_model">edi.pick.report.tutorial.record</field>
-      <field name="view_type">form</field>
+
       <field name="view_id" ref="pick_report_tutorial_record_tree"/>
       <field name="search_view_id" ref="pick_report_record_search"/>
       <field name="context">{'create': False}</field>
@@ -64,7 +64,7 @@
       <field name="name">Stock Move Reports</field>
       <field name="type">ir.actions.act_window</field>
       <field name="res_model">edi.move.report.tutorial.record</field>
-      <field name="view_type">form</field>
+
       <field name="view_id" ref="move_report_tutorial_record_tree"/>
       <field name="search_view_id" ref="move_report_record_search"/>
       <field name="context">{'create': False}</field>

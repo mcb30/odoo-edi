@@ -73,7 +73,7 @@
       <field name="name">Partners</field>
       <field name="type">ir.actions.act_window</field>
       <field name="res_model">edi.partner.record</field>
-      <field name="view_type">form</field>
+
       <field name="view_id" ref="partner_record_tree"/>
       <field name="search_view_id" ref="partner_record_search"/>
       <field name="context">{'create': False}</field>

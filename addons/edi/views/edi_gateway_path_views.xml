@@ -76,7 +76,7 @@
       <field name="name">EDI Gateway Paths</field>
       <field name="type">ir.actions.act_window</field>
       <field name="res_model">edi.gateway.path</field>
-      <field name="view_type">form</field>
+
       <field name="view_id" ref="gateway_path_tree"/>
       <field name="search_view_id" ref="gateway_path_search"/>
       <field name="help" type="html">

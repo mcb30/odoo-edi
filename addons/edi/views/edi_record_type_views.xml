@@ -55,7 +55,7 @@
       <field name="name">EDI Record Types</field>
       <field name="type">ir.actions.act_window</field>
       <field name="res_model">edi.record.type</field>
-      <field name="view_type">form</field>
+
       <field name="view_id" ref="record_type_tree"/>
       <field name="search_view_id" ref="record_type_search"/>
       <field name="help" type="html">

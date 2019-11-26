@@ -78,7 +78,7 @@
       <field name="name">Rules</field>
       <field name="type">ir.actions.act_window</field>
       <field name="res_model">edi.procurement.record</field>
-      <field name="view_type">form</field>
+
       <field name="view_id" ref="procurement_record_tree"/>
       <field name="search_view_id" ref="procurement_record_search"/>
       <field name="context">{'create': False}</field>

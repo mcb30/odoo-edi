@@ -34,7 +34,7 @@
       <field name="name">Minimum Inventory Rules</field>
       <field name="type">ir.actions.act_window</field>
       <field name="res_model">edi.orderpoint.tutorial.record</field>
-      <field name="view_type">form</field>
+
       <field name="view_id" ref="orderpoint_tutorial_record_tree"/>
       <field name="search_view_id" ref="orderpoint_record_search"/>
       <field name="context">{'create': False}</field>

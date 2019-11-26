@@ -71,7 +71,7 @@
       <field name="name">Stock Move Reports</field>
       <field name="type">ir.actions.act_window</field>
       <field name="res_model">edi.move.report.record</field>
-      <field name="view_type">form</field>
+
       <field name="view_id" ref="move_report_record_tree"/>
       <field name="search_view_id" ref="move_report_record_search"/>
       <field name="context">{'create': False}</field>

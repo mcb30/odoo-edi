@@ -58,7 +58,7 @@
       <field name="name">Sale Order Reports</field>
       <field name="type">ir.actions.act_window</field>
       <field name="res_model">edi.sale.report.tutorial.record</field>
-      <field name="view_type">form</field>
+
       <field name="view_id" ref="sale_report_tutorial_record_tree"/>
       <field name="search_view_id" ref="sale_report_record_search"/>
       <field name="context">{'create': False}</field>
@@ -70,7 +70,7 @@
       <field name="name">Sale Line Reports</field>
       <field name="type">ir.actions.act_window</field>
       <field name="res_model">edi.sale.line.report.tutorial.record</field>
-      <field name="view_type">form</field>
+
       <field name="view_id" ref="sale_line_report_tutorial_record_tree"/>
       <field name="search_view_id" ref="sale_line_report_record_search"/>
       <field name="context">{'create': False}</field>

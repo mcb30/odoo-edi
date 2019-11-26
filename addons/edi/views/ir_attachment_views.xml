@@ -101,7 +101,7 @@
     <record id="document_attachments_action" model="ir.actions.act_window">
       <field name="name">EDI Attachments</field>
       <field name="res_model">ir.attachment</field>
-      <field name="view_type">form</field>
+
       <field name="view_mode">tree,form</field>
       <field name="view_id" ref="document_attachments_tree"/>
       <field name="search_view_id" ref="document_attachments_search"/>

@@ -56,7 +56,7 @@
       <field name="name">Locations</field>
       <field name="type">ir.actions.act_window</field>
       <field name="res_model">edi.location.tutorial.record</field>
-      <field name="view_type">form</field>
+
       <field name="view_id" ref="location_tutorial_record_tree"/>
       <field name="search_view_id" ref="location_tutorial_record_search"/>
       <field name="context">{'create': False}</field>
