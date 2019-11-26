@@ -447,7 +447,7 @@ class EdiDocument(models.Model):
         """View output attachments"""
         self.ensure_one()
         action = self.env.ref('edi.document_attachments_action').read()[0]
-        action['display_name'] = _("Outputs")
+        action['name'] = _("Outputs")
         action['domain'] = [('res_model', '=', 'edi.document'),
                             ('res_field', '=', 'output_ids'),
                             ('res_id', '=', self.id)]

@@ -92,7 +92,7 @@ class EdiTransfer(models.Model):
         """View input attachments"""
         self.ensure_one()
         action = self.env.ref('edi.document_attachments_action').read()[0]
-        action['display_name'] = _("Inputs")
+        action['name'] = _("Inputs")
         action['domain'] = [('id', 'in', self.mapped('input_ids.id'))]
         action['context'] = {'create': False}
         return action
@@ -102,7 +102,7 @@ class EdiTransfer(models.Model):
         """View output attachments"""
         self.ensure_one()
         action = self.env.ref('edi.document_attachments_action').read()[0]
-        action['display_name'] = _("Outputs")
+        action['name'] = _("Outputs")
         action['domain'] = [('id', 'in', self.mapped('output_ids.id'))]
         action['context'] = {'create': False}
         return action

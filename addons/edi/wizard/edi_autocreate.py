@@ -35,7 +35,7 @@ class EdiAutocreateWizard(models.TransientModel):
         self.ensure_one()
         action = self.env.ref('edi.document_action').read()[0]
         action['target'] = 'main'
-        action['display_name'] = _("Autocreated EDI Documents")
+        action['name'] = _("Autocreated EDI Documents")
         action['domain'] = [('id', 'in', self.doc_ids.ids)]
         action['context'] = {'create': False}
         return action
