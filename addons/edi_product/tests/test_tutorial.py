@@ -12,8 +12,8 @@ class TestTutorial(EdiProductCase):
         cls.doc_type_tutorial = cls.env.ref(
             'edi_product.tutorial_document_type'
         )
-        cls.units = cls.env.ref('product.product_uom_unit')
-        cls.dozens = cls.env.ref('product.product_uom_dozen')
+        cls.units = cls.env.ref('uom.product_uom_unit')
+        cls.dozens = cls.env.ref('uom.product_uom_dozen')
         cls.dozens.name = "Dozen(s)"
 
     @classmethod

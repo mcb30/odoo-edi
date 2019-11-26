@@ -31,7 +31,7 @@ class EdiProductTutorialRecord(models.Model):
     _inherit = 'edi.product.record'
     _description = "Product"
 
-    uom_id = fields.Many2one('product.uom', string="Unit of Measure",
+    uom_id = fields.Many2one('uom.uom', string="Unit of Measure",
                              required=True, readonly=True)
     weight = fields.Integer(string="Weight", required=True, readonly=True,
                             help="Weight (in grams)")
@@ -60,7 +60,7 @@ class EdiProductTutorialDocument(models.AbstractModel):
 
     @api.model
     def product_record_values(self, data):
-        ProductUom = self.env['product.uom']
+        ProductUom = self.env['uom.uom']
         uoms = ProductUom.search([], order='id')
         uom_by_name = {x.name: x for x in uoms}
 
