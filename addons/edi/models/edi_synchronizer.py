@@ -143,7 +143,7 @@ class EdiSyncRecord(models.AbstractModel):
             self._edi_sync_domain_call()
         ]))
         self.precache_targets(targets)
-        return {k: v.with_prefetch(targets._prefetch).ensure_one()
+        return {k: v.with_prefetch(targets._prefetch_ids).ensure_one()
                 for k, v in targets.groupby(key)}
 
     @api.model
