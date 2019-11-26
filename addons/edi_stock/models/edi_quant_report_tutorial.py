@@ -74,8 +74,6 @@ class EdiQuantReportTutorialDocument(models.AbstractModel):
             data = output.getvalue().encode()
 
         # Create output attachment
-        prepare_date = datetime.strptime(doc.prepare_date,
-                                         DEFAULT_SERVER_DATETIME_FORMAT)
         filename = '%s%s.csv' % (doc.doc_type_id.sequence_id.prefix,
-                                 prepare_date.strftime('%Y%m%d%H%M%S'))
+                                 doc.prepare_date.strftime('%Y%m%d%H%M%S'))
         doc.output(filename, data)
