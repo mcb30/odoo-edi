@@ -125,7 +125,7 @@ class EdiRecord(models.AbstractModel):
                 rel = EdiLookupRelationship(name, target, via, domain)
                 cls._edi_relates.append(rel)
 
-    @api.multi
+
     def _add_edi_relates(self, required=True):
         """Add EDI lookup relationship target IDs to records
 
@@ -168,7 +168,7 @@ class EdiRecord(models.AbstractModel):
                         ready -= recs
         return ready
 
-    @api.multi
+
     def missing_edi_relates(self, rel, key):
         """Handle missing EDI lookup relationship targets
 
@@ -246,7 +246,7 @@ class EdiRecord(models.AbstractModel):
         return (dict(chain(defaults, vals.items()))
                 for vals in chain((first,), iterator))
 
-    @api.multi
+
     def precache(self):
         """Precache associated records
 
@@ -290,7 +290,7 @@ class EdiRecord(models.AbstractModel):
         _logger.info("%s prepared %s in %.2fs, %d excess queries", doc.name,
                      self._name, stats.elapsed, (stats.count - count))
 
-    @api.multi
+
     def execute(self):
         """Execute records"""
 

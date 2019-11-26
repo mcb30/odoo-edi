@@ -13,7 +13,7 @@ class EdiDocument(models.Model):
         string="Stock Transfer Requests",
     )
 
-    @api.multi
+
     @api.depends('pick_request_ids',
                  'pick_request_ids.pick_id')
     def _compute_pick_ids(self):

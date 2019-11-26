@@ -47,14 +47,14 @@ class EdiSaleLineRequestRecord(models.Model):
     qty = fields.Float(string="Quantity", readonly=True, required=True,
                        digits=dp.get_precision('Product Unit of Measure'))
 
-    @api.multi
+
     def precache(self):
         """Precache associated records"""
         super().precache()
         self.mapped('product_id.product_tmpl_id.name')
         self.mapped('order_id.partner_id.name')
 
-    @api.multi
+
     def sale_line_values(self):
         """Construct ``sale.order.line`` value dictionary"""
         self.ensure_one()
@@ -66,7 +66,7 @@ class EdiSaleLineRequestRecord(models.Model):
             'order_id': self.order_id.id,
         }
 
-    @api.multi
+
     def execute(self):
         """Execute records"""
         super().execute()

@@ -37,7 +37,7 @@ class EdiDocument(models.Model):
         string="Stock Move Requests",
     )
 
-    @api.multi
+
     @api.depends('pick_request_tutorial_ids',
                  'pick_request_tutorial_ids.pick_id')
     def _compute_pick_ids(self):
@@ -78,7 +78,7 @@ class EdiMoveRequestTutorialRecord(models.Model):
                                                      ('U', 'Update'),
                                                      ('D', 'Delete')])
 
-    @api.multi
+
     def existing_move(self):
         """Find corresponding existing move (if any)"""
         move = super().existing_move().filtered(lambda x: x.state != 'done')

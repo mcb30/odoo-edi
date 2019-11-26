@@ -14,7 +14,7 @@ class Message(models.Model):
     edi_attachment_audit_ids = fields.One2many('edi.attachment.audit',
                                                'mail_message_id')
 
-    @api.multi
+
     def message_format(self):
         """Add attachment audit information to mail messages"""
         values = super().message_format()

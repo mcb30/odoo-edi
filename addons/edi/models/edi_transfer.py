@@ -78,7 +78,7 @@ class EdiTransfer(models.Model):
         for xfer in self:
             xfer.output_count = len(xfer.output_ids)
 
-    @api.multi
+
     def action_view_docs(self):
         """View documents"""
         self.ensure_one()
@@ -87,7 +87,7 @@ class EdiTransfer(models.Model):
         action['context'] = {'create': False}
         return action
 
-    @api.multi
+
     def action_view_inputs(self):
         """View input attachments"""
         self.ensure_one()
@@ -97,7 +97,7 @@ class EdiTransfer(models.Model):
         action['context'] = {'create': False}
         return action
 
-    @api.multi
+
     def action_view_outputs(self):
         """View output attachments"""
         self.ensure_one()
@@ -107,7 +107,7 @@ class EdiTransfer(models.Model):
         action['context'] = {'create': False}
         return action
 
-    @api.multi
+
     def receive_inputs(self, conn):
         """Receive input attachments and create documents"""
         self.ensure_one()
@@ -141,7 +141,6 @@ class EdiTransfer(models.Model):
                              self.gateway_id.name, doc.name,
                              ", ".join(doc.mapped('input_ids.datas_fname')))
 
-    @api.multi
     def send_outputs(self, conn):
         """Send output attachments"""
         self.ensure_one()
@@ -161,7 +160,7 @@ class EdiTransfer(models.Model):
             # Associate output attachments with this transfer
             self.output_ids += outputs
 
-    @api.multi
+
     def do_transfer(self, conn):
         """Receive input attachments, process documents, send outputs"""
         self.ensure_one()

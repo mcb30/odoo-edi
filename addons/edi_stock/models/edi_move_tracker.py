@@ -35,7 +35,7 @@ class EdiMoveTracker(models.Model):
     product_id = fields.Many2one('product.product', string="Product",
                                  related='move_ids.product_id', readonly=True)
 
-    @api.multi
+
     @api.depends('move_ids', 'move_ids.picking_id')
     def _compute_pick_ids(self):
         """Calculate associated stock transfers

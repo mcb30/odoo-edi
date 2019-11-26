@@ -59,7 +59,7 @@ class EdiIssue(models.AbstractModel):
                                      compute='_compute_issue_counts',
                                      store=True)
 
-    @api.multi
+
     @api.depends('issue_ids', 'issue_ids.stage_id', 'issue_ids.edi_doc_id',
                  'issue_ids.edi_gateway_id', 'issue_ids.edi_transfer_id')
     def _compute_issue_counts(self):
@@ -75,7 +75,7 @@ class EdiIssue(models.AbstractModel):
             issues.rel_issue_count = (len(issues.issue_ids) -
                                       issues.issue_count)
 
-    @api.multi
+
     def _issue_vals(self):
         """Construct values for corresponding issues"""
         self.ensure_one()
@@ -88,7 +88,7 @@ class EdiIssue(models.AbstractModel):
                     vals[edi_field] = rec.id
         return vals
 
-    @api.multi
+
     def raise_issue(self, fmt, err):
         """Raise issue via issue tracker
 
@@ -128,7 +128,7 @@ class EdiIssue(models.AbstractModel):
                                        content_subtype='plaintext')
         return issue
 
-    @api.multi
+
     def close_issues(self):
         """Close all open issues"""
         for issue in self.mapped('issue_ids'):
@@ -136,7 +136,7 @@ class EdiIssue(models.AbstractModel):
                                       [('fold', '=', True)])
             issue.stage_id = closed
 
-    @api.multi
+
     def action_view_issues(self):
         """View open issues"""
         self.ensure_one()
@@ -148,7 +148,7 @@ class EdiIssue(models.AbstractModel):
         action['context'].update({'create': True})
         return action
 
-    @api.multi
+
     def action_close_issues(self):
         """Close all open issues"""
         self.close_issues()

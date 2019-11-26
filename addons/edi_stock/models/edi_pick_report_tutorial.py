@@ -32,7 +32,7 @@ class EdiDocument(models.Model):
         string="Stock Move Reports",
     )
 
-    @api.multi
+
     @api.depends('pick_report_tutorial_ids',
                  'pick_report_tutorial_ids.pick_id')
     def _compute_pick_ids(self):

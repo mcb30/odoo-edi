@@ -62,7 +62,7 @@ class EdiPartnerRecord(models.Model):
         })
         return partner_vals
 
-    @api.multi
+
     def missing_edi_relates_title_key(self, rel, key):
         """Handle missing partner title
 
@@ -74,7 +74,7 @@ class EdiPartnerRecord(models.Model):
         Target = Record[rel.target]
         return Target.create({rel.via: key})
 
-    @api.multi
+
     def execute(self):
         """Execute records"""
         super(EdiPartnerRecord, self.with_context(recompute=True)).execute()

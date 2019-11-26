@@ -16,7 +16,7 @@ class EdiDocument(models.Model):
     sale_ids = fields.One2many('sale.order', string="Sale Orders",
                                compute='_compute_sale_ids')
 
-    @api.multi
+
     def _compute_sale_ids(self):
         """Calculate associated sale orders"""
         pass

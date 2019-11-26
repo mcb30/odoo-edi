@@ -125,7 +125,7 @@ class EdiSyncRecord(models.AbstractModel):
         """Precache associated target records"""
         targets.mapped(self._edi_sync_via)
 
-    @api.multi
+
     def precache(self):
         """Precache associated records"""
         super().precache()
@@ -160,7 +160,7 @@ class EdiSyncRecord(models.AbstractModel):
         }
         return target_vals
 
-    @api.multi
+
     def _record_values(self):
         """Reconstruct record field value dictionary
 
@@ -285,7 +285,7 @@ class EdiSyncRecord(models.AbstractModel):
         """Process matched target records"""
         pass
 
-    @api.multi
+
     def execute(self):
         """Execute records"""
         super().execute()
@@ -388,7 +388,7 @@ class EdiDeactivatorRecord(models.AbstractModel):
     target_id = fields.Many2one('_unknown', string="Target", required=True,
                                 readonly=True, index=True)
 
-    @api.multi
+
     def execute(self):
         """Execute records"""
         super().execute()

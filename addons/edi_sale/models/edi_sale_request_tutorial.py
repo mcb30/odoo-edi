@@ -29,7 +29,7 @@ class EdiDocument(models.Model):
         string="Sale Line Requests",
     )
 
-    @api.multi
+
     @api.depends('sale_request_tutorial_ids',
                  'sale_line_request_tutorial_ids.order_id')
     def _compute_sale_ids(self):

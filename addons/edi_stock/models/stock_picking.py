@@ -18,7 +18,7 @@ class StockPickingType(models.Model):
         default=False,
     )
 
-    @api.multi
+
     def action_edi_pick_report(self):
         """Create EDI pick report"""
         EdiPickReportDocument = self.env['edi.pick.report.document']
@@ -34,7 +34,7 @@ class StockPicking(models.Model):
 
     _inherit = 'stock.picking'
 
-    @api.multi
+
     def action_done(self):
         """Extend action done to trigger creation of EDI documents"""
         res = super().action_done()

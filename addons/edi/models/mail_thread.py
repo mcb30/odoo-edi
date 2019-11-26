@@ -12,21 +12,21 @@ class MailThread(models.AbstractModel):
 
     _inherit = 'mail.thread'
 
-    @api.multi
+
     def message_post(self, *args, **kwargs):
         """Post message"""
         if self._context.get('tracking_disable'):
             return
         return super().message_post(*args, **kwargs)
 
-    @api.multi
+
     def message_post_with_view(self, *args, **kwargs):
         """Post message using a view"""
         if self._context.get('tracking_disable'):
             return
         return super().message_post_with_view(*args, **kwargs)
 
-    @api.multi
+
     def message_post_with_template(self, *args, **kwargs):
         """Post message using a template"""
         if self._context.get('tracking_disable'):

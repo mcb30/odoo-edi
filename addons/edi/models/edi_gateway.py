@@ -167,7 +167,7 @@ class EdiGateway(models.Model):
     cron_count = fields.Integer(string="Schedule Count",
                                 compute='_compute_cron_count')
 
-    @api.multi
+
     @api.depends('model_id')
     def _compute_can_initiate(self):
         """Compute ability to initiate connections"""
@@ -175,35 +175,35 @@ class EdiGateway(models.Model):
             Model = self.env[gw.model_id.model]
             gw.can_initiate = hasattr(Model, 'connect')
 
-    @api.multi
+
     @api.depends('path_ids')
     def _compute_path_count(self):
         """Compute number of paths (for UI display)"""
         for gw in self:
             gw.path_count = len(gw.path_ids)
 
-    @api.multi
+
     @api.depends('transfer_ids')
     def _compute_transfer_count(self):
         """Compute number of transfers (for UI display)"""
         for gw in self:
             gw.transfer_count = len(gw.transfer_ids)
 
-    @api.multi
+
     @api.depends('doc_ids')
     def _compute_doc_count(self):
         """Compute number of documents (for UI display)"""
         for gw in self:
             gw.doc_count = len(gw.doc_ids)
 
-    @api.multi
+
     @api.depends('cron_ids')
     def _compute_cron_count(self):
         """Compute number of scheduled jobs (for UI display)"""
         for gw in self:
             gw.cron_count = len(gw.cron_ids)
 
-    @api.multi
+
     @api.depends('ssh_host_key')
     def _compute_ssh_host_fingerprint(self):
         """Compute SSH host key fingerprint"""
@@ -216,7 +216,7 @@ class EdiGateway(models.Model):
             else:
                 gw.ssh_host_fingerprint = None
 
-    @api.multi
+
     @api.constrains('password', 'config_password')
     def _check_passwords(self):
         for gw in self:
@@ -224,7 +224,7 @@ class EdiGateway(models.Model):
                 raise ValidationError(_("You cannot specify both a password "
                                         "and a password configuration option"))
 
-    @api.multi
+
     def _get_password(self):
         """Get password (from database record or from configuration file)"""
         self.ensure_one()
@@ -239,7 +239,7 @@ class EdiGateway(models.Model):
             return password
         return None
 
-    @api.multi
+
     def ssh_connect(self):
         """Connect to SSH server"""
         self.ensure_one()
@@ -262,7 +262,7 @@ class EdiGateway(models.Model):
             raise UserError(err) from err
         return ssh
 
-    @api.multi
+
     def lock_for_transfer(self, transfer):
         """Lock gateway for transfer"""
         # Update a single field on the gateway.  This implicitly
@@ -271,7 +271,7 @@ class EdiGateway(models.Model):
         # remainder of the transaction.
         self.write({'last_transfer_id': transfer.id})
 
-    @api.multi
+
     def action_view_paths(self):
         """View paths"""
         self.ensure_one()
@@ -280,7 +280,7 @@ class EdiGateway(models.Model):
         action['context'] = {'default_gateway_id': self.id}
         return action
 
-    @api.multi
+
     def action_view_transfers(self):
         """View transfers"""
         self.ensure_one()
@@ -288,7 +288,7 @@ class EdiGateway(models.Model):
         action['domain'] = [('gateway_id', '=', self.id)]
         return action
 
-    @api.multi
+
     def action_view_docs(self):
         """View documents"""
         self.ensure_one()
@@ -297,7 +297,7 @@ class EdiGateway(models.Model):
         action['context'] = {'create': False}
         return action
 
-    @api.multi
+
     def action_view_cron(self):
         """View scheduled jobs"""
         self.ensure_one()
@@ -313,7 +313,7 @@ class EdiGateway(models.Model):
         }
         return action
 
-    @api.multi
+
     def action_test(self):
         """Test connection"""
         self.ensure_one()
@@ -328,7 +328,7 @@ class EdiGateway(models.Model):
         self.message_post(body=_("Connection tested successfully"))
         return True
 
-    @api.multi
+
     def do_transfer(self, conn=None):
         """Receive input attachments, process documents, send outputs"""
         self.ensure_one()
@@ -360,14 +360,14 @@ class EdiGateway(models.Model):
             transfer.raise_issue(_("Transfer failed: %s"), err)
         return transfer
 
-    @api.multi
+
     def action_transfer(self):
         """Receive input attachments, process documents, send outputs"""
         self.ensure_one()
         transfer = self.do_transfer()
         return not transfer.issue_ids
 
-    @api.multi
+
     def xmlrpc_transfer(self, **kwargs):
         """Receive input attachments, process documents, send outputs"""
         self = self or self.env.ref('edi.gateway_xmlrpc')

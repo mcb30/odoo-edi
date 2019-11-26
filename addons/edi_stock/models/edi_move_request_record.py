@@ -54,14 +54,14 @@ class EdiMoveRequestRecord(models.Model):
     qty = fields.Float(string="Quantity", readonly=True, required=True,
                        digits=dp.get_precision('Product Unit of Measure'))
 
-    @api.multi
+
     def precache(self):
         """Precache associated records"""
         super().precache()
         self.mapped('product_id.product_tmpl_id.name')
         self.mapped('tracker_id.move_ids.name')
 
-    @api.multi
+
     def move_values(self):
         """Construct ``stock.move`` value dictionary
 
@@ -83,7 +83,7 @@ class EdiMoveRequestRecord(models.Model):
             'picking_type_id': self.pick_id.picking_type_id.id,
         }
 
-    @api.multi
+
     def existing_move(self):
         """Find corresponding existing move (if any)"""
         self.ensure_one()
@@ -96,7 +96,7 @@ class EdiMoveRequestRecord(models.Model):
             x.picking_type_id == self.pick_id.picking_type_id
         )
 
-    @api.multi
+
     def execute(self):
         """Execute records"""
         # pylint: disable=too-many-locals

@@ -18,7 +18,7 @@ class EdiAutocreateWizard(models.TransientModel):
     )
     doc_ids = fields.Many2many('edi.document', string="Documents")
 
-    @api.multi
+
     def autocreate(self):
         """Autocreate EDI documents"""
         self.ensure_one()
@@ -40,13 +40,13 @@ class EdiAutocreateWizard(models.TransientModel):
         action['context'] = {'create': False}
         return action
 
-    @api.multi
+
     def action_create(self):
         """Autocreate EDI documents"""
         self.autocreate()
         return self.action_display()
 
-    @api.multi
+
     def action_prepare(self):
         """Autocreate and prepare EDI documents"""
         self.autocreate()
@@ -54,7 +54,7 @@ class EdiAutocreateWizard(models.TransientModel):
             doc.action_prepare()
         return self.action_display()
 
-    @api.multi
+
     def action_execute(self):
         """Autocreate and execute EDI documents"""
         self.autocreate()

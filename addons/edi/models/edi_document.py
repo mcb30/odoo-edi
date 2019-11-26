@@ -111,7 +111,7 @@ class EdiDocumentType(models.Model):
             docs += doc
         return docs
 
-    @api.multi
+
     def autoemit(self):
         """Create, prepare, and execute documents with no inputs"""
         Document = self.env['edi.document']
@@ -201,7 +201,7 @@ class EdiDocument(models.Model):
         for doc in self:
             doc.output_count = len(doc.output_ids)
 
-    @api.multi
+
     @api.depends('doc_type_id', 'doc_type_id.rec_type_ids',
                  'doc_type_id.rec_type_ids.model_id',
                  'doc_type_id.rec_type_ids.model_id.model')
@@ -225,7 +225,7 @@ class EdiDocument(models.Model):
             rec_models = doc.mapped('doc_type_id.rec_type_ids.model_id.model')
             doc.rec_type_names = '/%s/' % '/'.join(rec_models)
 
-    @api.multi
+
     def _get_state_name(self):
         """Get name of current state"""
         vals = dict(self.fields_get(allfields=['state'])['state']['selection'])
@@ -239,7 +239,7 @@ class EdiDocument(models.Model):
             doc.name = doc.doc_type_id.sequence_id.next_by_id()
         return doc
 
-    @api.multi
+
     def copy(self, default=None):
         """Duplicate record (including input attachments)"""
         self.ensure_one()
@@ -251,14 +251,14 @@ class EdiDocument(models.Model):
             })
         return new
 
-    @api.multi
+
     def lock_for_action(self):
         """Lock document"""
         for doc in self:
             # Obtain a database row-level exclusive lock by writing the record
             doc.state = doc.state
 
-    @api.multi
+
     def inputs(self):
         """Iterate over decoded input attachments"""
         self.ensure_one()
@@ -267,7 +267,7 @@ class EdiDocument(models.Model):
         return ((x.datas_fname, b64decode(x.datas))
                 for x in self.input_ids.sorted('id'))
 
-    @api.multi
+
     def input(self):
         """Get single decoded input attachment"""
         self.ensure_one()
@@ -275,7 +275,7 @@ class EdiDocument(models.Model):
             raise UserError(_("More than one input attachment"))
         return next(self.inputs())
 
-    @api.multi
+
     def output(self, name, data):
         """Create output attachment"""
         self.ensure_one()
@@ -290,7 +290,7 @@ class EdiDocument(models.Model):
         })
         return attachment
 
-    @api.multi
+
     def execute_records(self):
         """Execute records"""
         self.ensure_one()
@@ -307,7 +307,7 @@ class EdiDocument(models.Model):
                              stats.elapsed, count, stats.count,
                              (stats.count / count))
 
-    @api.multi
+
     def action_prepare(self):
         """Prepare document
 
@@ -345,7 +345,7 @@ class EdiDocument(models.Model):
                      self.name, stats.elapsed, stats.count)
         return True
 
-    @api.multi
+
     def action_unprepare(self):
         """Return Prepared document to Draft state"""
         self.ensure_one()
@@ -368,7 +368,7 @@ class EdiDocument(models.Model):
         _logger.info("Unprepared %s", self.name)
         return True
 
-    @api.multi
+
     def action_execute(self):
         """Execute document
 
@@ -411,7 +411,7 @@ class EdiDocument(models.Model):
                      self.name, stats.elapsed, stats.count)
         return True
 
-    @api.multi
+
     def action_cancel(self):
         """Cancel document"""
         self.ensure_one()
@@ -428,7 +428,7 @@ class EdiDocument(models.Model):
         _logger.info("Cancelled %s", self.name)
         return True
 
-    @api.multi
+
     def action_view_inputs(self):
         """View input attachments"""
         self.ensure_one()
@@ -442,7 +442,7 @@ class EdiDocument(models.Model):
                              'default_res_id': self.id}
         return action
 
-    @api.multi
+
     def action_view_outputs(self):
         """View output attachments"""
         self.ensure_one()

@@ -25,7 +25,7 @@ class EdiDocument(models.Model):
     pick_ids = fields.One2many('stock.picking', string="Stock Transfers",
                                compute='_compute_pick_ids')
 
-    @api.multi
+
     def _compute_pick_ids(self):
         """Calculate associated stock transfers"""
         pass
