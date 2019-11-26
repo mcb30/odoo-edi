@@ -136,12 +136,14 @@ class EdiRecord(models.AbstractModel):
         Record = self.browse()
         doc = self.mapped('doc_id')
         ready = self
+
         for rel in self._edi_relates:
             # pylint: disable=cell-var-from-loop
-
             # Find records missing a target, if any
-            missing = self.filtered(lambda x: x[rel.key] and not x[rel.target])
-
+            missing = self.filtered(
+                lambda x: x[rel.key] and not x[rel.target].id
+                and not isinstance(x[rel.target], models.NewId)
+            )
             # Process records in batches to minimise database lookups
             keygetter = itemgetter(rel.key)
             for r, batch in missing.batched(self.BATCH_SIZE):
