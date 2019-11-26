@@ -31,7 +31,7 @@
       <field name="name">EDI Document Autocreation</field>
       <field name="type">ir.actions.act_window</field>
       <field name="res_model">edi.document.autocreate</field>
-      <field name="view_type">form</field>
+
       <field name="view_mode">form</field>
       <field name="view_id" ref="document_autocreate_form"/>
       <field name="target">new</field>
