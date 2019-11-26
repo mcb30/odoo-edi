@@ -14,7 +14,7 @@
 	<xpath expr="//field[@name='name']" position="attributes">
 	  <attribute name="filter_domain">
 	    ['|','|',('name','ilike',self),
-		     ('datas_fname','ilike',self),
+		     ('name','ilike',self),
 		     ('res_name','ilike',self)]
 	  </attribute>
 	</xpath>

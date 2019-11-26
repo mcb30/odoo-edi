@@ -80,7 +80,7 @@ class EdiConnectionLocal(models.AbstractModel):
             if Attachment.search([('res_model', '=', 'edi.document'),
                                   ('res_field', '=', 'input_ids'),
                                   ('res_id', '!=', False),
-                                  ('datas_fname', '=', filepath.name),
+                                  ('name', '=', filepath.name),
                                   ('file_size', '=', stat.st_size)]):
                 continue
 
@@ -91,7 +91,7 @@ class EdiConnectionLocal(models.AbstractModel):
             # Create new attachment for received file
             attachment = Attachment.create({
                 'name': filepath.name,
-                'datas_fname': filepath.name,
+                'name': filepath.name,
                 'datas': base64.b64encode(data),
                 'res_model': 'edi.document',
                 'res_field': 'input_ids',
@@ -136,7 +136,7 @@ class EdiConnectionLocal(models.AbstractModel):
 
         # Send attachments
         for attachment in docs.mapped('output_ids').sorted('id'):
-            filepath = directory.joinpath(attachment.datas_fname)
+            filepath = directory.joinpath(attachment.name)
 
             # Did the user try to escape the jail?
             if not self.path_allowed(jail_directory, filepath):
@@ -145,7 +145,7 @@ class EdiConnectionLocal(models.AbstractModel):
                                       % jail_directory)
 
             # Skip files not matching glob pattern
-            if not fnmatch.fnmatch(attachment.datas_fname, path.glob):
+            if not fnmatch.fnmatch(attachment.name, path.glob):
                 continue
 
             # Skip files of the same size already existing in local directory

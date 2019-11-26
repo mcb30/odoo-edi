@@ -142,7 +142,7 @@ class TestEdiConnectionLocal(test_edi_gateway.EdiGatewayFileSystemCase):
             self.path_send.path = tempdir
 
             attachment = self.create_output_attachment(doc, 'hello_world.txt')
-            attachment.datas_fname = "../hack_it.txt"
+            attachment.name = "../hack_it.txt"
 
             with self.assertRaisesIssue(self.gateway, PermissionError):
                 self.gateway.do_transfer()

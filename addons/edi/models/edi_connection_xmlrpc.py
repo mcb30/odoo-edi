@@ -38,7 +38,7 @@ class EdiConnectionXMLRPC(models.AbstractModel):
             # Create new attachment for input file
             attachment = Attachment.create({
                 'name': f['name'],
-                'datas_fname': f['name'],
+                'name': f['name'],
                 'datas': str(f['data']),
                 'res_model': 'edi.document',
                 'res_field': 'input_ids',
@@ -65,7 +65,7 @@ class EdiConnectionXMLRPC(models.AbstractModel):
 
         # Identify output attachments
         outputs = docs.mapped('output_ids').sorted('id').filtered(
-            lambda x: fnmatch.fnmatch(x.datas_fname, path.glob)
+            lambda x: fnmatch.fnmatch(x.name, path.glob)
         )
 
         # Skip files already sent, if applicable
@@ -76,7 +76,7 @@ class EdiConnectionXMLRPC(models.AbstractModel):
             ]).mapped('output_ids')
 
         # Create output files from attachments
-        conn[path.path] += [{'name': x.datas_fname, 'data': x.datas}
+        conn[path.path] += [{'name': x.name, 'data': x.datas}
                             for x in outputs]
 
         return outputs

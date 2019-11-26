@@ -22,7 +22,7 @@ class Message(models.Model):
             msg = self.browse(value['id'])
             if msg.edi_attachment_audit_ids:
                 edi_attachment_audit_ids = msg.edi_attachment_audit_ids.read([
-                    'datas_fname', 'file_size', 'checksum',
+                    'name', 'file_size', 'checksum',
                 ])
                 value['edi_attachment_audit_ids'] = edi_attachment_audit_ids
         return values
@@ -43,7 +43,7 @@ class EdiAttachmentAudit(models.Model):
     attachment_id = fields.Many2one('ir.attachment', string="Attachment",
                                     index=True, readonly=True,
                                     ondelete='set null')
-    datas_fname = fields.Char(string="File Name", readonly=True)
+    name = fields.Char(string="File Name", readonly=True)
     file_size = fields.Integer(string="File Size", readonly=True)
     checksum = fields.Char(string="Checksum", readonly=True)
 
@@ -52,7 +52,7 @@ class EdiAttachmentAudit(models.Model):
         """Create audit log of attachments"""
         if attachments:
             audit_values = [(0, 0, {'attachment_id': x.id,
-                                    'datas_fname': x.datas_fname,
+                                    'name': x.name,
                                     'file_size': x.file_size,
                                     'checksum': x.checksum})
                             for x in attachments.sorted('id', reverse=True)]

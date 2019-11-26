@@ -139,7 +139,8 @@ class EdiTransfer(models.Model):
                                         body=(_("Created %s") % doc.name))
                 _logger.info("%s created %s (%s)",
                              self.gateway_id.name, doc.name,
-                             ", ".join(doc.mapped('input_ids.datas_fname')))
+                             ", ".join(doc.mapped('input_ids.name')))
+
 
     def send_outputs(self, conn):
         """Send output attachments"""

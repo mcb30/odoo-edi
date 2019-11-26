@@ -44,7 +44,7 @@ class EdiRawDocument(models.AbstractModel):
     @api.model
     def autotype(self, inputs):
         """Autodetect document type"""
-        return [x for x in inputs if self.automodel(x.datas_fname) is not None]
+        return [x for x in inputs if self.automodel(x.name) is not None]
 
     @api.model
     def importer(self, doc):

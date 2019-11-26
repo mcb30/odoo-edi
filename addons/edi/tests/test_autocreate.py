@@ -17,7 +17,7 @@ class TestAutocreate(EdiCase):
         """Autocreate documents"""
         EdiDocumentType = self.env['edi.document.type']
         attachments = self.create_attachment(*filenames)
-        self.assertEqual(attachments.mapped('datas_fname'), list(filenames))
+        self.assertEqual(attachments.mapped('name'), list(filenames))
         docs = EdiDocumentType.autocreate(attachments)
         return docs
 
@@ -44,15 +44,17 @@ class TestAutocreate(EdiCase):
         EdiDocument = self.env['edi.document']
         docs = self.autocreate('dummy.txt', 'res.users.csv', 'hello_world.txt')
         self.assertEqual(len(docs), 2)
-        self.assertEqual(docs[0].input_ids.sorted('id').mapped('datas_fname'),
+
+
+        self.assertEqual(docs[0].input_ids.sorted('id').mapped('name'),
                          ['dummy.txt', 'hello_world.txt'])
-        self.assertEqual(docs[1].input_ids.sorted('id').mapped('datas_fname'),
+        self.assertEqual(docs[1].input_ids.sorted('id').mapped('name'),
                          ['res.users.csv'])
         docs = self.autocreate('res.users.csv', 'dummy.txt', 'hello_world.txt')
         self.assertEqual(len(docs), 2)
-        self.assertEqual(docs[0].input_ids.sorted('id').mapped('datas_fname'),
+        self.assertEqual(docs[0].input_ids.sorted('id').mapped('name'),
                          ['res.users.csv'])
-        self.assertEqual(docs[1].input_ids.sorted('id').mapped('datas_fname'),
+        self.assertEqual(docs[1].input_ids.sorted('id').mapped('name'),
                          ['dummy.txt', 'hello_world.txt'])
         self.assertEqual(list(docs),
                          list(EdiDocument.search([('id', 'in', docs.ids)])))

@@ -264,7 +264,7 @@ class EdiDocument(models.Model):
         self.ensure_one()
         if not self.input_ids:
             raise UserError(_("Missing input attachment"))
-        return ((x.datas_fname, b64decode(x.datas))
+        return ((x.name, b64decode(x.datas))
                 for x in self.input_ids.sorted('id'))
 
 
@@ -282,7 +282,7 @@ class EdiDocument(models.Model):
         Attachment = self.env['ir.attachment']
         attachment = Attachment.create({
             'name': name,
-            'datas_fname': name,
+            'name': name,
             'datas': b64encode(data),
             'res_model': 'edi.document',
             'res_field': 'output_ids',
@@ -433,7 +433,7 @@ class EdiDocument(models.Model):
         """View input attachments"""
         self.ensure_one()
         action = self.env.ref('edi.document_attachments_action').read()[0]
-        action['display_name'] = _("Inputs")
+        action['name'] = _("Inputs")
         action['domain'] = [('res_model', '=', 'edi.document'),
                             ('res_field', '=', 'input_ids'),
                             ('res_id', '=', self.id)]

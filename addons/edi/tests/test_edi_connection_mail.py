@@ -48,7 +48,7 @@ class TestEdiConnectionMail(test_edi_gateway.EdiGatewayConnectionCase):
             for path, files in path_files.items()
         )
         actual = frozenset(
-            (mail.email_to, frozenset((attachment.datas_fname,
+            (mail.email_to, frozenset((attachment.name,
                                        base64.b64decode(attachment.datas))
                                       for attachment in mail.attachment_ids))
             for (mail, *args), kwargs in ctx.call_args_list

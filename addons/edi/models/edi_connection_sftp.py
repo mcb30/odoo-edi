@@ -77,7 +77,7 @@ class EdiConnectionSFTP(models.AbstractModel):
             if Attachment.search([('res_model', '=', 'edi.document'),
                                   ('res_field', '=', 'input_ids'),
                                   ('res_id', '!=', False),
-                                  ('datas_fname', '=', dirent.filename),
+                                  ('name', '=', dirent.filename),
                                   ('file_size', '=', dirent.st_size)]):
                 continue
 
@@ -90,7 +90,7 @@ class EdiConnectionSFTP(models.AbstractModel):
             # Create new attachment for received file
             attachment = Attachment.create({
                 'name': dirent.filename,
-                'datas_fname': dirent.filename,
+                'name': dirent.filename,
                 'datas': base64.b64encode(data),
                 'res_model': 'edi.document',
                 'res_field': 'input_ids',
@@ -135,11 +135,11 @@ class EdiConnectionSFTP(models.AbstractModel):
         for attachment in docs.mapped('output_ids').sorted('id'):
 
             # Skip files not matching glob pattern
-            if not fnmatch.fnmatch(attachment.datas_fname, path.glob):
+            if not fnmatch.fnmatch(attachment.name, path.glob):
                 continue
 
             # Skip files already existing in remote directory
-            if attachment.datas_fname in files:
+            if attachment.name in files:
                 # Assume that a file size check is sufficient to
                 # identify duplicate files.  We cannot sensibly check
                 # the timestamp since there is no guarantee that local
@@ -147,7 +147,7 @@ class EdiConnectionSFTP(models.AbstractModel):
                 # time zone), and we cannot use checksums without
                 # retrieving the potential duplicate file (which may
                 # not be possible due to access restrictions).
-                if attachment.file_size == files[attachment.datas_fname]:
+                if attachment.file_size == files[attachment.name]:
                     continue
 
             # Skip files already sent, if applicable
@@ -156,7 +156,7 @@ class EdiConnectionSFTP(models.AbstractModel):
 
             # Send file with temporary filename
             temppath = os.path.join(path.path, ('.%s~' % uuid.uuid4().hex))
-            filepath = os.path.join(path.path, attachment.datas_fname)
+            filepath = os.path.join(path.path, attachment.name)
             _logger.info("%s sending %s", transfer.gateway_id.name, filepath)
             data = base64.b64decode(attachment.datas)
             conn.file(temppath, mode='wb').write(data)

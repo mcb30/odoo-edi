@@ -73,7 +73,7 @@ class EdiCase(common.SavepointCase):
             path = cls.files.joinpath(filename)
             attachments += IrAttachment.create({
                 'name': path.name,
-                'datas_fname': path.name,
+                'name': path.name,
                 'datas': base64.b64encode(path.read_bytes()),
             })
         return attachments
@@ -130,12 +130,12 @@ class EdiCase(common.SavepointCase):
                          decode=bytes.decode):
         """Assert that attachment filename and content is as expected"""
         if filename is None:
-            filename = attachment.datas_fname
+            filename = attachment.name
         data = self.files.joinpath(filename).read_bytes()
         if pattern is None:
-            self.assertEqual(attachment.datas_fname, filename)
+            self.assertEqual(attachment.name, filename)
         else:
-            self.assertRegex(attachment.datas_fname, pattern)
+            self.assertRegex(attachment.name, pattern)
         try:
             maxDiff = self.maxDiff
             self.maxDiff = None

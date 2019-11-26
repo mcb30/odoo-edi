@@ -62,7 +62,7 @@ class EdiConnectionMail(models.AbstractModel):
 
             # Identify applicable attachments
             attachments = doc.output_ids.sorted('id').filtered(
-                lambda x: fnmatch.fnmatch(x.datas_fname, path.glob)
+                lambda x: fnmatch.fnmatch(x.name, path.glob)
             )
 
             # Skip documents where all attachments have already been sent

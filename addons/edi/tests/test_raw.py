@@ -50,7 +50,7 @@ class TestRaw(EdiCase):
     def test02_unknown_format(self):
         """Unknown file format"""
         doc = self.create_raw('res.users.csv')
-        doc.input_ids.datas_fname = 'res.users.garbage'
+        doc.input_ids.name = 'res.users.garbage'
         with self.assertRaisesIssue(doc):
             doc.action_prepare()
 
@@ -80,14 +80,14 @@ class TestRaw(EdiCase):
         """Prefixed model name in filename"""
         doc = self.create_raw('res.users.csv')
         attachment = doc.input_ids
-        attachment.datas_fname = '01-initial-res.users.csv'
+        attachment.name = '01-initial-res.users.csv'
         self.assertTrue(doc.action_execute())
 
     def test06_unknown_model(self):
         """Unrecognised model name in filename"""
         doc = self.create_raw('res.users.csv')
         attachment = doc.input_ids
-        attachment.datas_fname = '01-initial-res.definitely.not.users.csv'
+        attachment.name = '01-initial-res.definitely.not.users.csv'
         with self.assertRaisesIssue(doc):
             doc.action_prepare()
 
@@ -95,6 +95,6 @@ class TestRaw(EdiCase):
         """Unrecognisable model name in filename"""
         doc = self.create_raw('res.users.csv')
         attachment = doc.input_ids
-        attachment.datas_fname = 'res.users-broken.csv'
+        attachment.name = 'res.users-broken.csv'
         with self.assertRaisesIssue(doc):
             doc.action_prepare()

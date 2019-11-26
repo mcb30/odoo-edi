@@ -19,7 +19,7 @@
 <p>Please find attached:
 <ul>
 % for attachment in object.output_ids:
-<li>${attachment.datas_fname}</li>
+<li>${attachment.name}</li>
 % endfor
 </ul>
 from EDI document ${object.name}, executed on ${object.execute_date}.
