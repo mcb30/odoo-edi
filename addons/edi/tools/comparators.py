@@ -17,9 +17,10 @@ class Comparator(UserDict):
     mapping.
     """
 
-    def __init__(self, model):
+    def __init__(self, model, env):
         super().__init__()
         self.model = model
+        self.env = env
 
     def __missing__(self, key):
         field = self.model._fields[key]
@@ -33,7 +34,7 @@ class Comparator(UserDict):
                 (not x and not y and not isinstance(y, models.NewId))
                 or (x.id == y)
             )
-        elif isinstance(field, fields.Float) and field.digits:
-            (_precision, scale) = field.digits
+        elif isinstance(field, fields.Float) and field.get_digits(self.env):
+            (_precision, scale) = field.get_digits(self.env)
             return lambda x, y: float_compare(x, y, precision_digits=scale) == 0
         return lambda x, y: (not x and not y) or (x == y)

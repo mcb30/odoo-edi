@@ -214,7 +214,7 @@ class EdiSyncRecord(models.AbstractModel):
         matched_ids = set()
 
         # Construct comparator for target model
-        comparator = Comparator(Target)
+        comparator = Comparator(Target, self.env)
 
         # Construct produced values cache for deduplication
         produced = set() if self._edi_sync_dedupe else None
