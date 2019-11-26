@@ -53,7 +53,7 @@ class TestPartnerTutorial(EdiCase):
         self.assertEqual(partners.ref, 'E')
         self.assertEqual(partners.email, 'eve@example.com')
 
-    def test03_correction(self):
+    def test04_correction2(self):
         """Document and subsequent correction document"""
         Title = self.env['res.partner.title']
         doc1 = self.create_tutorial('friends.csv')
