@@ -2,7 +2,6 @@
 
 import base64
 import logging
-import os
 import paramiko
 from odoo import api, fields, models
 from odoo.exceptions import UserError, ValidationError
@@ -201,7 +200,7 @@ class EdiGateway(models.Model):
     def _compute_cron_count(self):
         """Compute number of scheduled jobs (for UI display)"""
         for gw in self:
-            gw.cron_count = len(gw.cron_ids)
+            gw.cron_count = len(gw.sudo().cron_ids)
 
     @api.multi
     @api.depends('ssh_host_key')
