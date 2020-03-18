@@ -158,7 +158,7 @@
 	  <templates>
 	    <t t-name="kanban-box">
 	      <div class="oe_kanban_card oe_kanban_global_click">
-		<div class="row">
+		<div>
 		  <div class="col-xs-6">
 		    <strong><field name="name"/></strong>
 		  </div>
@@ -176,7 +176,7 @@
 		    </span>
 		  </div>
 		</div>
-		<div class="row text-muted">
+		<div class="text-muted">
 		  <div class="col-xs-12">
 		    <div><field name="doc_type_id"/></div>
 		    <div><field name="create_date"/></div>
