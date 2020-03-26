@@ -231,13 +231,14 @@ class EdiDocument(models.Model):
         vals = dict(self.fields_get(allfields=['state'])['state']['selection'])
         return vals[self.state]
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         """Create record (generating name automatically if needed)"""
-        doc = super().create(vals)
-        if not doc.name:
-            doc.name = doc.doc_type_id.sequence_id.next_by_id()
-        return doc
+        docs = super().create(vals_list)
+        for doc in docs:
+            if not doc.name:
+                doc.name = doc.doc_type_id.sequence_id.next_by_id()
+        return docs
 
 
     def copy(self, default=None):

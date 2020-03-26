@@ -115,22 +115,24 @@ class EdiRawDocument(models.AbstractModel):
         # Perform a trial import to validate input file
         self.import_data(doc, trial=TRIAL_COUNT)
 
+    def _get_values(self, doc, recs):
+        IrModel = self.env['ir.model']
+        model = IrModel._get(recs._name)
+        for index, rec in enumerate(recs, start=1):
+            yield {
+                'doc_id': doc.id,
+                'name': '%05d' % index,
+                'model_id': model.id,
+                'res_id': rec.id,
+            }
     @api.model
     def execute(self, doc):
         """Execute document"""
         super().execute(doc)
-        IrModel = self.env['ir.model']
         EdiRawRecord = self.env['edi.raw.record']
 
         # Import data
         recs = self.import_data(doc)
 
         # Create EDI records for imported records
-        model = IrModel._get(recs._name)
-        for index, rec in enumerate(recs, start=1):
-            EdiRawRecord.create({
-                'doc_id': doc.id,
-                'name': '%05d' % index,
-                'model_id': model.id,
-                'res_id': rec.id,
-            })
+        EdiRawRecord.create(list(self._get_values(doc, recs)))

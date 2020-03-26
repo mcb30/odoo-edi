@@ -260,6 +260,13 @@ class EdiRecord(models.AbstractModel):
         for rel in self._edi_relates:
             self.mapped('%s.%s' % (rel.target, rel.via))
 
+    @staticmethod
+    def _add_doc_id(doc, vlist):
+        for record_vals in vlist:
+            record_vals['doc_id'] = doc.id
+            yield record_vals
+
+
     @api.model
     def prepare(self, doc, vlist):
         """Prepare records
@@ -277,10 +284,7 @@ class EdiRecord(models.AbstractModel):
         # Create records
         with self.statistics() as stats:
             try:
-                for record_vals in vlist:
-                    record_vals['doc_id'] = doc.id
-                    self.create(record_vals)
-                    count += 1
+                self.create(list(self._add_doc_id(doc, vlist)))
                 self.recompute()
             except NoRecordValuesError:
                 # Values dictionary iterable was not implemented (most
@@ -290,7 +294,7 @@ class EdiRecord(models.AbstractModel):
 
         # Log statistics
         _logger.info("%s prepared %s in %.2fs, %d excess queries", doc.name,
-                     self._name, stats.elapsed, (stats.count - count))
+                     self._name, stats.elapsed, (stats.count - 1))
 
 
     def execute(self):
