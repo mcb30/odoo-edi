@@ -352,7 +352,7 @@ class EdiSyncRecord(models.AbstractModel):
                         (rec.target_values(rec._record_values())
                          for rec in batch)
                     ))
-                    targets = [Target.create(vals) for vals in vals_list]
+                    targets = Target.create(vals_list)
                     for rec, created in zip(batch, targets):
                         rec[target] = created
                     self.recompute()
