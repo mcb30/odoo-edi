@@ -21,6 +21,5 @@ from . import mail_thread
 
 from . import edi_partner_document
 from . import edi_partner_record
-from . import edi_partner_tutorial
 from . import edi_raw_document
 from . import edi_raw_record

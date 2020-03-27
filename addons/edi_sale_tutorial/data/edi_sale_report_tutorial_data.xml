@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- EDI sale order report tutorial record type -->
+    <record id="sale_report_tutorial_record_type" model="edi.record.type">
+      <field name="name">Sale Order Report Tutorial</field>
+      <field name="model_id" ref="model_edi_sale_report_tutorial_record"/>
+      <field name="sequence" eval="415"/>
+    </record>
+
+    <!-- EDI sale order line report tutorial record type -->
+    <record id="sale_line_report_tutorial_record_type" model="edi.record.type">
+      <field name="name">Sale Order Line Report Tutorial</field>
+      <field name="model_id" ref="model_edi_sale_line_report_tutorial_record"/>
+      <field name="sequence" eval="420"/>
+    </record>
+
+    <!-- EDI sale order report tutorial document type -->
+    <record id="sale_report_tutorial_document_type" model="edi.document.type">
+      <field name="name">Sale Order Report Tutorial</field>
+      <field name="model_id" ref="model_edi_sale_report_tutorial_document"/>
+      <field name="sequence" eval="410"/>
+      <field name="sequence_id" ref="edi_sale.sale_report_sequence_default"/>
+      <field name="rec_type_ids"
+	     eval="[(6, False, [ref('sale_report_tutorial_record_type'),
+		   ref('sale_line_report_tutorial_record_type')])]"/>
+    </record>
+
+    <!-- EDI sale order report tutorial XML-RPC gateway path -->
+    <record id="sale_report_tutorial_path_xmlrpc" model="edi.gateway.path">
+      <field name="name">Sale Order Report Tutorial</field>
+      <field name="sequence" eval="400"/>
+      <field name="gateway_id" ref="edi.gateway_xmlrpc"/>
+      <field name="path">tutorial/sale/report</field>
+      <field name="doc_type_ids"
+	     eval="[(6, False, [ref('sale_report_tutorial_document_type')])]"/>
+    </record>
+
+  </data>
+</odoo>
