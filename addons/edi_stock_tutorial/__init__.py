@@ -1,4 +1,4 @@
-"""EDI product module"""
+"""EDI stock module"""
 
 from . import models
 from . import tests

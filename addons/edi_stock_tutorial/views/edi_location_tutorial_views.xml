@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- EDI location tutorial record form view -->
+    <record id="location_tutorial_record_form" model="ir.ui.view">
+      <field name="name">edi.location.tutorial.record.form</field>
+      <field name="model">edi.location.tutorial.record</field>
+      <field name="inherit_id" ref="edi_stock.location_record_form"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+	<xpath expr="//group[@name='detail']" position="inside">
+	  <field name="shelf"/>
+	  <field name="parent_key"/>
+	  <field name="parent_id"/>
+	</xpath>
+      </field>
+    </record>
+
+    <!-- EDI location tutorial record tree view -->
+    <record id="location_tutorial_record_tree" model="ir.ui.view">
+      <field name="name">edi.location.tutorial.record.tree</field>
+      <field name="model">edi.location.tutorial.record</field>
+      <field name="inherit_id" ref="edi_stock.location_record_tree"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+	<xpath expr="//tree" position="inside">
+	  <field name="shelf"/>
+	  <field name="parent_key"/>
+	  <field name="parent_id"/>
+	</xpath>
+      </field>
+    </record>
+
+    <!-- EDI location tutorial record search filter -->
+    <record id="location_tutorial_record_search" model="ir.ui.view">
+      <field name="name">edi.location.tutorial.record.search</field>
+      <field name="model">edi.location.tutorial.record</field>
+      <field name="inherit_id" ref="edi_stock.location_record_search"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+	<xpath expr="//field[@name='description']" position="after">
+	  <field name="parent_key"/>
+	  <field name="parent_id"/>
+	</xpath>
+	<xpath expr="//group" position="inside">
+	  <filter string="Parent Location" name="by_parent_id"
+		  domain="[]" context="{'group_by':'parent_id'}"/>
+	</xpath>
+      </field>
+    </record>
+
+    <!-- EDI location tutorial record action window -->
+    <record id="location_tutorial_record_action"
+	    model="ir.actions.act_window">
+      <field name="name">Locations</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.location.tutorial.record</field>
+
+      <field name="view_id" ref="location_tutorial_record_tree"/>
+      <field name="search_view_id" ref="location_tutorial_record_search"/>
+      <field name="context">{'create': False}</field>
+    </record>
+
+    <!-- EDI location tutorial record menu item -->
+    <menuitem id="location_tutorial_record_menu"
+	      action="location_tutorial_record_action"
+	      parent="edi.tutorial_menu" sequence="6"/>
+
+    <!-- EDI location tutorial records field -->
+    <record id="location_tutorial_document_form" model="ir.ui.view">
+      <field name="name">edi.location.tutorial.document.form</field>
+      <field name="model">edi.document</field>
+      <field name="inherit_id" ref="edi.document_form"/>
+      <field name="arch" type="xml">
+	<xpath expr="//page[@name='location']" position="after">
+	  <page name="location_tutorial" string="Locations"
+		attrs="{'invisible':['!',('rec_type_names','ilike',
+		       '/edi.location.tutorial.record/')]}">
+	    <field name="location_tutorial_ids" readonly="1">
+	      <tree>
+		<field name="name"/>
+		<field name="location_id"/>
+		<field name="description"/>
+		<field name="shelf"/>
+		<field name="parent_key"/>
+		<field name="parent_id"/>
+	      </tree>
+	    </field>
+	  </page>
+	</xpath>
+      </field>
+    </record>
+
+  </data>
+</odoo>

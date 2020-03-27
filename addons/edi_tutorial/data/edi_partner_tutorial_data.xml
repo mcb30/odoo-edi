@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- EDI partner tutorial record type -->
+    <record id="partner_tutorial_record_type" model="edi.record.type">
+      <field name="name">Partner Tutorial</field>
+      <field name="model_id" ref="model_edi_partner_tutorial_record"/>
+      <field name="sequence" eval="100"/>
+    </record>
+
+    <!-- EDI partner tutorial document type -->
+    <record id="partner_tutorial_document_type" model="edi.document.type">
+      <field name="name">Partner Tutorial</field>
+      <field name="model_id" ref="model_edi_partner_tutorial_document"/>
+      <field name="sequence" eval="100"/>
+      <field name="sequence_id" ref="partner_sequence_default"/>
+      <field name="rec_type_ids"
+	     eval="[(6, False, [ref('partner_tutorial_record_type')])]"/>
+    </record>
+
+    <!-- EDI partner tutorial XML-RPC gateway path -->
+    <record id="partner_tutorial_path_xmlrpc" model="edi.gateway.path">
+      <field name="name">Partner Tutorial</field>
+      <field name="sequence" eval="100"/>
+      <field name="gateway_id" ref="edi.gateway_xmlrpc"/>
+      <field name="path">tutorial/partner</field>
+      <field name="doc_type_ids"
+	     eval="[(6, False, [ref('partner_tutorial_document_type')])]"/>
+    </record>
+
+  </data>
+</odoo>

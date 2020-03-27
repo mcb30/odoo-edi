@@ -1,6 +1,6 @@
 """EDI stock level report tutorial tests"""
 
-from .common import EdiQuantCase
+from odoo.addons.edi_stock.tests.common import EdiQuantCase
 
 
 class TestTutorial(EdiQuantCase):
@@ -9,9 +9,7 @@ class TestTutorial(EdiQuantCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.doc_type_tutorial = cls.env.ref(
-            'edi_stock.quant_report_tutorial_document_type'
-        )
+        cls.doc_type_tutorial = cls.env.ref("edi_stock.quant_report_tutorial_document_type")
         cls.create_quant(cls.fridge, cls.apple, 7)
         cls.create_quant(cls.cupboard, cls.apple, 3)
         cls.create_quant(cls.cupboard, cls.banana, 6)
@@ -31,13 +29,11 @@ class TestTutorial(EdiQuantCase):
         self.assertEqual(len(doc.output_ids), 0)
         self.assertTrue(doc.action_execute())
         self.assertEqual(len(doc.output_ids), 1)
-        self.assertAttachment(doc.output_ids, 'stock01.csv',
-                              pattern=r'STK\d+\.csv')
+        self.assertAttachment(doc.output_ids, "stock01.csv", pattern=r"STK\d+\.csv")
 
     def test02_multiple(self):
         """Multiple source locations"""
         self.doc_type_tutorial.location_ids += self.loc_suppliers
         doc = self.create_tutorial()
         self.assertTrue(doc.action_execute())
-        self.assertAttachment(doc.output_ids, 'stock02.csv',
-                              pattern=r'STK\d+\.csv')
+        self.assertAttachment(doc.output_ids, "stock02.csv", pattern=r"STK\d+\.csv")

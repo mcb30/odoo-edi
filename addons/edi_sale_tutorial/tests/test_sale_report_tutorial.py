@@ -1,6 +1,6 @@
 """EDI sale order report tutorial tests"""
 
-from .common import EdiSaleCase
+from odoo.addons.edi_sale.tests.common import EdiSaleCase
 
 
 class TestTutorial(EdiSaleCase):

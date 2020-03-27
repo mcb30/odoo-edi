@@ -1,6 +1,6 @@
 """EDI stock location tutorial tests"""
 
-from .common import EdiCase
+from odoo.addons.edi.tests.common import EdiCase
 
 
 class TestLocationTutorial(EdiCase):
