@@ -3,6 +3,7 @@
 import fnmatch
 import logging
 from odoo import api, models
+from ..tools import batched
 
 _logger = logging.getLogger(__name__)
 
@@ -18,6 +19,8 @@ class EdiConnectionXMLRPC(models.AbstractModel):
     _inherit = 'edi.connection.model'
     _description = "EDI XML-RPC Connection"
 
+    _BATCH_SIZE = 100
+
     @api.model
     def receive_inputs(self, conn, path, _transfer):
         """Receive input attachments"""
@@ -28,25 +31,32 @@ class EdiConnectionXMLRPC(models.AbstractModel):
         if path.path not in conn:
             return
 
+        not_consumed = []
+
         # Create input attachments
-        for f in list(conn[path.path]):
+        for _r, fs in batched(conn[path.path], self._BATCH_SIZE):
 
-            # Skip files not matching glob pattern
-            if not fnmatch.fnmatch(f['name'], path.glob):
-                continue
+            attachment_data = []
 
-            # Create new attachment for input file
-            attachment = Attachment.create({
-                'name': f['name'],
-                'name': f['name'],
-                'datas': str(f['data']),
-                'res_model': 'edi.document',
-                'res_field': 'input_ids',
-            })
-            inputs += attachment
+            for f in fs:
+                # Skip files not matching glob pattern
+                if not fnmatch.fnmatch(f["name"], path.glob):
+                    # Collect unprocessed files to attach to collection
+                    not_consumed.append(f)
+                    continue
 
-            # Consume input file
-            conn[path.path].remove(f)
+                # Create new attachment for input file
+                attachment_data.append({
+                    'name': str(f['name']),
+                    'datas': str(f['data']),
+                    'res_model': 'edi.document',
+                    'res_field': 'input_ids',
+                })
+
+            # add new attachments
+            inputs += Attachment.create(attachment_data)
+
+        conn[path.path] = not_consumed
 
         return inputs
 
@@ -78,5 +88,4 @@ class EdiConnectionXMLRPC(models.AbstractModel):
         # Create output files from attachments
         conn[path.path] += [{'name': x.name, 'data': x.datas}
                             for x in outputs]
-
         return outputs

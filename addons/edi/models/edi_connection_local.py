@@ -12,6 +12,8 @@ from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.translate import _
 
+from ..tools import batched
+
 _logger = logging.getLogger(__name__)
 
 
@@ -26,6 +28,8 @@ class EdiConnectionLocal(models.AbstractModel):
     _inherit = 'edi.connection.model'
     _description = "EDI Local Connection"
 
+    _BATCH_SIZE = 100
+
     @api.model
     def path_allowed(self, jail_directory, test_path):
         """Is the path within the permitted jail directory?"""
@@ -35,7 +39,6 @@ class EdiConnectionLocal(models.AbstractModel):
         real_jail_directory = os.path.realpath(jail_directory)
         return os.path.commonpath([real_jail_directory,
                                    os.path.realpath(test_path)]) == real_jail_directory
-
 
     @api.model
     def connect(self, _gateway):
@@ -56,7 +59,10 @@ class EdiConnectionLocal(models.AbstractModel):
         jail_directory = gateway.get_jail_path()
 
         # List local directory
-        min_date = (datetime.now() - timedelta(hours=path.age_window))
+        min_date = datetime.now() - timedelta(hours=path.age_window)
+
+        attachment_data = []
+
         for filepath in directory.iterdir():
 
             # Skip files not matching glob pattern
@@ -64,11 +70,9 @@ class EdiConnectionLocal(models.AbstractModel):
                 continue
 
             # Did the user try to escape the jail?
-            if not self.path_allowed(jail_directory, filepath):
                 raise PermissionError(errno.EACCES,
                                       _("Tried to access a folder outside the jail directory %s")
                                       % jail_directory)
-
             # Get file information
             stat = filepath.stat()
 
@@ -89,21 +93,25 @@ class EdiConnectionLocal(models.AbstractModel):
             data = filepath.read_bytes()
 
             # Create new attachment for received file
-            attachment = Attachment.create({
-                'name': filepath.name,
-                'name': filepath.name,
-                'datas': base64.b64encode(data),
-                'res_model': 'edi.document',
-                'res_field': 'input_ids',
+            attachment_data.append({
+                    "name": filepath.name,
+                    "datas": base64.b64encode(data),
+                    "res_model": "edi.document",
+                    "res_field": "input_ids",
             })
-            inputs += attachment
+
+            # attachment.file_size b64decodes datas and gets the length
+            attachment_size = len(data)
 
             # Check received size
-            if attachment.file_size != stat.st_size:
+            if attachment_size != stat.st_size:
                 raise ValidationError(
                     _("File size mismatch (expected %d got %d)") %
-                    (stat.st_size, attachment.file_size)
+                    (stat.st_size, attachment_size)
                 )
+
+        for _r, batch in batched(attachment_data, self._BATCH_SIZE):
+            inputs += Attachment.create(batch)
 
         return inputs
 

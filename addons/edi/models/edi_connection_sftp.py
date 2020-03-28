@@ -11,6 +11,7 @@ import paramiko
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.translate import _
+from ..tools import batched
 
 _logger = logging.getLogger(__name__)
 
@@ -47,6 +48,8 @@ class EdiConnectionSFTP(models.AbstractModel):
     _inherit = 'edi.connection.model'
     _description = "EDI SFTP Connection"
 
+    _BATCH_SIZE = 100
+
     @api.model
     def connect(self, gateway):
         """Connect to SFTP server"""
@@ -60,9 +63,10 @@ class EdiConnectionSFTP(models.AbstractModel):
         """Receive input attachments"""
         Attachment = self.env['ir.attachment']
         inputs = Attachment.browse()
+        attachment_data = []
 
         # List remote directory
-        min_date = (datetime.now() - timedelta(hours=path.age_window))
+        min_date = datetime.now() - timedelta(hours=path.age_window)
         for dirent in conn.listdir_attr(path.path):
 
             # Skip files outside the age window
@@ -88,21 +92,25 @@ class EdiConnectionSFTP(models.AbstractModel):
             data = conn.file(filepath, mode='rb').read()
 
             # Create new attachment for received file
-            attachment = Attachment.create({
-                'name': dirent.filename,
-                'name': dirent.filename,
-                'datas': base64.b64encode(data),
-                'res_model': 'edi.document',
-                'res_field': 'input_ids',
+            attachment_data.append({
+                "name": dirent.filename,
+                "datas": base64.b64encode(data),
+                "res_model": "edi.document",
+                "res_field": "input_ids",
             })
-            inputs += attachment
+
+            # attachment.file_size b64decodes datas and gets the length
+            attachment_size = len(data)
 
             # Check received size
-            if attachment.file_size != dirent.st_size:
+            if attachment_size != dirent.st_size:
                 raise ValidationError(
                     _("File size mismatch (expected %d got %d)") %
-                    (dirent.st_size, attachment.file_size)
+                    (dirent.st_size, attachment_size)
                 )
+
+        for _r, batch in batched(attachment_data, self._BATCH_SIZE):
+            inputs += Attachment.create(batch)
 
         return inputs
 
