@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+
+        <!-- Partner record type -->
+        <record id="partner_sale_forward_record_type" model="edi.record.type">
+            <field name="name">Partner Record</field>
+            <field name="model_id" ref="model_edi_partner_record_info" />
+            <field name="sequence" eval="120" />
+        </record>
+
+    </data>
+</odoo>
