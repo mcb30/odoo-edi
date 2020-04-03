@@ -52,7 +52,7 @@ class EdiMoveRequestRecord(models.Model):
     product_id = fields.Many2one('product.product', string="Product",
                                  required=False, readonly=True, index=True)
     qty = fields.Float(string="Quantity", readonly=True, required=True,
-                       digits=dp.get_precision('Product Unit of Measure'))
+                       digits='Product Unit of Measure')
 
 
     def precache(self):

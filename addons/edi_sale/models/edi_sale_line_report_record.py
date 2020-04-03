@@ -40,11 +40,11 @@ class EdiSaleLineReportRecord(models.Model):
     )
     qty_ordered = fields.Float(
         string="Ordered", readonly=True, required=True,
-        digits=dp.get_precision('Product Unit of Measure'),
+        digits='Product Unit of Measure',
     )
     qty_delivered = fields.Float(
         string="Delivered", readonly=True, required=True,
-        digits=dp.get_precision('Product Unit of Measure'),
+        digits='Product Unit of Measure',
     )
 
     @api.model
