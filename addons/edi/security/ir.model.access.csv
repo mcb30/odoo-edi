@@ -19,3 +19,4 @@ access_edi_record,access_edi_record,model_edi_record,base.group_user,1,0,0,0
 access_edi_record_type,access_edi_record_type,model_edi_record_type,base.group_user,1,0,0,0
 access_edi_transfer,access_edi_transfer,model_edi_transfer,base.group_user,1,0,0,0
 access_edi_transfer_allow,access_edi_transfer_allow,model_edi_transfer,base.group_system,1,1,1,1
+access_edi_allow_task,access_edi_allow_task,model_project_task,base.group_system,1,1,1,1
