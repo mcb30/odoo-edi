@@ -1,6 +1,6 @@
 """EDI stock transfer report documents"""
 
-from odoo import api, fields, models
+from odoo import api, fields, models, tools
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
 
@@ -55,6 +55,34 @@ class EdiPickReportDocument(models.AbstractModel):
     a ``stock.picking``.  It may be overridden if there is a need to
     report more than once upon a single ``stock.picking`` record.
     """
+
+    @api.model_cr
+    def init(self):
+        """Create index for :meth:`~.pick_report_domain`
+
+        This method follows the logic of :meth:`~.pick_report_domain`, which
+        returns a domain with either two or three clauses depending on the
+        value of `~._edi_pick_report_via`. To complicate things,
+        `~._edi_pick_report_via` is allowed to be overridden in models
+        inheriting from this one. This method gets called for each derived
+        model and creates the appropriate index for each one.
+        """
+        super(EdiPickReportDocument, self).init()
+
+        Picking = self.env['stock.picking']
+
+        if self._edi_pick_report_via is not None:
+            tools.create_index(self._cr,
+                               'stock_picking_state_picking_type_id_%s_index' %
+                                   (self._edi_pick_report_via,),
+                               Picking._table,
+                               ['state', 'picking_type_id',
+                                self._edi_pick_report_via])
+        else:
+            tools.create_index(self._cr,
+                               'stock_picking_state_picking_type_id_index',
+                               Picking._table,
+                               ['state', 'picking_type_id'])
 
     @api.model
     def pick_report_record_model(self, doc,
