@@ -27,3 +27,4 @@ access_edi_pick_request_record_user,access_edi_pick_request_record_user,model_ed
 access_edi_procurement_record_user,access_edi_procurement_record_user,model_edi_procurement_record,base.group_user,1,0,0,0
 access_edi_quant_report_record_user,access_edi_quant_report_record_user,model_edi_quant_report_record,base.group_user,1,0,0,0
 access_edi_route_record_user,access_edi_route_record_user,model_edi_route_record,base.group_user,1,0,0,0
+stock.access_stock_quant_manager,stock.quant manager,stock.model_stock_quant,stock.group_stock_manager,1,0,1,0
