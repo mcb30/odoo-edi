@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<odoo>
+
+    <!-- EDI partner record info form view -->
+    <record id="partner_record_info_form" model="ir.ui.view">
+        <field name="name">edi.partner.record.info.form</field>
+        <field name="model">edi.partner.record.info</field>
+        <field name="inherit_id" ref="edi.partner_record_form" />
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='basic']" position="inside">
+                <field name="email" />
+                <field name="address_line_1" />
+                <field name="address_line_2" />
+                <field name="town" />
+                <field name="county" />
+                <field name="postcode" />
+                <field name="phone" />
+                <field name="mobile" />
+                <field name="is_company" />
+            </xpath>
+        </field>
+    </record>
+
+    <!-- EDI partner record info tree view -->
+    <record id="partner_record_info_tree" model="ir.ui.view">
+        <field name="name">edi.partner.record.info.tree</field>
+        <field name="model">edi.partner.record.info</field>
+        <field name="inherit_id" ref="edi.partner_record_tree" />
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="inside">
+                <field name="email" />
+                <field name="address_line_1" />
+                <field name="address_line_2" />
+                <field name="town" />
+                <field name="county" />
+                <field name="postcode" />
+                <field name="phone" />
+                <field name="mobile" />
+                <field name="is_company" />
+            </xpath>
+        </field>
+    </record>
+
+    <!-- EDI partner record info action window -->
+    <record id="partner_record_info_action" model="ir.actions.act_window">
+        <field name="name">Partners</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">edi.partner.record.info</field>
+        <field name="view_type">form</field>
+        <field name="view_id" ref="partner_record_info_tree" />
+        <field name="search_view_id" ref="edi.partner_record_search" />
+        <field name="context">{'create': False}</field>
+    </record>
+
+    <!-- Records submenu -->
+    <menuitem name="Sale Forward Request" id="edi_menu" parent="edi.record_menu" sequence="30" />
+
+    <!-- EDI partner record info menu item -->
+    <menuitem id="partner_record_info_menu" action="partner_record_info_action" parent="edi_menu" sequence="55" />
+
+</odoo>
