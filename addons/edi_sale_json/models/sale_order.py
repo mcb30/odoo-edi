@@ -24,6 +24,8 @@ class SaleOrder(models.Model):
         return True
 
     def action_confirm(self):
+        # This assumes that we don't have both edi_sale_json and edi_sale_forward_request - to be
+        # revisited if we need to have both on one system.
         res = super().action_confirm()
         if res:
             res &= self.action_edi_autocreate()
