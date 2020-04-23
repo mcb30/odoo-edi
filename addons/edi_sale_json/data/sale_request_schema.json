@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "http://udes.io/order_request_schema.json",
+  "title": "Order Requests Schema",
+  "description": "The json schema which defined for order requests.",
+  "definitions": {
+    "address": {
+      "$id": "#/definitions/address",
+      "type": "object",
+      "properties": {
+        "first": { "type": "string" },
+        "second": { "type": "string" },
+        "town": { "type": "string" },
+        "postcode": { "type": "string" },
+        "county": { "type": "string" }
+      },
+      "required": ["first", "second", "town", "postcode"]
+    },
+    "customer_name": {
+      "$id": "#/definitions/customer_name",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "name": { "type": "string" }
+      },
+      "required": ["title", "name"]
+    },
+    "customer_ref": {
+      "$id": "#/definitions/customer_ref",
+      "type": "string"
+    },
+    "order_ref": {
+      "$id": "#/definitions/order_ref",
+      "type": "string"
+    },
+    "customer": {
+      "$id": "#/definitions/customer",
+      "type": "object",
+      "properties": {
+        "customer_ref": { "$ref": "#/definitions/customer_ref" },
+        "customer_type": {
+          "type": "string",
+          "enum": ["person", "company"]
+        },
+        "name": { "$ref": "#/definitions/customer_name" },
+        "address": { "$ref": "#/definitions/address" }
+      },
+      "required": ["customer_ref", "name", "address"]
+    },
+    "order_line": {
+      "$id": "#/definitions/order_line",
+      "type": "object",
+      "properties": {
+        "line_ref": { "type": "string" },
+        "product_ref": { "type": "string" },
+        "quantity": { "type": "integer" }
+      },
+      "required": ["line_ref", "product_ref", "quantity"]
+    },
+    "order": {
+      "$id": "#/definitions/order",
+      "type": "object",
+      "properties": {
+        "customer_ref": { "$ref": "#/definitions/customer_ref" },
+        "order_ref": { "$ref": "#/definitions/order_ref" },
+        "order_type": { "type": "string", "enum": ["individual", "group"] },
+        "priority": { "type": "string", "enum": ["low", "normal", "high"] },
+        "lines": {
+          "type": "array",
+          "items": [{ "$ref": "#/definitions/order_line" }]
+        }
+      },
+      "required": ["customer_ref", "order_ref", "lines"]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "customers": {
+      "type": "array",
+      "items": [{ "$ref": "#/definitions/customer" }],
+      "minItems": 1,
+      "uniqueItems": true,
+      "additionalItems": false
+    },
+    "orders": {
+      "type": "array",
+      "items": [{ "$ref": "#/definitions/order" }],
+      "minItems": 1,
+      "uniqueItems": true,
+      "additionalItems": false
+    }
+  },
+  "required": ["customers", "orders"],
+  "additionalItems": false
+}
