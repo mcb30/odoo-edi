@@ -134,8 +134,8 @@ class EdiSaleForwardDocument(models.AbstractModel):
 
         with io.StringIO() as output:
             json.dump(data, output, indent=2)
+            data = output.getvalue().encode()
 
-        data = output.getvalue().encode()
         # Create output attachment
         filename = "sale_forward_%s.json" % datetime.now().strftime("%Y%m%d_%H%M")
         doc.output(filename, data)
