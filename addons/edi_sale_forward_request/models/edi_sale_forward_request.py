@@ -36,7 +36,6 @@ class EdiDocument(models.Model):
         "edi.sale.line.forward.request.record", "doc_id", string="Sale Line Requests",
     )
 
-    @api.multi
     @api.depends("sale_forward_request_ids", "sale_line_forward_request_ids.order_id")
     def _compute_sale_ids(self):
         retvals = super()._compute_sale_ids()

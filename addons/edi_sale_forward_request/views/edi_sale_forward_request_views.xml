@@ -29,7 +29,6 @@
         <field name="name">Sale Order Requests</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">edi.sale.forward.request.record</field>
-        <field name="view_type">form</field>
         <field name="view_id" ref="sale_forward_request_record_tree" />
         <field name="search_view_id" ref="edi_sale.sale_request_record_search" />
         <field name="context">{'create': False}</field>
@@ -40,7 +39,6 @@
         <field name="name">Sale Order Line Requests</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">edi.sale.line.forward.request.record</field>
-        <field name="view_type">form</field>
         <field name="view_id" ref="sale_line_forward_request_record_tree" />
         <field name="search_view_id" ref="edi_sale.sale_line_request_record_search" />
         <field name="context">{'create': False}</field>
