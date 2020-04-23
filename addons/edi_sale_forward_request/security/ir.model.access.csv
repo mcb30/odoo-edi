@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_edi_partner_record_info,access_edi_partner_record_info,model_edi_partner_record_info,base.group_user,1,1,1,1
+access_edi_sale_line_forward_request_record,access_edi_sale_line_forward_request_record,model_edi_sale_line_forward_request_record,base.group_user,1,1,1,1
+access_edi_sale_forward_request_record,access_edi_sale_forward_request_record,model_edi_sale_forward_request_record,base.group_user,1,1,1,1
