@@ -27,14 +27,5 @@
 		   ref('sale_line_forward_request_record_type')])]" />
     </record>
 
-    <!-- EDI sale order forward request XML-RPC gateway path -->
-    <record id="sale_forward_request_path_xmlrpc" model="edi.gateway.path">
-      <field name="name">Sale Order Request</field>
-      <field name="sequence" eval="410" />
-      <field name="gateway_id" ref="edi.gateway_xmlrpc" />
-      <field name="path">json/sale/request</field>
-      <field name="doc_type_ids" eval="[(6, False, [ref('sale_forward_request_document_type')])]" />
-    </record>
-
   </data>
 </odoo>
