@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+
+    <!-- EDI sale forwarding record form view -->
+    <record id="sale_forwarding_record_form" model="ir.ui.view">
+      <field name="name">edi.sale.forward.record.form</field>
+      <field name="model">edi.sale.forward.record</field>
+      <field name="inherit_id" ref="edi_sale.sale_report_record_form"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+        <xpath expr="//group[@name='basic']" position="inside">
+          <field name="sale_ref"/>
+          <field name="partner_id"/>
+        </xpath>
+      </field>
+    </record>
+
+    <!-- EDI sale line forwarding record form view -->
+    <record id="sale_line_forwarding_record_form" model="ir.ui.view">
+      <field name="name">edi.sale.line.forward.record.form</field>
+      <field name="model">edi.sale.line.forward.record</field>
+      <field name="inherit_id" ref="edi_sale.sale_line_report_record_form"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+        <xpath expr="//group[@name='basic']" position="inside"/>
+      </field>
+    </record>
+
+    <!-- EDI sale forwarding record tree view -->
+    <record id="sale_forwarding_record_tree" model="ir.ui.view">
+      <field name="name">edi.sale.forward.record.tree</field>
+      <field name="model">edi.sale.forward.record</field>
+      <field name="inherit_id" ref="edi_sale.sale_report_record_tree"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+        <xpath expr="//tree" position="inside">
+          <field name="sale_ref"/>
+          <field name="partner_id"/>
+        </xpath>
+      </field>
+    </record>
+
+    <!-- EDI sale line forwarding record tree view -->
+    <record id="sale_line_forwarding_record_tree" model="ir.ui.view">
+      <field name="name">edi.sale.line.forward.record.tree</field>
+      <field name="model">edi.sale.line.forward.record</field>
+      <field name="inherit_id" ref="edi_sale.sale_line_report_record_tree"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+        <xpath expr="//tree" position="inside"/>
+      </field>
+    </record>
+
+    <!-- EDI sale forwarding record action window -->
+    <record id="sale_forwarding_record_action" model="ir.actions.act_window">
+      <field name="name">Sale Order Forwards</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.sale.forward.record</field>
+
+      <field name="view_id" ref="sale_forwarding_record_tree"/>
+      <field name="search_view_id" ref="edi_sale.sale_report_record_search"/>
+      <field name="context">{'create': False}</field>
+    </record>
+
+    <!-- EDI sale line forwarding record action window -->
+    <record id="sale_line_forwarding_record_action" model="ir.actions.act_window">
+      <field name="name">Sale Line Forwards</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">edi.sale.line.forward.record</field>
+
+      <field name="view_id" ref="sale_line_forwarding_record_tree"/>
+      <field name="search_view_id" ref="edi_sale.sale_line_report_record_search"/>
+      <field name="context">{'create': False}</field>
+    </record>
+
+    <!-- EDI sale forwarding record menu items -->
+    <menuitem id="sale_forwarding_record_menu" action="sale_forwarding_record_action" parent="edi.tutorial_menu" sequence="90"/>
+    <menuitem id="sale_line_forwarding_record_menu" action="sale_line_forwarding_record_action" parent="edi.tutorial_menu" sequence="95"/>
+
+    <!-- EDI sale forwarding records field -->
+    <record id="sale_forwarding_document_form" model="ir.ui.view">
+      <field name="name">edi.sale.forwarding.document.form</field>
+      <field name="model">edi.document</field>
+      <field name="inherit_id" ref="edi.document_form"/>
+      <field name="arch" type="xml">
+        <xpath expr="//page[@name='sale_report']" position="after">
+          <page name="sale_forwarding" string="Sale Forwarded" attrs="{'invisible':['!',('rec_type_names','ilike',
+		       '/edi.sale.forward.record/')]}">
+            <field name="sale_forward_ids" readonly="1">
+              <tree>
+                <field name="name"/>
+                <field name="sale_id"/>
+                <field name="sale_ref"/>
+                <field name="partner_id"/>
+              </tree>
+            </field>
+          </page>
+          <page name="sale_line_forwarding" string="Sale Lines" attrs="{'invisible':['!',('rec_type_names','ilike',
+		       '/edi.sale.line.forward.record/')]}">
+            <field name="sale_line_forward_ids" readonly="1">
+              <tree>
+                <field name="name"/>
+                <field name="line_ids" widget="many2many_tags"/>
+                <field name="product_id"/>
+                <field name="qty_ordered"/>
+              </tree>
+            </field>
+          </page>
+        </xpath>
+      </field>
+    </record>
+
+  </data>
+</odoo>
