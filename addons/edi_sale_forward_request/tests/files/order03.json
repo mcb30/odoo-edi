@@ -1,0 +1,37 @@
+{
+    "customers": [
+        {
+            "customer_ref": "16",
+            "customer_type": "person",
+            "name": {
+                "title": "Dame",
+                "name": "Alice"
+            },
+            "address": {
+                "first": "Central Park",
+                "second": "East 74th Street",
+                "town": "New York",
+                "postcode": "10021",
+                "county": "New York"
+            }
+        }
+    ],
+    "orders": [
+        {
+            "customer_ref": "16",
+            "order_ref": "S00012",
+            "lines": [
+                {
+                    "line_ref": "[CXN789H] Computer RAM",
+                    "product_ref": "CXN789H",
+                    "quantity": 5.0
+                },
+                {
+                    "line_ref": "[CXN789U] Computer Display",
+                    "product_ref": "CXN789U",
+                    "quantity": 7.0
+                }
+            ]
+        }
+    ]
+}
