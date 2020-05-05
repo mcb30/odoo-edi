@@ -41,6 +41,8 @@ class EdiPartnerRecord(models.Model):
     BATCH_CREATE = 100
     """Batch size for creating new records"""
 
+    _force_enable_recompute = True
+
     name = fields.Char(string="Internal Reference")
     partner_id = fields.Many2one('res.partner', string="Partner",
                                  required=False, readonly=True, index=True,
@@ -77,7 +79,9 @@ class EdiPartnerRecord(models.Model):
     @api.multi
     def execute(self):
         """Execute records"""
-        super(EdiPartnerRecord, self.with_context(recompute=True)).execute()
+        if self._force_enable_recompute:
+            self = self.with_context(recompute=True)
+        super(EdiPartnerRecord, self).execute()
 
 
 class EdiPartnerTitleRecord(models.Model):
