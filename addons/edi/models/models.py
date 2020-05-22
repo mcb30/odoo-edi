@@ -1,18 +1,22 @@
 """Base model enhancements"""
 
+import logging
 import itertools
 from operator import itemgetter
 from odoo import models
 from .. import tools
+
+_logger = logging.getLogger(__name__)
 
 def add_if_not_exists(cls):
     """Patch class to add a new method"""
     def wrapper(func):
         # pylint: disable=missing-docstring
         if hasattr(cls, func.__name__):
-            raise ImportError("%s.%s is already defined" %
+            _logger.warning("%s.%s is already defined" %
                               (cls.__name__, func.__name__))
-        setattr(cls, func.__name__, func)
+        else:
+            setattr(cls, func.__name__, func)
         return func
     return wrapper
 
