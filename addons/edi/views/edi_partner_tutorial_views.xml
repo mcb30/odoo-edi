@@ -49,7 +49,7 @@
     <record id="partner_tutorial_document_form" model="ir.ui.view">
       <field name="name">edi.partner.tutorial.document.form</field>
       <field name="model">edi.document</field>
-      <field name="inherit_id" ref="edi.document_form"/>
+      <field name="inherit_id" ref="edi.partner_document_form"/>
       <field name="arch" type="xml">
 	<xpath expr="//page[@name='partner']" position="after">
 	  <page name="partner_tutorial" string="Partners"
