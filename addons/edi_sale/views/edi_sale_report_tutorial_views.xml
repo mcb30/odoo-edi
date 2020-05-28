@@ -88,7 +88,7 @@
     <record id="sale_report_tutorial_document_form" model="ir.ui.view">
       <field name="name">edi.sale.report.tutorial.document.form</field>
       <field name="model">edi.document</field>
-      <field name="inherit_id" ref="edi.document_form"/>
+      <field name="inherit_id" ref="edi_sale.sale_report_document_form"/>
       <field name="arch" type="xml">
 	<xpath expr="//page[@name='sale_report']" position="after">
 	  <page name="sale_report_tutorial" string="Sales"

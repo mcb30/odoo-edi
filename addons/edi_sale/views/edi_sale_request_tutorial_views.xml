@@ -82,7 +82,7 @@
     <record id="sale_request_tutorial_document_form" model="ir.ui.view">
       <field name="name">edi.sale.request.tutorial.document.form</field>
       <field name="model">edi.document</field>
-      <field name="inherit_id" ref="edi.document_form"/>
+      <field name="inherit_id" ref="edi_sale.sale_request_document_form"/>
       <field name="arch" type="xml">
 	<xpath expr="//page[@name='sale_request']" position="after">
 	  <page name="sale_request_tutorial" string="Sales"
