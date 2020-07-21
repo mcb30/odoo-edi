@@ -1,4 +1,4 @@
-FROM unipartdigital/odoo-tester
+FROM mcb30/odoo-tester
 
 # Packages
 #
