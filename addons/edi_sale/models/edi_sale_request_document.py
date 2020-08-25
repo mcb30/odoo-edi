@@ -111,6 +111,7 @@ class EdiSaleRequestDocument(models.AbstractModel):
             domain = [('id', 'in', orderless_partners.mapped('id')),
                       ('sale_order_ids', '=', False)]
             Partner.search(domain).unlink()
+            self.report_invalid_records(doc)
 
         # Automatically confirm sale orders, if applicable
         if self._auto_confirm:
@@ -121,3 +122,55 @@ class EdiSaleRequestDocument(models.AbstractModel):
                     self.recompute()
                 _logger.info("%s confirmed %d-%d in %.2fs, %d queries",
                              doc.name, r[0], r[-1], stats.elapsed, stats.count)
+
+    def report_invalid_records(self, doc):
+        """Post a message listing records that were not processed."""
+        PartnerRecord = self.partner_record_model(doc)
+        SaleLineRequestRecord = self.sale_line_request_record_model(doc)
+        SaleRequestRecord = self.sale_request_record_model(doc)
+
+        error_domain = [('doc_id', '=', doc.id), ('error', '!=', False)]
+        lines = SaleLineRequestRecord.search(error_domain)
+        orders = SaleRequestRecord.search(error_domain)
+        partners = PartnerRecord.search(error_domain)
+        message = []
+        if lines:
+            message.extend(self._build_invalid_order_lines_report(lines))
+        if orders:
+            message.extend(self._build_invalid_orders_report(orders))
+        if partners:
+            message.extend(self._build_invalid_partners_report(partners))
+        if message:
+            doc.sudo().with_context(tracking_disable=False).message_post(body='\n'.join(message),
+                                                                         content_subtype='plaintext')
+        return
+
+    def _build_invalid_order_lines_report(self, lines):
+        report_lines = ['Missing order lines']
+        for line in lines:
+            item = '\t'.join([str(x) for x in self._extract_invalid_order_line(line)])
+            report_lines.append(item)
+        return report_lines
+
+    def _extract_invalid_order_line(self, line):
+        return [line.order_key, line.product_key, int(line.qty), line.error]
+
+    def _build_invalid_orders_report(self, orders):
+        report_lines = ['Missing orders']
+        for order in orders:
+            item = '\t'.join([str(x) for x in self._extract_invalid_order_order(order)])
+            report_lines.append(item)
+        return report_lines
+
+    def _extract_invalid_order(self, order):
+        return [order.name, order.error]
+
+    def _build_invalid_partners_report(self, partners):
+        report_lines = ['Missing partners']
+        for partner in partners:
+            item = '\t'.join([str(x) for x in self._extract_invalid_partner(partner)])
+            report_lines.append(item)
+        return report_lines
+
+    def _extract_invalid_partner(self, partner):
+        return [partner.error.replace('\n', ' ')]

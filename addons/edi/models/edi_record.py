@@ -110,6 +110,9 @@ class EdiRecord(models.AbstractModel):
                              required=True, readonly=True, index=True,
                              ondelete='cascade')
 
+    error = fields.Char(string='Error',
+                        help='Records errors in execution')
+
     @api.model
     def _setup_complete(self):
         super()._setup_complete()
@@ -163,10 +166,11 @@ class EdiRecord(models.AbstractModel):
                     if required and not target:
                         try:
                             target = recs.missing_edi_relates(rel, key)
-                        except UserError:
+                        except UserError as ex:
                             if doc.fail_fast:
                                 raise
                             _logger.warning('Suppressed error for missing relate %r, %r, %r', recs, rel, key)
+                            recs.write({'error': ex.name})
                     if target:
                         recs.write({rel.target: target.id})
                     else:
