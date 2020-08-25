@@ -2,6 +2,7 @@
 
 import logging
 from odoo import api, fields, models
+from odoo.exceptions import ValidationError
 from odoo.osv import expression
 from ..tools import batched, Comparator
 
@@ -355,7 +356,22 @@ class EdiSyncRecord(models.AbstractModel):
                         (rec.target_values(rec._record_values())
                          for rec in batch)
                     ))
-                    targets = [Target.create(vals) for vals in vals_list]
+                    if doc.fail_fast:
+                        targets = [Target.create(vals) for vals in vals_list]
+                    else:
+                        targets = []
+                        bad_recs = batch.browse()
+                        for rec, vals in zip(batch, vals_list):
+                            try:
+                                instance = Target.create(vals)
+                                targets.append(instance)
+                            except ValidationError as ex:
+                                _logger.exception('Create Failed to create order for %r, %s', rec, rec.name)
+                                rec.error = ex.name
+                                bad_recs |= rec
+                        if bad_recs:
+                            batch -= bad_recs
+
                     for rec, created in zip(batch, targets):
                         rec[target] = created
                     self.recompute()
