@@ -77,6 +77,11 @@ class EdiDocumentType(models.Model):
     active = fields.Boolean(default=True, string='Active',
                             help='Display in list views or searches.')
 
+    # Control behaviour if an error occurs.
+    fail_fast = fields.Boolean(string="End document execution immediately on error",
+                               help="End document execution immediately on error",
+                               default=True)
+
     _sql_constraints = [('model_uniq', 'unique (model_id)',
                          "The document model must be unique")]
 
@@ -188,6 +193,8 @@ class EdiDocument(models.Model):
     # Record type names (solely for use by views)
     rec_type_names = fields.Char(string="Record Type Names",
                                  compute='_compute_rec_type_names')
+
+    fail_fast = fields.Boolean(related='doc_type_id.fail_fast', read_only=True)
 
     @api.depends('input_ids', 'input_ids.res_id')
     def _compute_input_count(self):
