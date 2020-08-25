@@ -161,7 +161,12 @@ class EdiRecord(models.AbstractModel):
                 for key, recs in batch.groupby(keygetter):
                     target = targets_by_key.get(key)
                     if required and not target:
-                        target = recs.missing_edi_relates(rel, key)
+                        try:
+                            target = recs.missing_edi_relates(rel, key)
+                        except UserError:
+                            if doc.fail_fast:
+                                raise
+                            _logger.warning('Suppressed error for missing relate %r, %r, %r', recs, rel, key)
                     if target:
                         recs.write({rel.target: target.id})
                     else:
@@ -300,5 +305,4 @@ class EdiRecord(models.AbstractModel):
         # can arise when a document has multiple EDI record types, and
         # the execution of earlier EDI records has created objects to
         # which this EDI record refers via a lookup relationship.
-        #
-        self._add_edi_relates(required=self._edi_relates_required)
+        return self._add_edi_relates(required=self._edi_relates_required)
