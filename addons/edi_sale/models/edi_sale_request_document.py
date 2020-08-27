@@ -112,6 +112,7 @@ class EdiSaleRequestDocument(models.AbstractModel):
                       ('sale_order_ids', '=', False)]
             Partner.search(domain).unlink()
             self.report_invalid_records(doc)
+            self._clear_errors(doc)
 
         # Automatically confirm sale orders, if applicable
         if self._auto_confirm:
@@ -174,3 +175,14 @@ class EdiSaleRequestDocument(models.AbstractModel):
 
     def _extract_invalid_partner(self, partner):
         return [partner.error.replace('\n', ' ')]
+
+    def _clear_errors(self, doc):
+        PartnerRecord = self.partner_record_model(doc)
+        SaleLineRequestRecord = self.sale_line_request_record_model(doc)
+        SaleRequestRecord = self.sale_request_record_model(doc)
+
+        error_domain = [('doc_id', '=', doc.id), ('error', '!=', False)]
+        for model in (PartnerRecord, SaleLineRequestRecord, SaleRequestRecord):
+            records = model.search(error_domain)
+            records.write({'error': False})
+        return

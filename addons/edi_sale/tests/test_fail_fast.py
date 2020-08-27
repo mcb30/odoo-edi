@@ -146,17 +146,23 @@ class TestFailFast(EdiSaleCase):
 
     def test07_reports_missing_order_line(self):
         """Test reports missing lines from otherwise valid orders."""
+        SaleRequestDocument = self.env['edi.sale.request.document']
+
         expected_message = '<p>Missing order lines<br>ORD01\tDURIAN\t2\tCannot identify Product "DURIAN"</p>'
         doc = self.create_tutorial('order02.csv', fail_fast=False)
         self.assertTrue(doc.action_execute())
+        SaleLineRequestRecord = SaleRequestDocument.browse().sale_line_request_record_model(doc)
+        error_domain = [('doc_id', '=', doc.id), ('error', '!=', False)]
 
         messages = self.MailMessage.search([('body', 'like', 'Missing order lines%')])
         self.assertEqual(len(messages), 1)
         self.assertEqual(messages[0].body, expected_message)
+        self.assertEqual(SaleLineRequestRecord.search_count(error_domain), 0)
 
     def test08_reports_lines_from_missing_order(self):
         """Test reports lines from completely invalid order."""
         Sale = self.env['sale.order']
+        SaleRequestDocument = self.env['edi.sale.request.document']
 
         expected_message = '<p>Missing order lines<br>ORD02\tBANANA\t2\tCannot identify Quotation "ORD02"</p>'
         create_method = Sale.create
@@ -171,7 +177,10 @@ class TestFailFast(EdiSaleCase):
         doc = self.create_tutorial('order05.csv', fail_fast=False)
         with mock.patch.object(Sale.__class__, 'create', create=True, autospec=True, side_effect=create_sale):
             self.assertTrue(doc.action_execute())
+        SaleLineRequestRecord = SaleRequestDocument.browse().sale_line_request_record_model(doc)
+        error_domain = [('doc_id', '=', doc.id), ('error', '!=', False)]
 
         messages = self.MailMessage.search([('body', 'like', 'Missing order lines%')])
         self.assertEqual(len(messages), 1)
         self.assertEqual(messages[0].body, expected_message)
+        self.assertEqual(SaleLineRequestRecord.search_count(error_domain), 0)
