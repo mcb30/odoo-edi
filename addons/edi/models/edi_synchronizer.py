@@ -333,8 +333,23 @@ class EdiSyncRecord(models.AbstractModel):
                 with self.statistics() as stats:
                     vals_list = [rec.target_values(rec._record_values())
                                  for rec in batch]
-                    for rec, vals in zip(batch, vals_list):
-                        rec[target].write(vals)
+                    if doc.fail_fast:
+                        for rec, vals in zip(batch, vals_list):
+                            rec[target].write(vals)
+                    else:
+                        for rec, vals in zip(batch, vals_list):
+                            try:
+                                # We use a savepoint here to handle the case where
+                                # vals violate an api.constrains on the target.
+                                # These constraints are checked after updates are
+                                # sent to the database, so the offending change
+                                # must be rolled back for the affected object.
+                                with self.env.cr.savepoint():
+                                    rec[target].write(vals)
+                            except ValidationError as ex:
+                                rec[target].invalidate_cache()
+                                rec.error = ex.name
+                                _logger.exception('Failed to update for %r, %s', rec, rec.name)
                     self.recompute()
                 _logger.info("%s updated %s %d-%d in %.2fs, %d excess queries",
                              doc.name, Target._name, offset,
@@ -366,7 +381,7 @@ class EdiSyncRecord(models.AbstractModel):
                                 instance = Target.create(vals)
                                 targets.append(instance)
                             except ValidationError as ex:
-                                _logger.exception('Create Failed to create order for %r, %s', rec, rec.name)
+                                _logger.exception('Failed to create for %r, %s', rec, rec.name)
                                 rec.error = ex.name
                                 bad_recs |= rec
                         if bad_recs:
