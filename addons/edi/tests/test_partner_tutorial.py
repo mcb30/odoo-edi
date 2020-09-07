@@ -1,5 +1,10 @@
 """EDI partner tutorial tests"""
 
+from unittest import mock
+
+from odoo import tools
+from odoo.exceptions import ValidationError
+
 from .common import EdiCase
 
 
@@ -14,8 +19,9 @@ class TestPartnerTutorial(EdiCase):
         )
 
     @classmethod
-    def create_tutorial(cls, *filenames):
+    def create_tutorial(cls, *filenames, fail_fast=True):
         """Create partner tutorial document"""
+        cls.doc_type_tutorial.fail_fast = fail_fast
         return cls.create_input_document(cls.doc_type_tutorial, *filenames)
 
     def test01_basic(self):
@@ -81,3 +87,46 @@ class TestPartnerTutorial(EdiCase):
         self.assertEqual(partners_by_ref['B'].email, 'bob@example.com')
         self.assertEqual(partners_by_ref['E'].title.name, 'Ms')
         self.assertFalse(partners_by_ref['U'].title)
+
+    def test06_does_not_apply_invalid_update_if_failfast_is_off(self):
+        """If fail fast is off, invalid updates should not be applied to their targets"""
+        Partner = self.env['res.partner']
+        doc1 = self.create_tutorial('friends.csv')
+        self.assertTrue(doc1.action_execute())
+        partners = doc1.mapped('partner_tutorial_ids.partner_id')
+        self.assertEqual(len(partners), 4)
+        partners_by_ref = {x.ref: x for x in partners}
+        self.assertFalse(partners_by_ref['U'].title)
+        doc2 = self.create_tutorial('update_untitled.csv', fail_fast=False)
+        self.assertTrue(doc2.action_prepare())
+        with mock.patch.object(Partner.__class__, 'write', create=True,
+                               autospec=True,
+                               side_effect=ValidationError('Test Error')):
+            with tools.mute_logger('odoo.addons.edi.models.edi_synchronizer'):
+                self.assertTrue(doc2.action_execute())
+        partners = doc2.mapped('partner_tutorial_ids.partner_id')
+        self.assertEqual(len(partners), 1)
+        self.assertEqual(partners.ref, 'U')
+        self.assertEqual(partners.email, 'untitled@example.com')
+        self.assertFalse(partners.title)
+
+    def test07_does_not_create_invalid_partners_if_failfast_is_off(self):
+        """If fail fast is off, we create only valid customers"""
+        Partner = self.env['res.partner']
+        create_method = Partner.create
+
+        def create_partner(*args, **kw):
+            cls, vals = args
+            if vals['name'] == 'Untitled':
+                return ValidationError('Test Error')
+            return create_method(vals)
+
+        doc = self.create_tutorial('friends.csv', fail_fast=False)
+        with mock.patch.object(Partner.__class__, 'create', create=True, autospec=True, side_effect=create_partner):
+            self.assertTrue(doc.action_execute())
+        partners = doc.mapped('partner_tutorial_ids.partner_id')
+        self.assertEqual(len(partners), 3)
+        partners_by_ref = {x.ref: x for x in partners}
+        self.assertEqual(partners_by_ref['A'].name, 'Alice')
+        self.assertEqual(partners_by_ref['B'].email, 'bob@example.com')
+        self.assertEqual(partners_by_ref['E'].title.name, 'Ms')
