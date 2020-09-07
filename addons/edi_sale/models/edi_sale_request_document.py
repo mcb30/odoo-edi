@@ -97,20 +97,12 @@ class EdiSaleRequestDocument(models.AbstractModel):
         """Execute document"""
         super().execute(doc)
 
-        # Delete sale orders which no longer have any order lines.
-        Partner = self.env['res.partner']
         SaleRequestRecord = self.sale_request_record_model(doc)
         reqs = SaleRequestRecord.search([('doc_id', '=', doc.id)])
 
         if not doc.fail_fast:
-            to_remove = reqs.mapped('sale_id').filtered(lambda s: len(s.mapped('order_line')) == 0)
-            orderless_partners = to_remove.mapped('partner_id')
-            to_remove.unlink()
-            # Remove partners with no orders in the current document and no
-            # historic orders.
-            domain = [('id', 'in', orderless_partners.mapped('id')),
-                      ('sale_order_ids', '=', False)]
-            Partner.search(domain).unlink()
+            self.remove_sales_for_invalid_partner_updates(doc)
+            self.remove_empty_orders(doc, reqs)
             self.report_invalid_records(doc)
             self._clear_errors(doc)
 
@@ -123,6 +115,39 @@ class EdiSaleRequestDocument(models.AbstractModel):
                     self.recompute()
                 _logger.info("%s confirmed %d-%d in %.2fs, %d queries",
                              doc.name, r[0], r[-1], stats.elapsed, stats.count)
+
+    def remove_sales_for_invalid_partner_updates(self, doc):
+        """Remove sale orders for partners with invalid updates."""
+        PartnerRecord = self.partner_record_model(doc)
+        SaleRequestRecord = self.sale_request_record_model(doc)
+
+        # Identify EDI partners with invalid updates which are either parents
+        # or individuals.
+        invalid_partners = PartnerRecord.search([('error', '!=', False),
+                                                 ('parent_id', '=', False),
+                                                 ('doc_id', '=', doc.id)])
+        # Identify EDI partners which are children of invalid parents.
+        invalid_children = PartnerRecord.search([('parent_id', 'in', invalid_partners.mapped('partner_id').ids)])
+        invalid_partners |= invalid_children
+        # Identify sale orders created for invalid partners.
+        invalid_sales = SaleRequestRecord.search([('doc_id', '=', doc.id),
+                                                  ('customer_id', 'in', invalid_partners.mapped('partner_id').ids)])
+        invalid_sales.mapped('sale_id').unlink()
+        return
+
+    def remove_empty_orders(self, doc, reqs):
+        """Delete sale orders with no order lines, and related partners."""
+        Partner = self.env['res.partner']
+
+        to_remove = reqs.mapped('sale_id').filtered(lambda s: len(s.mapped('order_line')) == 0)
+        orderless_partners = to_remove.mapped('partner_id')
+        to_remove.unlink()
+        # Remove partners with no orders in the current document and no
+        # historic orders.
+        domain = [('id', 'in', orderless_partners.mapped('id')),
+                  ('sale_order_ids', '=', False)]
+        Partner.search(domain).unlink()
+        return
 
     def report_invalid_records(self, doc):
         """Post a message listing records that were not processed."""
