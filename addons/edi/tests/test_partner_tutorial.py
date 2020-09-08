@@ -74,7 +74,7 @@ class TestPartnerTutorial(EdiCase):
         self.assertEqual(len(partners), 1)
         self.assertEqual(partners.ref, 'U')
         self.assertEqual(partners.email, 'untitled@example.com')
-        self.assertTrue(partners.title, dame_title)
+        self.assertEqual(partners.title, dame_title)
 
     def test05_doppelganger(self):
         """Test that if a partner is repeated it is correctly ingested"""
