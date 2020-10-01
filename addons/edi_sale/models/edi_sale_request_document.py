@@ -103,8 +103,8 @@ class EdiSaleRequestDocument(models.AbstractModel):
         if not doc.fail_fast:
             self.remove_sales_for_invalid_partner_updates(doc)
             self.remove_empty_orders(doc, reqs)
-            self.report_invalid_records(doc)
-            self._clear_errors(doc)
+            if self.report_invalid_records(doc):
+                self._clear_errors(doc)
 
         # Automatically confirm sale orders, if applicable
         if self._auto_confirm:
@@ -150,7 +150,10 @@ class EdiSaleRequestDocument(models.AbstractModel):
         return
 
     def report_invalid_records(self, doc):
-        """Post a message listing records that were not processed."""
+        """Post a message listing records that were not processed.
+
+        Returns True if there are records with errors, False otherwise.
+        """
         PartnerRecord = self.partner_record_model(doc)
         SaleLineRequestRecord = self.sale_line_request_record_model(doc)
         SaleRequestRecord = self.sale_request_record_model(doc)
@@ -169,7 +172,7 @@ class EdiSaleRequestDocument(models.AbstractModel):
         if message:
             doc.sudo().with_context(tracking_disable=False).message_post(body='\n'.join(message),
                                                                          content_subtype='plaintext')
-        return
+        return any([lines, orders, partners])
 
     def _build_invalid_order_lines_report(self, lines):
         report_lines = ['Missing order lines']
