@@ -1,4 +1,4 @@
-FROM unipartdigital/odoo-tester
+FROM unipartdigital/odoo-tester:13.0
 
 # Packages
 #
