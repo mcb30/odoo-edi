@@ -3,6 +3,7 @@ FROM unipartdigital/odoo-tester
 # Packages
 #
 RUN dnf install -y python3-paramiko python3-ply ; dnf clean all
+RUN pip3 install jsonschema
 
 # Prerequisite module installation (without tests)
 #
@@ -14,4 +15,4 @@ ADD addons /opt/odoo-addons
 
 # Module tests
 #
-CMD ["--test-enable", "-i", "edi,edi_product,edi_stock,edi_sale"]
+CMD ["--test-enable", "-i", "edi,edi_product,edi_stock,edi_sale,edi_sale_forward_request"]
