@@ -116,19 +116,17 @@ class EdiSaleRequestDocument(models.AbstractModel):
                 _logger.info("%s confirmed %d-%d in %.2fs, %d queries",
                              doc.name, r[0], r[-1], stats.elapsed, stats.count)
 
+    def get_invalid_partners(self, doc):
+        """Identify and return EDI partner records with invalid updates"""
+        PartnerRecord = self.partner_record_model(doc)
+        invalid_partners = PartnerRecord.search([('error', '!=', False), ('doc_id', '=', doc.id)])
+        return invalid_partners
+
     def remove_sales_for_invalid_partner_updates(self, doc):
         """Remove sale orders for partners with invalid updates."""
-        PartnerRecord = self.partner_record_model(doc)
         SaleRequestRecord = self.sale_request_record_model(doc)
 
-        # Identify EDI partners with invalid updates which are either parents
-        # or individuals.
-        invalid_partners = PartnerRecord.search([('error', '!=', False),
-                                                 ('parent_id', '=', False),
-                                                 ('doc_id', '=', doc.id)])
-        # Identify EDI partners which are children of invalid parents.
-        invalid_children = PartnerRecord.search([('parent_id', 'in', invalid_partners.mapped('partner_id').ids)])
-        invalid_partners |= invalid_children
+        invalid_partners = self.get_invalid_partners(doc)
         # Identify sale orders created for invalid partners.
         invalid_sales = SaleRequestRecord.search([('doc_id', '=', doc.id),
                                                   ('customer_id', 'in', invalid_partners.mapped('partner_id').ids)])

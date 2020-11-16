@@ -1,6 +1,7 @@
 """EDI sale order forward request tests"""
 
 from odoo.addons.edi_sale.tests.common import EdiSaleCase
+from jsonschema.exceptions import ValidationError
 
 
 class TestSaleForwardRequest(EdiSaleCase):
@@ -52,9 +53,11 @@ class TestSaleForwardRequest(EdiSaleCase):
         self.assertEqual(len(order_line), 1)
         self.assertEqual(order_line.product_uom_qty, 7.0)
 
-    def test01_invalid_json(self):
+    def test02_invalid_json(self):
         """Test json schema validation with invalid json"""
         doc = self.create_edi_document("order02.json")
-        doc.action_execute()
-        self.assertEqual(len(doc.issue_ids), 1)
-        self.assertTrue("Failed validating" in doc.issue_ids.name)
+        with self.assertRaisesIssue(doc, exception=ValidationError):
+            self.assertFalse(doc.action_execute())
+
+            doc.issue_ids.ensure_one()
+            self.assertTrue("'test' is not one of ['person', 'company']" in doc.issue_ids.name)
