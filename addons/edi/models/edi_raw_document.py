@@ -14,7 +14,7 @@ OPTIONS = {
 
 TRIAL_COUNT = 10
 
-MODEL_PATTERN = re.compile(r'.*?(?P<model>([a-z]+\.)+[a-z]+)$')
+MODEL_PATTERN = re.compile(r'.*?(?P<model>([a-z]+\_?[a-z]+\.)+([a-z]+\_?[a-z]+))$')
 
 
 class TrialImport(Exception):
