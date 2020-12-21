@@ -86,6 +86,12 @@ class EdiRecord(models.AbstractModel):
     BATCH_UPDATE = property(attrgetter('BATCH_SIZE'))
     """Batch size for updating existing records"""
 
+    CLEAR_CACHE_PREPARE = 0
+    """Number of records where to clear cache on PREPARE: 0 for disabled"""
+
+    CLEAR_CACHE_EXECUTE = 0
+    """Number of records where to clear cache on EXECUTE: 0 for disabled"""
+
     _edi_relates = ()
     """EDI lookup relationships"""
 

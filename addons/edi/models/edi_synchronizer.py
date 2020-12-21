@@ -181,6 +181,16 @@ class EdiSyncRecord(models.AbstractModel):
         return record_vals
 
     @api.model
+    def check_clear_cache(self, threshold, value):
+        """Check if cache has to be invalidated from the threshold, where 0 means
+        disabled."""
+        if threshold and threshold <= value:
+            value = 0
+            self.invalidate_cache()
+
+        return value
+
+    @api.model
     def prepare(self, doc, vlist):
         """Prepare records"""
         super().prepare(doc, self.elide(doc, vlist))
@@ -223,6 +233,7 @@ class EdiSyncRecord(models.AbstractModel):
         # Initialise statistics
         total = 0
         count = 0
+        clear_cache_count = 0
         stats = self.statistics()
 
         # Process records in batches for efficiency
@@ -230,7 +241,9 @@ class EdiSyncRecord(models.AbstractModel):
 
             _logger.info("%s preparing %s %d-%d",
                          doc.name, self._name, r[0], r[-1])
-            total += len(r)
+            len_r = len(r)
+            total += len_r
+            clear_cache_count += len_r
 
             # Add EDI lookup relationship target IDs where known
             self._add_edi_relates_vlist(vbatch)
@@ -270,7 +283,7 @@ class EdiSyncRecord(models.AbstractModel):
                 # Create EDI record
                 count += 1
                 yield record_vals
-
+            clear_cache_count = self.check_clear_cache(self.CLEAR_CACHE_PREPARE, clear_cache_count)
         # Process all matched target records
         self.matched(doc, Target.browse(matched_ids))
 
@@ -314,6 +327,7 @@ class EdiSyncRecord(models.AbstractModel):
         # Process records in order of lookup relationship readiness
         remaining = self
         offset = 0
+        clear_cache_count = 0
         while remaining:
 
             # Identify records for which all lookup relationships are ready
@@ -356,6 +370,8 @@ class EdiSyncRecord(models.AbstractModel):
                              (offset + count - 1), stats.elapsed,
                              (stats.count - count))
                 offset += count
+                clear_cache_count += count
+                clear_cache_count = self.check_clear_cache(self.CLEAR_CACHE_EXECUTE, clear_cache_count)
 
             # Create new target records
             new = ready.filtered(lambda x: not x[target])
@@ -395,6 +411,9 @@ class EdiSyncRecord(models.AbstractModel):
                              (offset + count - 1), stats.elapsed,
                              (stats.count - 2 * count))
                 offset += count
+                clear_cache_count += count
+                clear_cache_count = self.check_clear_cache(self.CLEAR_CACHE_EXECUTE, clear_cache_count)
+
 
 
 class EdiDeactivatorRecord(models.AbstractModel):
