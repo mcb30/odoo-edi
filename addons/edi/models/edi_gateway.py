@@ -105,6 +105,13 @@ class EdiGateway(models.Model):
     can_initiate = fields.Boolean(string="Initiate Connections",
                                   compute='_compute_can_initiate')
     server = fields.Char(string="Server Address")
+    # Map the server address to the desired server
+    outgoing_server_id = fields.Many2one(
+        'ir.mail_server',
+        string="Outgoing Server",
+        compute='_compute_outgoing_server_id',
+        readonly=True,
+    )
     timeout = fields.Float(string="Timeout (in seconds)")
     safety = fields.Char(
         string="Safety Catch",
@@ -215,6 +222,34 @@ class EdiGateway(models.Model):
                 gw.ssh_host_fingerprint = ':'.join('%02x' % x for x in digest)
             else:
                 gw.ssh_host_fingerprint = None
+
+    @api.multi
+    @api.depends('server', 'port')
+    def _compute_outgoing_server_id(self):
+        """Get the outgoing server from the smtp host name and port if supplied"""
+        MailServer = self.env['ir.mail_server']
+        for gw in self:
+            if gw.server:
+                domain = [('smtp_host', '=', gw.server)]
+                if gw.port:
+                    domain += [('smtp_port', '=', gw.port)]
+                # Order the servers by priority as is default behaviour
+                server = MailServer.search(domain, order='sequence asc',
+                                           limit=1)
+                if server:
+                    gw.outgoing_server_id = server
+                    _logger.info("Outgoing server for '%s' set to '%s' with "
+                                 "address %s", gw.name, server.name, gw.server)
+                else:
+                    _logger.warning("Outgoing server '%s' not found - will "
+                                    "use the server with the lowest priority",
+                                    gw.server)
+                    gw.outgoing_server_id = False
+            else:
+                # Server set to default
+                _logger.info("No outgoing server set - will use the server "
+                             "with the lowest priority")
+                gw.outgoing_server_id = False
 
     @api.multi
     @api.constrains('password', 'config_password')

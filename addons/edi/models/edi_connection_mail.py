@@ -31,7 +31,7 @@ class EdiConnectionMail(models.AbstractModel):
         pass
 
     @api.model
-    def send_outputs(self, _conn, path, _transfer):
+    def send_outputs(self, _conn, path, transfer):
         """Send output attachments"""
         Attachment = self.env['ir.attachment']
         Document = self.env['edi.document']
@@ -76,6 +76,9 @@ class EdiConnectionMail(models.AbstractModel):
             vals['res_id'] = path.id
             vals['email_to'] = path.path
             vals['attachment_ids'] = [(6, 0, [x.id for x in attachments])]
+            outgoing_server = transfer.gateway_id.outgoing_server_id
+            if outgoing_server:
+                vals['mail_server_id'] = outgoing_server.id
             mail = Mail.create(vals)
 
             # Send e-mail
