@@ -196,6 +196,11 @@ class EdiSyncRecord(models.AbstractModel):
         super().prepare(doc, self.elide(doc, vlist))
 
     @api.model
+    def comparator(self):
+        """Get comparator class for record elision"""
+        return Comparator
+
+    @api.model
     def elide(self, doc, vlist):
         """Elide records that would not result in a modification
 
@@ -225,6 +230,7 @@ class EdiSyncRecord(models.AbstractModel):
         matched_ids = set()
 
         # Construct comparator for target model
+        Comparator = self.comparator()
         comparator = Comparator(Target)
 
         # Construct produced values cache for deduplication
