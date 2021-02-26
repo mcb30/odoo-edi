@@ -139,7 +139,7 @@ class EdiCase(common.SavepointCase):
         try:
             maxDiff = self.maxDiff
             self.maxDiff = None
-            self.assertEqual(decode(base64.b64decode(attachment.datas)),
+            self.assertEqual(decode(base64.b64decode(attachment.datas or b"")),
                              decode(data))
         finally:
             self.maxDiff = maxDiff
