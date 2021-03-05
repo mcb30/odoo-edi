@@ -39,15 +39,44 @@ def groupby(self, key, sort=True):
     a non-arbitrary ordering is required, then use :meth:`~.sorted` to
     sort the recordset first, then pass to :meth:`~.groupby` with
     ``sort=False``.
+
+    Any recordsets within a tuple in ``key`` will be replaced with a list of IDs from each
+    recordset.
     """
+    def tuple_contains_recordset(tup):
+        """Returns True if the supplied tuple contains a recordset, otherwise False"""
+        for item in tup:
+            if isinstance(item, models.BaseModel):
+                return True
+        return False
+
+    def get_ids_from_recordset_in_tuple(tup):
+        """
+        Replaces each Recordset found within the supplied tuple
+        with a list of ids from that recordset
+        """
+        temp_key = []
+        for item in tup:
+            next_key = item
+            if isinstance(next_key, models.BaseModel):
+                next_key = next_key.ids
+            elif isinstance(next_key, tuple) and tuple_contains_recordset(next_key):
+                next_key = get_ids_from_recordset_in_tuple(next_key)
+            temp_key.append(next_key)
+        return tuple(temp_key)
+
     recs = self
     if isinstance(key, str):
         key = itemgetter(key)
     if sort:
-        if recs and isinstance(key(next(iter(recs))), models.BaseModel):
-            recs = recs.sorted(key=lambda x: key(x).ids)
-        else:
-            recs = recs.sorted(key=key)
+        if recs:
+            first_key = key(next(iter(recs)))
+            if isinstance(first_key, models.BaseModel):
+                recs = recs.sorted(key=lambda x: key(x).ids)
+            elif isinstance(first_key, tuple) and tuple_contains_recordset(first_key):
+                recs = recs.sorted(key=lambda x: get_ids_from_recordset_in_tuple(key(x)))
+            else:
+                recs = recs.sorted(key=key)
     return ((k, self.browse(x.id for x in v))
             for k, v in itertools.groupby(recs, key=key))
 
