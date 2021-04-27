@@ -338,8 +338,13 @@ class EdiSyncRecord(models.AbstractModel):
 
             # Identify records for which all lookup relationships are ready
             ready = remaining._add_edi_relates(required=False)
-            if remaining and not ready:
-                remaining._add_edi_relates(required=True)
+            if not ready:
+                ready = remaining._add_edi_relates(required=True)
+            if not ready:
+                # No more progress can be made. Do not raise an error, since
+                # fail_fast must be off here, otherwise
+                # _add_edi_relates(required=True) would have already raised one.
+                break
             remaining -= ready
 
             # Update existing target records
