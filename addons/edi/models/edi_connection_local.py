@@ -165,7 +165,7 @@ class EdiConnectionLocal(models.AbstractModel):
             # Write file with temporary filename
             _logger.info("%s writing %s", transfer.gateway_id.name, filepath)
             temppath = filepath.with_name('.%s~' % uuid.uuid4().hex)
-            temppath.write_bytes(base64.b64decode(attachment.datas))
+            temppath.write_bytes(base64.b64decode(attachment.datas or b''))
 
             # Rename temporary file
             temppath.rename(filepath)
