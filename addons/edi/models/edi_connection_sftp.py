@@ -158,7 +158,7 @@ class EdiConnectionSFTP(models.AbstractModel):
             temppath = os.path.join(path.path, ('.%s~' % uuid.uuid4().hex))
             filepath = os.path.join(path.path, attachment.datas_fname)
             _logger.info("%s sending %s", transfer.gateway_id.name, filepath)
-            data = base64.b64decode(attachment.datas)
+            data = base64.b64decode(attachment.datas or b'')
             conn.file(temppath, mode='wb').write(data)
 
             # Rename temporary file
