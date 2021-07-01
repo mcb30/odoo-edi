@@ -13,6 +13,7 @@ class MailThread(models.AbstractModel):
     _inherit = 'mail.thread'
 
     @api.multi
+    @api.returns('mail.message', lambda value: value.id)
     def message_post(self, *args, **kwargs):
         """Post message"""
         if self._context.get('tracking_disable'):
