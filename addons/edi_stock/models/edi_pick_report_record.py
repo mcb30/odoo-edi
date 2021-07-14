@@ -37,7 +37,7 @@ class EdiPickReportRecord(models.Model):
     _description = "Stock Transfer Report"
 
     pick_id = fields.Many2one('stock.picking', string="Transfer",
-                              required=True, readonly=True, index=True)
+                              readonly=True, index=True)
 
     _sql_constraints = [('doc_name_uniq', 'unique (doc_id, name)',
                          "Each name may appear at most once per document")]
