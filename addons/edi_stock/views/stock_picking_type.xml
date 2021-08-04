@@ -7,11 +7,15 @@
       <field name="model">stock.picking.type</field>
       <field name="inherit_id" ref="stock.view_picking_type_form"/>
       <field name="arch" type="xml">
-	<xpath expr="//form/sheet/group[last()]" position="after">
-	  <group name="edi_config" string="EDI Config">
-	    <field name="edi_pick_report_autoemit"/>
-	  </group>
-	</xpath>
+        <xpath expr="//form/sheet/group[last()]" position="after">
+          <group name="edi_config" string="EDI Config">
+            <field name="edi_pick_report_autoemit"/>
+            <field name="x_enable_pick_cancellation_email_notifs"/>
+            <field name="x_pick_cancellation_email_notif_template_id" attrs="{
+              'invisible': [('x_enable_pick_cancellation_email_notifs', '=', False)],
+              'required': [('x_enable_pick_cancellation_email_notifs', '=', True)]}" options="{'no_create': True}"/>
+          </group>
+        </xpath>
       </field>
     </record>
 

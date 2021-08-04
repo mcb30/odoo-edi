@@ -17,6 +17,19 @@ class StockPickingType(models.Model):
         help="Create EDI pick report documents automatically",
         default=False,
     )
+    x_enable_pick_cancellation_email_notifs = fields.Boolean(
+        string="Enable Pick Cancellation Notifications",
+        default=False,
+        help="""
+        When a pick using this picking type is cancelled,
+        send an email out using the template defined in u_pick_cancellation_email_notif_template
+        """,
+    )
+    x_pick_cancellation_email_notif_template_id = fields.Many2one(
+        comodel_name="mail.template",
+        string="Pick Cancellation Email Template",
+        help="The email template to use for pick cancellation emails",
+    )
 
     @api.multi
     def action_edi_pick_report(self):

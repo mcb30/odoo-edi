@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+        <!-- Move Cancellation sequence -->
+        <record id="sequence_edi_move_cancellation" model="ir.sequence">
+            <field name="name">Move Cancellation</field>
+            <field name="prefix">MCAN</field>
+            <field name="padding" eval="5" />
+        </record>
+        <!-- Move Cancellation record type -->
+        <record id="edi_record_type_move_cancellation" model="edi.record.type">
+            <field name="name">Move Cancellation</field>
+            <field name="sequence">67</field>
+            <field name="model_id" ref="model_edi_record_stock_cancellation" />
+        </record>
+        <!-- Move Cancellation document type -->
+        <record id="edi_document_type_move_cancellation" model="edi.document.type">
+            <field name="name">Move Cancellation</field>
+            <field name="model_id" ref="model_edi_document_stock_cancellation" />
+            <field name="sequence">23</field>
+            <field name="sequence_id" ref="sequence_edi_move_cancellation" />
+            <field name="rec_type_ids" eval="[(6, False, [
+          ref('edi_record_type_move_cancellation'),
+        ])]" />
+            <!-- pick_type_ids will be determined based on which ones have
+            x_enable_pick_cancellation_email_notifs set -->
+        </record>
+
+        <!-- Intended as a baseline template for Move Cancellation EDI -->
+        <record id="move_cancellation_template" model="mail.template">
+            <field name="name">Move Cancellation</field>
+            <field name="model_id" ref="model_edi_record_stock_cancellation" />
+            <field name="auto_delete" eval="False" />
+            <field name="email_from">${user.name} &lt;${user.email | safe}&gt;</field>
+            <field name="subject">Cancellation For ${object.order_reference | safe}</field>
+            <field name="body_html">
+                <![CDATA[
+        <p>Products have been cancelled from <span style="font-weight: bold;">${object.order_reference}</span> for the following customer:</p>
+        <p>
+            % if object.customer_id.company_type != 'company':
+                ${object.customer_id.name}<br/>
+            % endif
+            ${object.customer_id.contact_address.replace("\n", "<br/>") | safe}</p>
+        <h3>The following product(s) have been cancelled:</h3>
+        <!-- Table is built in divs because Odoo WYSIWYG editor
+            butchers for loops in tables if you edit & save the template -->
+        <div style="display:table;">
+            <div style="display:table-header-group;">
+                <div style="display:table-row;">
+                    <div style="display:table-cell; padding: 0px 5px;">Part Number</div>
+                    <div style="display:table-cell; padding: 0px 5px;">Quantity Ordered</div>
+                    <div style="display:table-cell; padding: 0px 5px;">Cancelled By</div>
+                </div>
+            </div>
+            <div style="display:table-row-group;">
+                %for move in object.move_ids:
+                    <div style="display:table-row;">
+                        <div style="display:table-cell; padding: 0px 5px;">${move.product_id.name_get()[0][1]}</div>
+                        <div style="display:table-cell; padding: 0px 5px;">
+                            % if move.sale_line_id:
+                                ${move.sale_line_id.product_uom_qty}
+                            % else:
+                                ${move.product_uom_qty}
+                            % endif
+                        </div>
+                        <div style="display:table-cell; padding: 0px 5px;">${move.write_uid.name}</div>
+                    </div>
+                % endfor
+            </div>
+        </div>
+        ]]>
+            </field>
+        </record>
+    </data>
+</odoo>
