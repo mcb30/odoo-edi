@@ -4,7 +4,7 @@ from base64 import b64decode, b64encode
 from collections import namedtuple
 import logging
 from odoo import api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 from odoo.tools.translate import _
 from ..tools import NoRecordValuesError
 
@@ -84,6 +84,11 @@ class EdiDocumentType(models.Model):
 
     _sql_constraints = [('model_uniq', 'unique (model_id)',
                          "The document model must be unique")]
+
+    # optionally enforce document name globs
+    enforce_filename = fields.Boolean(string="Enforce document filenames follow glob pattern",
+                                  help="Enforce document filenames follow glob pattern",
+                                  default=True)
 
     @api.model
     def autocreate(self, inputs):
