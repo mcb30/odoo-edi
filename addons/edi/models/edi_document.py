@@ -82,6 +82,11 @@ class EdiDocumentType(models.Model):
                                help="End document execution immediately on error",
                                default=True)
 
+    # optionally enforce document name globs
+    enforce_filename = fields.Boolean(string="Enforce Document Filenames",
+                                  help="Enforce document filenames follow glob pattern",
+                                  default=False)
+
     _sql_constraints = [('model_uniq', 'unique (model_id)',
                          "The document model must be unique")]
 
