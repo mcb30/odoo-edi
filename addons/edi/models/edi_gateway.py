@@ -376,23 +376,23 @@ class EdiGateway(models.Model):
         Model = self.env[self.model_id.model]
         try:
             # pylint: disable=broad-except
-            if self.safety:
-                section, _sep, key = self.safety.rpartition('.')
-                safety = config.get_misc(section or 'edi', key)
-                if safety is None:
-                    raise UserError(_("Missing configuration option '%s'") %
+            section, _sep, key = self.safety.rpartition('.')
+            conf_file_safety = config.get_misc(section or 'edi', key)
+            if conf_file_safety is None:
+                raise UserError(_("Missing configuration option '%s'") %
                                     self.safety)
-                if not safety:
-                    raise UserError(_("Gateway disabled via configuration "
-                                      "option '%s'") % self.safety)
-            if conn is not None:
-                with self.env.cr.savepoint(), self.env.clear_upon_failure():
-                    transfer.do_transfer(conn)
-            else:
-                with Model.connect(self) as auto_conn,\
-                        self.env.cr.savepoint(),\
-                        self.env.clear_upon_failure():
-                    transfer.do_transfer(auto_conn)
+            if not conf_file_safety:
+                raise UserError(_("Gateway disabled via configuration "
+                                    "option '%s'") % self.safety)
+            if self.safety and conf_file_safety:
+                if conn is not None:
+                    with self.env.cr.savepoint(), self.env.clear_upon_failure():
+                        transfer.do_transfer(conn)
+                else:
+                    with Model.connect(self) as auto_conn,\
+                            self.env.cr.savepoint(),\
+                            self.env.clear_upon_failure():
+                        transfer.do_transfer(auto_conn)
         except Exception as err:
             transfer.raise_issue(_("Transfer failed: %s"), err)
         return transfer
