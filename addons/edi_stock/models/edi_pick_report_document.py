@@ -153,6 +153,7 @@ class EdiPickReportDocument(models.AbstractModel):
         Move = self.env['stock.move']
         # Lock pickings to prevent concurrent report generation attempts
         picks = Picking.search(self.pick_report_domain(doc), order='id')
+        picks = self.filter_picks(picks, doc)
         if self._edi_pick_report_via is not None:
             picks.write({self._edi_pick_report_via: False})
         # Construct move list, if applicable
@@ -181,3 +182,7 @@ class EdiPickReportDocument(models.AbstractModel):
                 raise UserError(_("Report already generated for %s") %
                                 ", ".join(reported_picks.mapped('name')))
             picks.write({self._edi_pick_report_via: doc.id})
+
+    def filter_picks(self, picks, doc):
+        """Method to be override in specific EDI-s when needed"""
+        return picks
