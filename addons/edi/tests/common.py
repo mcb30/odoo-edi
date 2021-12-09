@@ -188,3 +188,19 @@ class EdiCase(common.SavepointCase):
 
         # Delete the raised issue
         new_issue_ids.unlink()
+
+    def _execute_edi_for(self, document_type):
+        """
+        Create, execute, and return an edi document of the given edi.document.type
+
+        Due to the way CRON execution can lead to race conditions in unit tests
+        we have a function that runs the execution synchronously and also returns
+        the created document to save extra calls
+
+        :param: document_type: edi.document.type which should be created and executed
+        :returns: edi.document recordset
+        """
+        EdiDocument = self.env["edi.document"]
+        doc = EdiDocument.create({'doc_type_id': document_type.id})
+        doc.action_execute()
+        return doc
