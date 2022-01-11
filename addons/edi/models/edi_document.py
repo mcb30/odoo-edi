@@ -57,7 +57,7 @@ class EdiDocumentType(models.Model):
     name = fields.Char(string="Name", required=True, index=True)
     model_id = fields.Many2one('ir.model', string="Document Model",
                                domain=[('is_edi_document', '=', True)],
-                               required=True, index=True)
+                               required=True, index=True, ondelete='cascade')
     rec_type_ids = fields.Many2many('edi.record.type', string="Record Types")
 
     # Autodetection order when detecting a document type based upon

@@ -43,5 +43,5 @@ class EdiRawRecord(models.Model):
     _inherit = 'edi.record'
     _description = "Raw Record"
 
-    model_id = fields.Many2one('ir.model', string="Model", required=True)
+    model_id = fields.Many2one('ir.model', string="Model", required=True, ondelete='cascade')
     res_id = fields.Integer(string="Record ID", index=True, required=True)

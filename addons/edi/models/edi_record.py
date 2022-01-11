@@ -60,7 +60,7 @@ class EdiRecordType(models.Model):
 
     name = fields.Char(string="Name", required=True, index=True)
     model_id = fields.Many2one('ir.model', string="Record Model",
-                               required=True)
+                               required=True, ondelete=('cascade'))
     doc_type_ids = fields.Many2many('edi.document.type',
                                     string="Document Types")
     sequence = fields.Integer(string="Sequence", help="Application Order")

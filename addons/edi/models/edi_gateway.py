@@ -19,7 +19,7 @@ class ServerActions(models.Model):
 
     _inherit = 'ir.actions.server'
 
-    state = fields.Selection(selection_add=[('edi', "EDI Transfer")])
+    state = fields.Selection(selection_add=[('edi', "EDI Transfer")], ondelete={'edi': 'set default'})
     edi_gateway_id = fields.Many2one('edi.gateway', string="EDI Gateway",
                                      index=True, ondelete='cascade')
 
@@ -101,7 +101,7 @@ class EdiGateway(models.Model):
     name = fields.Char(string="Name", required=True, index=True)
     model_id = fields.Many2one('ir.model', string="Connection Model",
                                domain=[('is_edi_connection', '=', True)],
-                               required=True, index=True)
+                               required=True, index=True, ondelete='cascade')
     can_initiate = fields.Boolean(string="Initiate Connections",
                                   compute='_compute_can_initiate')
     server = fields.Char(string="Server Address")
