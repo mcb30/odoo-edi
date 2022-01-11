@@ -315,6 +315,8 @@ class EdiDocument(models.Model):
         Parse input attachments and create corresponding EDI records.
         """
         self.ensure_one()
+        # TODO Consider a better way of getting around the permissions
+        self = self.sudo()
         # Lock document
         self.lock_for_action()
         # Check document state
@@ -350,6 +352,8 @@ class EdiDocument(models.Model):
     def action_unprepare(self):
         """Return Prepared document to Draft state"""
         self.ensure_one()
+        # TODO Consider a better way of getting around the permissions
+        self = self.sudo()
         # Lock document
         self.lock_for_action()
         # Check document state
@@ -376,6 +380,8 @@ class EdiDocument(models.Model):
         Parse EDI records and update database.
         """
         self.ensure_one()
+        # TODO Consider a better way of getting around the permissions
+        self = self.sudo()
         # Lock document
         self.lock_for_action()
         # Automatically prepare document if needed
@@ -416,6 +422,8 @@ class EdiDocument(models.Model):
     def action_cancel(self):
         """Cancel document"""
         self.ensure_one()
+        # TODO Consider a better way of getting around the permissions
+        self = self.sudo()
         # Lock document
         self.lock_for_action()
         # Check document state

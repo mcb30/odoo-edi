@@ -98,6 +98,7 @@ class EdiRawDocument(models.AbstractModel):
             # Most likely an unrecognised column heading
             raise UserError(_("Unrecognised header \"%s\"") % e.args[0]) from e
         finally:
+            # sudo() added to action_prepare to allow this
             importer.unlink()
 
         # Raise any errors from the import
