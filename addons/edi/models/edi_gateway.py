@@ -350,6 +350,8 @@ class EdiGateway(models.Model):
                 if not safety:
                     raise UserError(_("Gateway disabled via configuration "
                                       "option '%s'") % self.safety)
+            else:
+                raise UserError(_("Gateway disabled as safety catch on gateway '%s' not configured.") % self.name)
             if conn is not None:
                 with self.env.cr.savepoint():
                     transfer.do_transfer(conn)
