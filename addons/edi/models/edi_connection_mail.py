@@ -75,7 +75,18 @@ class EdiConnectionMail(models.AbstractModel):
             outputs += attachments
 
             # Create e-mail
-            vals = template.generate_email(doc.id)
+            # Fields list stolen from odoo 11.0 generate_email() fallback.
+            email_fields = [
+                "subject",
+                "body_html",
+                "email_from",
+                "email_to",
+                "partner_to",
+                "email_cc",
+                "reply_to",
+                "scheduled_date",
+            ]
+            vals = template.generate_email(doc.id, email_fields)
             vals["model"] = "edi.gateway.path"
             vals["res_id"] = path.id
             vals["email_to"] = path.path

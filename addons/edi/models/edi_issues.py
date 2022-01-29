@@ -103,7 +103,7 @@ class EdiIssue(models.AbstractModel):
         self.ensure_one()
 
         # Parse exception
-        title = err.name if isinstance(err, UserError) else str(err)
+        title = err.args[0] if isinstance(err, UserError) else str(err)
         tbe = traceback.TracebackException.from_exception(err)
 
         # Construct issue

@@ -160,7 +160,7 @@ class EdiDocument(models.Model):
         index=True,
         default="draft",
         copy=False,
-        track_visibility="onchange",
+        tracking=True,
     )
     doc_type_id = fields.Many2one(
         "edi.document.type", string="Document Type", required=True, readonly=True, index=True

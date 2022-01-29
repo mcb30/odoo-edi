@@ -137,13 +137,19 @@ class EdiGatewayCase(EdiCase):
         EdiGateway = cls.env["edi.gateway"]
         EdiPath = cls.env["edi.gateway.path"]
 
-        # Create gateway
+        # Create gateway, by default with a safety catch set
         cls.gateway = EdiGateway.create(
             {
                 "name": "Test gateway",
                 "model_id": IrModel._get_id("edi.connection.model"),
+                "safety": "dummy_safety_catch",
             }
         )
+        # Spoof safety catch for this gateway, without overridding any other keys
+        if "edi" in config.misc.keys():
+            config.misc["edi"]["dummy_safety_catch"] = True
+        else:
+            config.misc["edi"] = {"dummy_safety_catch": True}
 
         # Create paths
         cls.path_receive = EdiPath.create(
@@ -399,11 +405,13 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
         ) as mock_do_transfer:
 
             # No safety option defined
-            self.gateway.safety = None
-            self.assertTrue(self.gateway.action_transfer())
-            self.assertTrue(mock_do_transfer.called)
-            mock_get_misc.reset_mock()
-            mock_do_transfer.reset_mock()
+            with self.assertRaisesIssue(self.gateway):
+                mock_get_misc.return_value = None
+                self.gateway.safety = None
+                self.assertFalse(self.gateway.action_transfer())
+                self.assertFalse(mock_do_transfer.called)
+                mock_get_misc.reset_mock()
+                mock_do_transfer.reset_mock()
 
             # Safety option defined, not present in configuration file
             with self.assertRaisesIssue(self.gateway):

@@ -27,10 +27,10 @@ class ServerActions(models.Model):
     )
 
     @api.model
-    def run_action_edi_multi(self, action, eval_context=None):
+    def _run_action_edi_multi(self, eval_context=None):
         """Run EDI server action"""
         # pylint: disable=unused-argument
-        action.edi_gateway_id.action_transfer()
+        self.edi_gateway_id.action_transfer()
 
 
 class EdiAutoAddHostKeyPolicy(paramiko.MissingHostKeyPolicy):
@@ -123,8 +123,8 @@ class EdiGateway(models.Model):
         connections.
         """,
     )
-    automatic = fields.Boolean(string="Process automatically", default=True)
-    resend = fields.Boolean(string="Resend missing files", default=True)
+    automatic = fields.Boolean(string="Process Automatically", default=True)
+    resend = fields.Boolean(string="Resend Missing Files", default=True)
 
     # Authentication
     username = fields.Char(string="Username")

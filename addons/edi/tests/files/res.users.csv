@@ -1,4 +1,4 @@
-id,name,login,action_id/id,new_password
+id,name,login,partner_id/id,new_password
 __import__.user_alice,Alice,alice,,password1
 __import__.user_bob,Bob,bob,,password2
-__import__.user_eve,Eve,eve,mail.action_view_mail_message,password3
+__import__.user_eve,Eve,eve,base.main_partner,password3

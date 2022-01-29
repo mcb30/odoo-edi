@@ -71,7 +71,8 @@ class EdiConnectionLocal(models.AbstractModel):
             if not fnmatch.fnmatch(filepath.name, path.glob):
                 continue
 
-                # Did the user try to escape the jail?
+            # Did the user try to escape the jail?
+            if not self.path_allowed(jail_directory, filepath):
                 raise PermissionError(
                     errno.EACCES,
                     _("Tried to access a folder outside the jail directory %s") % jail_directory,

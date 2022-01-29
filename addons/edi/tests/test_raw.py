@@ -39,8 +39,8 @@ class TestRaw(EdiCase):
         eve = users_by_login["eve"]
         self.assertEqual(eve, self.env.ref("__import__.user_eve"))
         self.assertEqual(
-            self.env[eve.action_id.type].browse(eve.action_id.id),
-            self.env.ref("mail.action_view_mail_message"),
+            eve.partner_id,
+            self.env.ref("base.main_partner"),
         )
         self.assertEqual(doc.raw_count, 3)
         action = doc.action_view_raw()
@@ -69,7 +69,7 @@ class TestRaw(EdiCase):
         attachment = doc.input_ids
         attachment.datas = b64encode(
             re.sub(
-                b"mail.action_view_mail_message",
+                b"base.main_partner",
                 b"edi.nonexistent_xmlid",
                 b64decode(attachment.datas),
             )
