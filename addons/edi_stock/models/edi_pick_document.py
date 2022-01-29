@@ -6,10 +6,9 @@ from odoo import api, fields, models
 class EdiDocumentType(models.Model):
     """Extend ``edi.document.type`` to include associated operation types"""
 
-    _inherit = 'edi.document.type'
+    _inherit = "edi.document.type"
 
-    pick_type_ids = fields.Many2many('stock.picking.type',
-                                     string="Stock Transfer Types")
+    pick_type_ids = fields.Many2many("stock.picking.type", string="Stock Transfer Types")
 
 
 class EdiDocument(models.Model):
@@ -20,11 +19,11 @@ class EdiDocument(models.Model):
     associated ``stock.picking`` records.
     """
 
-    _inherit = 'edi.document'
+    _inherit = "edi.document"
 
-    pick_ids = fields.One2many('stock.picking', string="Stock Transfers",
-                               compute='_compute_pick_ids')
-
+    pick_ids = fields.One2many(
+        "stock.picking", string="Stock Transfers", compute="_compute_pick_ids"
+    )
 
     def _compute_pick_ids(self):
         """Calculate associated stock transfers"""

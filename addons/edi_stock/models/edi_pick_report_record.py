@@ -6,10 +6,11 @@ from odoo import api, fields, models
 class EdiDocument(models.Model):
     """Extend ``edi.document`` to include stock transfer report records"""
 
-    _inherit = 'edi.document'
+    _inherit = "edi.document"
 
     pick_report_ids = fields.One2many(
-        'edi.pick.report.record', 'doc_id',
+        "edi.pick.report.record",
+        "doc_id",
         string="Stock Transfer Reports",
     )
 
@@ -32,15 +33,17 @@ class EdiPickReportRecord(models.Model):
     :meth:`~.prepare`.
     """
 
-    _name = 'edi.pick.report.record'
-    _inherit = 'edi.record'
+    _name = "edi.pick.report.record"
+    _inherit = "edi.record"
     _description = "Stock Transfer Report"
 
-    pick_id = fields.Many2one('stock.picking', string="Transfer",
-                              required=True, readonly=True, index=True)
+    pick_id = fields.Many2one(
+        "stock.picking", string="Transfer", required=True, readonly=True, index=True
+    )
 
-    _sql_constraints = [('doc_name_uniq', 'unique (doc_id, name)',
-                         "Each name may appear at most once per document")]
+    _sql_constraints = [
+        ("doc_name_uniq", "unique (doc_id, name)", "Each name may appear at most once per document")
+    ]
 
     @api.model
     def record_values(self, pick):
@@ -51,8 +54,8 @@ class EdiPickReportRecord(models.Model):
         report record.
         """
         return {
-            'name': pick.name,
-            'pick_id': pick.id,
+            "name": pick.name,
+            "pick_id": pick.id,
         }
 
     @api.model

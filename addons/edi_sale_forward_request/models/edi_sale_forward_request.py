@@ -5,8 +5,7 @@ from odoo import api, fields, models
 
 # FILEPATH : /srv/udes_closed_11/addons/edi_sale_json_outbound/data/sale_request_schema.json
 FILEPATH = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    *[os.pardir, "data", "sale_request_schema.json"]
+    os.path.dirname(os.path.abspath(__file__)), *[os.pardir, "data", "sale_request_schema.json"]
 )
 
 
@@ -26,14 +25,16 @@ class EdiDocument(models.Model):
 
     _inherit = "edi.document"
 
-    json_partner_ids = fields.One2many(
-        "edi.partner.record.info", "doc_id", string="Partners"
-    )
+    json_partner_ids = fields.One2many("edi.partner.record.info", "doc_id", string="Partners")
     sale_forward_request_ids = fields.One2many(
-        "edi.sale.forward.request.record", "doc_id", string="Sale Requests",
+        "edi.sale.forward.request.record",
+        "doc_id",
+        string="Sale Requests",
     )
     sale_line_forward_request_ids = fields.One2many(
-        "edi.sale.line.forward.request.record", "doc_id", string="Sale Line Requests",
+        "edi.sale.line.forward.request.record",
+        "doc_id",
+        string="Sale Line Requests",
     )
 
     @api.depends("sale_forward_request_ids", "sale_line_forward_request_ids.order_id")
@@ -82,9 +83,7 @@ class EdiPartnerRecord(models.Model):
     phone = fields.Char(string="Phone Number", readonly=True)
     mobile = fields.Char(string="Mobile Number", readonly=True)
     is_company = fields.Boolean(default=False, readonly=True)
-    country_id = fields.Many2one(
-        "res.country", default=lambda self: self.env.ref("base.uk").id
-    )
+    country_id = fields.Many2one("res.country", default=lambda self: self.env.ref("base.uk").id)
 
     @api.model
     def target_values(self, record_vals):

@@ -8,12 +8,15 @@ from odoo.tools.translate import _
 class StockPicking(models.Model):
     """Extend ``stock.picking`` to include the EDI stock transfer report"""
 
-    _inherit = 'stock.picking'
+    _inherit = "stock.picking"
 
-    edi_pick_report_id = fields.Many2one('edi.document',
-                                         string="EDI Stock Transfer Report",
-                                         required=False, readonly=True,
-                                         index=True)
+    edi_pick_report_id = fields.Many2one(
+        "edi.document",
+        string="EDI Stock Transfer Report",
+        required=False,
+        readonly=True,
+        index=True,
+    )
 
 
 class EdiPickReportDocument(models.AbstractModel):
@@ -44,11 +47,11 @@ class EdiPickReportDocument(models.AbstractModel):
     :meth:`~.pick_report_domain` and :meth:`~.move_report_domain`.
     """
 
-    _name = 'edi.pick.report.document'
-    _inherit = 'edi.document.model'
+    _name = "edi.pick.report.document"
+    _inherit = "edi.document.model"
     _description = "Stock Transfer Reports"
 
-    _edi_pick_report_via = 'edi_pick_report_id'
+    _edi_pick_report_via = "edi_pick_report_id"
     """Report record field
 
     This field is used to record the EDI document used to report upon
@@ -57,8 +60,7 @@ class EdiPickReportDocument(models.AbstractModel):
     """
 
     @api.model
-    def pick_report_record_model(self, doc,
-                                 supermodel='edi.pick.report.record'):
+    def pick_report_record_model(self, doc, supermodel="edi.pick.report.record"):
         """Get EDI stock transfer report record model class
 
         Subclasses should never need to override this method.
@@ -66,8 +68,7 @@ class EdiPickReportDocument(models.AbstractModel):
         return self.record_model(doc, supermodel=supermodel)
 
     @api.model
-    def move_report_record_model(self, doc,
-                                 supermodel='edi.move.report.record'):
+    def move_report_record_model(self, doc, supermodel="edi.move.report.record"):
         """Get EDI stock move report record model class
 
         Subclasses should never need to override this method.
@@ -83,11 +84,11 @@ class EdiPickReportDocument(models.AbstractModel):
         has not yet been generated.
         """
         domain = [
-            ('state', '=', 'done'),
-            ('picking_type_id', 'in', doc.doc_type_id.pick_type_ids.ids),
+            ("state", "=", "done"),
+            ("picking_type_id", "in", doc.doc_type_id.pick_type_ids.ids),
         ]
         if self._edi_pick_report_via is not None:
-            domain.append((self._edi_pick_report_via, '=', False))
+            domain.append((self._edi_pick_report_via, "=", False))
         return domain
 
     @api.model
@@ -97,7 +98,7 @@ class EdiPickReportDocument(models.AbstractModel):
         The default implementation returns all completed moves
         associated with the specified stock transfers.
         """
-        return [('picking_id', 'in', picks.ids), ('state', '=', 'done')]
+        return [("picking_id", "in", picks.ids), ("state", "=", "done")]
 
     @api.model
     def move_report_list(self, _doc, moves):
@@ -121,18 +122,18 @@ class EdiPickReportDocument(models.AbstractModel):
         """Prepare document"""
         PickReport = self.pick_report_record_model(doc)
         MoveReport = self.move_report_record_model(doc)
-        Picking = self.env['stock.picking']
-        Move = self.env['stock.move']
+        Picking = self.env["stock.picking"]
+        Move = self.env["stock.move"]
         # Lock pickings to prevent concurrent report generation attempts
-        picks = Picking.search(self.pick_report_domain(doc), order='id')
+        picks = Picking.search(self.pick_report_domain(doc), order="id")
         if self._edi_pick_report_via is not None:
             picks.write({self._edi_pick_report_via: False})
         # Construct move list, if applicable
         if MoveReport is not None:
-            moves = Move.search(self.move_report_domain(doc, picks),
-                                order='picking_id, id')
-            movelist = (x.with_prefetch(moves._prefetch_ids) for x in
-                        self.move_report_list(doc, moves))
+            moves = Move.search(self.move_report_domain(doc, picks), order="picking_id, id")
+            movelist = (
+                x.with_prefetch(moves._prefetch_ids) for x in self.move_report_list(doc, moves)
+            )
         # Prepare records
         PickReport.prepare(doc, picks)
         if MoveReport is not None:
@@ -145,11 +146,12 @@ class EdiPickReportDocument(models.AbstractModel):
         # Mark pickings as reported upon by this document
         doc.ensure_one()
         PickReport = self.pick_report_record_model(doc)
-        pick_reports = PickReport.search([('doc_id', '=', doc.id)])
-        picks = pick_reports.mapped('pick_id')
+        pick_reports = PickReport.search([("doc_id", "=", doc.id)])
+        picks = pick_reports.mapped("pick_id")
         if self._edi_pick_report_via is not None:
             reported_picks = picks.filtered(self._edi_pick_report_via)
             if reported_picks:
-                raise UserError(_("Report already generated for %s") %
-                                ", ".join(reported_picks.mapped('name')))
+                raise UserError(
+                    _("Report already generated for %s") % ", ".join(reported_picks.mapped("name"))
+                )
             picks.write({self._edi_pick_report_via: doc.id})

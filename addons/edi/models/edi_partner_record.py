@@ -6,12 +6,12 @@ from odoo import api, fields, models
 class EdiDocument(models.Model):
     """Extend ``edi.document`` to include EDI partner records"""
 
-    _inherit = 'edi.document'
+    _inherit = "edi.document"
 
-    partner_ids = fields.One2many('edi.partner.record', 'doc_id',
-                                  string="Partners")
-    partner_title_ids = fields.One2many('edi.partner.title.record', 'doc_id',
-                                        string="Partner Titles")
+    partner_ids = fields.One2many("edi.partner.record", "doc_id", string="Partners")
+    partner_title_ids = fields.One2many(
+        "edi.partner.title.record", "doc_id", string="Partner Titles"
+    )
 
 
 class EdiPartnerRecord(models.Model):
@@ -31,37 +31,39 @@ class EdiPartnerRecord(models.Model):
     Derived models should implement :meth:`~.target_values`.
     """
 
-    _name = 'edi.partner.record'
-    _inherit = 'edi.record.sync.active'
+    _name = "edi.partner.record"
+    _inherit = "edi.record.sync.active"
     _description = "Partner"
 
-    _edi_sync_target = 'partner_id'
-    _edi_sync_via = 'ref'
+    _edi_sync_target = "partner_id"
+    _edi_sync_via = "ref"
 
     BATCH_CREATE = 100
     """Batch size for creating new records"""
 
     name = fields.Char(string="Internal Reference")
-    partner_id = fields.Many2one('res.partner', string="Partner",
-                                 required=False, readonly=True, index=True,
-                                 auto_join=True)
-    full_name = fields.Char(string="Name", required=True, readonly=True,
-                            default="Anonymous")
-    title_key = fields.Char(string="Title Key", required=False, readonly=True,
-                            index=True, edi_relates='title_id.name')
-    title_id = fields.Many2one('res.partner.title', string="Title",
-                               required=False, readonly=True, index=True)
+    partner_id = fields.Many2one(
+        "res.partner", string="Partner", required=False, readonly=True, index=True, auto_join=True
+    )
+    full_name = fields.Char(string="Name", required=True, readonly=True, default="Anonymous")
+    title_key = fields.Char(
+        string="Title Key", required=False, readonly=True, index=True, edi_relates="title_id.name"
+    )
+    title_id = fields.Many2one(
+        "res.partner.title", string="Title", required=False, readonly=True, index=True
+    )
 
     @api.model
     def target_values(self, record_vals):
         """Construct ``res.partner`` field value dictionary"""
         partner_vals = super().target_values(record_vals)
-        partner_vals.update({
-            'name': record_vals['full_name'],
-            'title': record_vals.get('title_id'),
-        })
+        partner_vals.update(
+            {
+                "name": record_vals["full_name"],
+                "title": record_vals.get("title_id"),
+            }
+        )
         return partner_vals
-
 
     def missing_edi_relates_title_key(self, rel, key):
         """Handle missing partner title
@@ -73,7 +75,6 @@ class EdiPartnerRecord(models.Model):
         Record = self.browse()
         Target = Record[rel.target]
         return Target.create({rel.via: key})
-
 
     def execute(self):
         """Execute records"""
@@ -90,22 +91,29 @@ class EdiPartnerTitleRecord(models.Model):
     Derived models should implement :meth:`~.target_values`.
     """
 
-    _name = 'edi.partner.title.record'
-    _inherit = 'edi.record.sync'
+    _name = "edi.partner.title.record"
+    _inherit = "edi.record.sync"
     _description = "Partner Title"
 
-    _edi_sync_target = 'title_id'
+    _edi_sync_target = "title_id"
 
-    title_id = fields.Many2one('res.partner.title', string="Title",
-                               required=False, readonly=True, index=True,
-                               auto_join=True)
+    title_id = fields.Many2one(
+        "res.partner.title",
+        string="Title",
+        required=False,
+        readonly=True,
+        index=True,
+        auto_join=True,
+    )
     shortcut = fields.Char(string="Abbreviation", readonly=True)
 
     @api.model
     def target_values(self, record_vals):
         """Construct ``res.partner.title`` field value dictionary"""
         title_vals = super().target_values(record_vals)
-        title_vals.update({
-            'shortcut': record_vals['shortcut'],
-        })
+        title_vals.update(
+            {
+                "shortcut": record_vals["shortcut"],
+            }
+        )
         return title_vals

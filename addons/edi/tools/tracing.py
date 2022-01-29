@@ -101,11 +101,9 @@ class EdiTracer(object):
             tb = full_tb[skip:]
 
             # Log query, parameters, and incremental traceback
-            _logger.info("query: %s : %s\n%s", query, params,
-                         ''.join(traceback.format_list(tb)))
+            _logger.info("query: %s : %s\n%s", query, params, "".join(traceback.format_list(tb)))
 
-        return self.execute(query, params=params,
-                            log_exceptions=log_exceptions)
+        return self.execute(query, params=params, log_exceptions=log_exceptions)
 
     def start(self):
         """Start tracing queries"""

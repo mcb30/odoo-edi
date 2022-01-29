@@ -24,8 +24,8 @@ class EdiConnectionLocal(models.AbstractModel):
     used to send and receive EDI documents.
     """
 
-    _name = 'edi.connection.local'
-    _inherit = 'edi.connection.model'
+    _name = "edi.connection.local"
+    _inherit = "edi.connection.model"
     _description = "EDI Local Connection"
 
     _BATCH_SIZE = 100
@@ -37,8 +37,10 @@ class EdiConnectionLocal(models.AbstractModel):
             return True
 
         real_jail_directory = os.path.realpath(jail_directory)
-        return os.path.commonpath([real_jail_directory,
-                                   os.path.realpath(test_path)]) == real_jail_directory
+        return (
+            os.path.commonpath([real_jail_directory, os.path.realpath(test_path)])
+            == real_jail_directory
+        )
 
     @api.model
     def connect(self, _gateway):
@@ -50,7 +52,7 @@ class EdiConnectionLocal(models.AbstractModel):
     @api.model
     def receive_inputs(self, conn, path, transfer):
         """Receive input attachments"""
-        Attachment = self.env['ir.attachment']
+        Attachment = self.env["ir.attachment"]
         inputs = Attachment.browse()
         directory = conn.joinpath(path.path)
 
@@ -69,10 +71,11 @@ class EdiConnectionLocal(models.AbstractModel):
             if not fnmatch.fnmatch(filepath.name, path.glob):
                 continue
 
-            # Did the user try to escape the jail?
-                raise PermissionError(errno.EACCES,
-                                      _("Tried to access a folder outside the jail directory %s")
-                                      % jail_directory)
+                # Did the user try to escape the jail?
+                raise PermissionError(
+                    errno.EACCES,
+                    _("Tried to access a folder outside the jail directory %s") % jail_directory,
+                )
             # Get file information
             stat = filepath.stat()
 
@@ -81,11 +84,15 @@ class EdiConnectionLocal(models.AbstractModel):
                 continue
 
             # Skip files already successfully attached to a document
-            if Attachment.search([('res_model', '=', 'edi.document'),
-                                  ('res_field', '=', 'input_ids'),
-                                  ('res_id', '!=', False),
-                                  ('name', '=', filepath.name),
-                                  ('file_size', '=', stat.st_size)]):
+            if Attachment.search(
+                [
+                    ("res_model", "=", "edi.document"),
+                    ("res_field", "=", "input_ids"),
+                    ("res_id", "!=", False),
+                    ("name", "=", filepath.name),
+                    ("file_size", "=", stat.st_size),
+                ]
+            ):
                 continue
 
             # Read file
@@ -93,12 +100,14 @@ class EdiConnectionLocal(models.AbstractModel):
             data = filepath.read_bytes()
 
             # Create new attachment for received file
-            attachment_data.append({
+            attachment_data.append(
+                {
                     "name": filepath.name,
                     "datas": base64.b64encode(data),
                     "res_model": "edi.document",
                     "res_field": "input_ids",
-            })
+                }
+            )
 
             # attachment.file_size b64decodes datas and gets the length
             attachment_size = len(data)
@@ -106,8 +115,7 @@ class EdiConnectionLocal(models.AbstractModel):
             # Check received size
             if attachment_size != stat.st_size:
                 raise ValidationError(
-                    _("File size mismatch (expected %d got %d)") %
-                    (stat.st_size, attachment_size)
+                    _("File size mismatch (expected %d got %d)") % (stat.st_size, attachment_size)
                 )
 
         for _r, batch in batched(attachment_data, self._BATCH_SIZE):
@@ -118,39 +126,44 @@ class EdiConnectionLocal(models.AbstractModel):
     @api.model
     def send_outputs(self, conn, path, transfer):
         """Send output attachments"""
-        Document = self.env['edi.document']
-        Attachment = self.env['ir.attachment']
-        Transfer = self.env['edi.transfer']
+        Document = self.env["edi.document"]
+        Attachment = self.env["ir.attachment"]
+        Transfer = self.env["edi.transfer"]
         outputs = Attachment.browse()
         sent = Attachment.browse()
         directory = conn.joinpath(path.path)
 
         # Get list of output documents
-        min_date = (datetime.now() - timedelta(hours=path.age_window))
-        docs = Document.search([
-            ('execute_date', '>=', fields.Datetime.to_string(min_date)),
-            ('doc_type_id', 'in', path.doc_type_ids.mapped('id'))
-        ])
+        min_date = datetime.now() - timedelta(hours=path.age_window)
+        docs = Document.search(
+            [
+                ("execute_date", ">=", fields.Datetime.to_string(min_date)),
+                ("doc_type_id", "in", path.doc_type_ids.mapped("id")),
+            ]
+        )
 
         if not transfer.gateway_id.resend:
-            sent = Transfer.search([
-                ('create_date', '>', fields.Datetime.to_string(min_date)),
-                ('gateway_id', '=', transfer.gateway_id.id),
-            ]).mapped('output_ids')
+            sent = Transfer.search(
+                [
+                    ("create_date", ">", fields.Datetime.to_string(min_date)),
+                    ("gateway_id", "=", transfer.gateway_id.id),
+                ]
+            ).mapped("output_ids")
 
         # Get the jail directory
         gateway = transfer.gateway_id
         jail_directory = gateway.get_jail_path()
 
         # Send attachments
-        for attachment in docs.mapped('output_ids').sorted('id'):
+        for attachment in docs.mapped("output_ids").sorted("id"):
             filepath = directory.joinpath(attachment.name)
 
             # Did the user try to escape the jail?
             if not self.path_allowed(jail_directory, filepath):
-                raise PermissionError(errno.EACCES,
-                                      _("Tried to access a folder outside the jail directory %s")
-                                      % jail_directory)
+                raise PermissionError(
+                    errno.EACCES,
+                    _("Tried to access a folder outside the jail directory %s") % jail_directory,
+                )
 
             # Skip files not matching glob pattern
             if not fnmatch.fnmatch(attachment.name, path.glob):
@@ -172,7 +185,7 @@ class EdiConnectionLocal(models.AbstractModel):
 
             # Write file with temporary filename
             _logger.info("%s writing %s", transfer.gateway_id.name, filepath)
-            temppath = filepath.with_name('.%s~' % uuid.uuid4().hex)
+            temppath = filepath.with_name(".%s~" % uuid.uuid4().hex)
             temppath.write_bytes(base64.b64decode(attachment.datas))
 
             # Rename temporary file

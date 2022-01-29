@@ -21,13 +21,12 @@ class EdiPickRequestDocument(models.AbstractModel):
     :meth:`~.pick_request_record_values`.
     """
 
-    _name = 'edi.pick.request.document'
-    _inherit = 'edi.document.sync'
+    _name = "edi.pick.request.document"
+    _inherit = "edi.document.sync"
     _description = "Stock Transfer Requests"
 
     @api.model
-    def pick_request_record_model(self, doc,
-                                  supermodel='edi.pick.request.record'):
+    def pick_request_record_model(self, doc, supermodel="edi.pick.request.record"):
         """Get EDI stock transfer request record model class
 
         Subclasses should never need to override this method.
@@ -35,8 +34,7 @@ class EdiPickRequestDocument(models.AbstractModel):
         return self.record_model(doc, supermodel=supermodel)
 
     @api.model
-    def move_request_record_model(self, doc,
-                                  supermodel='edi.move.request.record'):
+    def move_request_record_model(self, doc, supermodel="edi.move.request.record"):
         """Get EDI stock move request record model class
 
         Subclasses should never need to override this method.
@@ -67,13 +65,19 @@ class EdiPickRequestDocument(models.AbstractModel):
     def prepare(self, doc):
         """Prepare document"""
         super().prepare(doc)
-        self.pick_request_record_model(doc).prepare(doc, (
-            record_vals
-            for _fname, data in doc.inputs()
-            for record_vals in self.pick_request_record_values(data)
-        ))
-        self.move_request_record_model(doc).prepare(doc, (
-            record_vals
-            for _fname, data in doc.inputs()
-            for record_vals in self.move_request_record_values(data)
-        ))
+        self.pick_request_record_model(doc).prepare(
+            doc,
+            (
+                record_vals
+                for _fname, data in doc.inputs()
+                for record_vals in self.pick_request_record_values(data)
+            ),
+        )
+        self.move_request_record_model(doc).prepare(
+            doc,
+            (
+                record_vals
+                for _fname, data in doc.inputs()
+                for record_vals in self.move_request_record_values(data)
+            ),
+        )

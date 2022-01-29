@@ -6,10 +6,11 @@ from odoo import api, fields, models
 class EdiDocument(models.Model):
     """Extend ``edi.document`` to include EDI stock move tracker records"""
 
-    _inherit = 'edi.document'
+    _inherit = "edi.document"
 
-    move_tracker_ids = fields.One2many('edi.move.tracker.record', 'doc_id',
-                                       string="Stock Move Trackers")
+    move_tracker_ids = fields.One2many(
+        "edi.move.tracker.record", "doc_id", string="Stock Move Trackers"
+    )
 
 
 class EdiMoveTrackerRecord(models.Model):
@@ -22,12 +23,17 @@ class EdiMoveTrackerRecord(models.Model):
     Derived models should implement :meth:`~.target_values`.
     """
 
-    _name = 'edi.move.tracker.record'
-    _inherit = 'edi.record.sync.active'
+    _name = "edi.move.tracker.record"
+    _inherit = "edi.record.sync.active"
     _description = "Stock Move Tracker"
 
-    _edi_sync_target = 'tracker_id'
+    _edi_sync_target = "tracker_id"
 
-    tracker_id = fields.Many2one('edi.move.tracker', string="Tracker",
-                                 required=False, readonly=True, index=True,
-                                 auto_join=True)
+    tracker_id = fields.Many2one(
+        "edi.move.tracker",
+        string="Tracker",
+        required=False,
+        readonly=True,
+        index=True,
+        auto_join=True,
+    )

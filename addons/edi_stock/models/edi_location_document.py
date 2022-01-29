@@ -6,9 +6,9 @@ from odoo import api, fields, models
 class EdiDocumentType(models.Model):
     """Extend ``edi.document.type`` to include associated stock locations"""
 
-    _inherit = 'edi.document.type'
+    _inherit = "edi.document.type"
 
-    location_ids = fields.Many2many('stock.location', string="Stock Locations")
+    location_ids = fields.Many2many("stock.location", string="Stock Locations")
 
 
 class EdiLocationDocument(models.AbstractModel):
@@ -32,12 +32,12 @@ class EdiLocationDocument(models.AbstractModel):
     :meth:`~.location_record_values`.
     """
 
-    _name = 'edi.location.document'
-    _inherit = 'edi.document.sync'
+    _name = "edi.location.document"
+    _inherit = "edi.document.sync"
     _description = "Stock Locations"
 
     @api.model
-    def location_record_model(self, doc, supermodel='edi.location.record'):
+    def location_record_model(self, doc, supermodel="edi.location.record"):
         """Get EDI location record model class
 
         Subclasses should never need to override this method.
@@ -58,8 +58,11 @@ class EdiLocationDocument(models.AbstractModel):
     def prepare(self, doc):
         """Prepare document"""
         super().prepare(doc)
-        self.location_record_model(doc).prepare(doc, (
-            record_vals
-            for _fname, data in doc.inputs()
-            for record_vals in self.location_record_values(data)
-        ))
+        self.location_record_model(doc).prepare(
+            doc,
+            (
+                record_vals
+                for _fname, data in doc.inputs()
+                for record_vals in self.location_record_values(data)
+            ),
+        )

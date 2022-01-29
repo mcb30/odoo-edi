@@ -16,9 +16,15 @@ class EdiDocument(models.Model):
 
     _inherit = "edi.document"
 
-    sale_forward_ids = fields.One2many("edi.sale.forward.record", "doc_id", string="Sale Forwards",)
+    sale_forward_ids = fields.One2many(
+        "edi.sale.forward.record",
+        "doc_id",
+        string="Sale Forwards",
+    )
     sale_line_forward_ids = fields.One2many(
-        "edi.sale.line.forward.record", "doc_id", string="Sale Line Forwards",
+        "edi.sale.line.forward.record",
+        "doc_id",
+        string="Sale Line Forwards",
     )
 
     @api.depends("sale_request_ids", "sale_request_ids.sale_id")

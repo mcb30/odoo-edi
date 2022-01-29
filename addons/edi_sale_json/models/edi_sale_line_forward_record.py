@@ -9,7 +9,9 @@ class EdiDocument(models.Model):
     _inherit = "edi.document"
 
     sale_line_forward_ids = fields.One2many(
-        "edi.sale.line.forward.record", "doc_id", string="Sale Order Line Reports",
+        "edi.sale.line.forward.record",
+        "doc_id",
+        string="Sale Order Line Reports",
     )
 
 
@@ -21,7 +23,11 @@ class EdiSaleLineForwardRecord(models.Model):
     _description = "Sale Order Line Forward"
 
     sale_id = fields.Many2one(
-        "sale.order", string="Order", required=True, readonly=True, index=True,
+        "sale.order",
+        string="Order",
+        required=True,
+        readonly=True,
+        index=True,
     )
     qty_delivered = fields.Float(required=False)
 

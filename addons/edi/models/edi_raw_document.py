@@ -7,18 +7,19 @@ from odoo.exceptions import UserError
 from odoo.tools.translate import _
 
 OPTIONS = {
-    'headers': True,
-    'quoting': '"',
-    'separator': ',',
+    "headers": True,
+    "quoting": '"',
+    "separator": ",",
 }
 
 TRIAL_COUNT = 10
 
-MODEL_PATTERN = re.compile(r'.*?(?P<model>([a-z]+\.)+[a-z]+)$')
+MODEL_PATTERN = re.compile(r".*?(?P<model>([a-z]+\.)+[a-z]+)$")
 
 
 class TrialImport(Exception):
     """Exception raised in a trial import to trigger a savepoint rollback"""
+
     pass
 
 
@@ -30,8 +31,8 @@ class EdiRawDocument(models.AbstractModel):
     via the EDI mechanism rather than the manual user interface.
     """
 
-    _name = 'edi.raw.document'
-    _inherit = 'edi.document.model'
+    _name = "edi.raw.document"
+    _inherit = "edi.document.model"
     _description = "Raw Records"
 
     @api.model
@@ -39,7 +40,7 @@ class EdiRawDocument(models.AbstractModel):
         """Calculate model name from input filename"""
         m = MODEL_PATTERN.match(pathlib.Path(fname).stem)
         if m:
-            return self.env.get(m.group('model'))
+            return self.env.get(m.group("model"))
 
     @api.model
     def autotype(self, inputs):
@@ -49,31 +50,33 @@ class EdiRawDocument(models.AbstractModel):
     @api.model
     def importer(self, doc):
         """Construct importer"""
-        Import = self.env['base_import.import']
+        Import = self.env["base_import.import"]
         fname, data = doc.input()
         Model = self.automodel(fname)
         if Model is None:
-            raise UserError(_("Unable to determine model from \"%s\"") % fname)
-        importer = Import.create({
-            'res_model': Model._name,
-            'file': data,
-            'file_name': fname,
-        })
+            raise UserError(_('Unable to determine model from "%s"') % fname)
+        importer = Import.create(
+            {
+                "res_model": Model._name,
+                "file": data,
+                "file_name": fname,
+            }
+        )
         return importer
 
     @api.model
     def import_data(self, doc, trial=None):
         """Import data"""
-        IrModel = self.env['ir.model']
+        IrModel = self.env["ir.model"]
 
         # Construct importer
         importer = self.importer(doc)
 
         # Construct header list
         preview = importer.parse_preview(OPTIONS)
-        if 'error' in preview:
-            raise UserError(preview['error'])
-        headers = preview['headers']
+        if "error" in preview:
+            raise UserError(preview["error"])
+        headers = preview["headers"]
 
         # Parse import file
         raw, fields = importer._convert_import_data(headers, OPTIONS)
@@ -86,8 +89,8 @@ class EdiRawDocument(models.AbstractModel):
         try:
             with self.env.cr.savepoint():
                 res = Model.load(fields, raw[:trial])
-                msgs = res.get('messages')
-                ids = res.get('ids')
+                msgs = res.get("messages")
+                ids = res.get("ids")
                 if trial:
                     ids = []
                     raise TrialImport
@@ -96,14 +99,14 @@ class EdiRawDocument(models.AbstractModel):
             pass
         except KeyError as e:
             # Most likely an unrecognised column heading
-            raise UserError(_("Unrecognised header \"%s\"") % e.args[0]) from e
+            raise UserError(_('Unrecognised header "%s"') % e.args[0]) from e
         finally:
             # sudo() added to action_prepare to allow this
             importer.unlink()
 
         # Raise any errors from the import
         if msgs:
-            raise UserError('\n'.join(x['message'] for x in msgs))
+            raise UserError("\n".join(x["message"] for x in msgs))
 
         # Return imported recordset
         return Model.browse(ids)
@@ -117,20 +120,21 @@ class EdiRawDocument(models.AbstractModel):
         self.import_data(doc, trial=TRIAL_COUNT)
 
     def _get_values(self, doc, recs):
-        IrModel = self.env['ir.model']
+        IrModel = self.env["ir.model"]
         model = IrModel._get(recs._name)
         for index, rec in enumerate(recs, start=1):
             yield {
-                'doc_id': doc.id,
-                'name': '%05d' % index,
-                'model_id': model.id,
-                'res_id': rec.id,
+                "doc_id": doc.id,
+                "name": "%05d" % index,
+                "model_id": model.id,
+                "res_id": rec.id,
             }
+
     @api.model
     def execute(self, doc):
         """Execute document"""
         super().execute(doc)
-        EdiRawRecord = self.env['edi.raw.record']
+        EdiRawRecord = self.env["edi.raw.record"]
 
         # Import data
         recs = self.import_data(doc)

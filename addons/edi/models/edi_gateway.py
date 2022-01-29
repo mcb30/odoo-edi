@@ -11,17 +11,20 @@ from odoo.tools.translate import _
 
 _logger = logging.getLogger(__name__)
 
-SSH_KNOWN_HOSTS = 'known_hosts'
+SSH_KNOWN_HOSTS = "known_hosts"
 
 
 class ServerActions(models.Model):
     """Add EDI Transfer option in server actions"""
 
-    _inherit = 'ir.actions.server'
+    _inherit = "ir.actions.server"
 
-    state = fields.Selection(selection_add=[('edi', "EDI Transfer")], ondelete={'edi': 'set default'})
-    edi_gateway_id = fields.Many2one('edi.gateway', string="EDI Gateway",
-                                     index=True, ondelete='cascade')
+    state = fields.Selection(
+        selection_add=[("edi", "EDI Transfer")], ondelete={"edi": "set default"}
+    )
+    edi_gateway_id = fields.Many2one(
+        "edi.gateway", string="EDI Gateway", index=True, ondelete="cascade"
+    )
 
     @api.model
     def run_action_edi_multi(self, action, eval_context=None):
@@ -49,11 +52,15 @@ class EdiAutoAddHostKeyPolicy(paramiko.MissingHostKeyPolicy):
             line = entry.to_line()
             self.gw.ssh_host_key = base64.b64encode(line.encode())
             self.gw.ssh_host_key_filename = SSH_KNOWN_HOSTS
-            self.gw.message_post(body=(_("Added host key for '%s' (%s)") %
-                                       (self.gw.server,
-                                        self.gw.ssh_host_fingerprint)))
-            _logger.warning("Added host key for '%s' (%s)",
-                            self.gw.server, self.gw.ssh_host_fingerprint)
+            self.gw.message_post(
+                body=(
+                    _("Added host key for '%s' (%s)")
+                    % (self.gw.server, self.gw.ssh_host_fingerprint)
+                )
+            )
+            _logger.warning(
+                "Added host key for '%s' (%s)", self.gw.server, self.gw.ssh_host_fingerprint
+            )
 
 
 class EdiPath(models.Model):
@@ -63,27 +70,24 @@ class EdiPath(models.Model):
     to send and/or receive EDI documents.
     """
 
-    _name = 'edi.gateway.path'
+    _name = "edi.gateway.path"
     _description = "EDI Gateway Path"
-    _order = 'gateway_id, sequence, id'
+    _order = "gateway_id, sequence, id"
 
     # Basic fields
     name = fields.Char(string="Name", required=True, index=True)
     sequence = fields.Integer(string="Sequence", help="Processing Order")
-    gateway_id = fields.Many2one('edi.gateway', string="Gateway",
-                                 required=True, index=True, ondelete='cascade')
+    gateway_id = fields.Many2one(
+        "edi.gateway", string="Gateway", required=True, index=True, ondelete="cascade"
+    )
     path = fields.Char(string="Directory Path", required=True)
 
     # Filtering
-    allow_receive = fields.Boolean(string="Receive Inputs", required=True,
-                                   default=True)
-    allow_send = fields.Boolean(string="Send Outputs", required=True,
-                                default=True)
-    glob = fields.Char(string="Filename Pattern", required=True, default='*')
-    age_window = fields.Float(string="Age Window (in hours)", required=True,
-                              default=24)
-    doc_type_ids = fields.Many2many('edi.document.type',
-                                    string="Document Types")
+    allow_receive = fields.Boolean(string="Receive Inputs", required=True, default=True)
+    allow_send = fields.Boolean(string="Send Outputs", required=True, default=True)
+    glob = fields.Char(string="Filename Pattern", required=True, default="*")
+    age_window = fields.Float(string="Age Window (in hours)", required=True, default=24)
+    doc_type_ids = fields.Many2many("edi.document.type", string="Document Types")
 
 
 class EdiGateway(models.Model):
@@ -93,17 +97,21 @@ class EdiGateway(models.Model):
     EDI documents.
     """
 
-    _name = 'edi.gateway'
+    _name = "edi.gateway"
     _description = "EDI Gateway"
-    _inherit = ['edi.issues', 'mail.thread']
+    _inherit = ["edi.issues", "mail.thread"]
 
     # Basic fields
     name = fields.Char(string="Name", required=True, index=True)
-    model_id = fields.Many2one('ir.model', string="Connection Model",
-                               domain=[('is_edi_connection', '=', True)],
-                               required=True, index=True, ondelete='cascade')
-    can_initiate = fields.Boolean(string="Initiate Connections",
-                                  compute='_compute_can_initiate')
+    model_id = fields.Many2one(
+        "ir.model",
+        string="Connection Model",
+        domain=[("is_edi_connection", "=", True)],
+        required=True,
+        index=True,
+        ondelete="cascade",
+    )
+    can_initiate = fields.Boolean(string="Initiate Connections", compute="_compute_can_initiate")
     server = fields.Char(string="Server Address")
     timeout = fields.Float(string="Timeout (in seconds)")
     safety = fields.Char(
@@ -133,78 +141,69 @@ class EdiGateway(models.Model):
     port = fields.Integer(string="Port")
     ssh_host_key = fields.Binary(string="SSH Host Key")
     ssh_host_key_filename = fields.Char(default=SSH_KNOWN_HOSTS)
-    ssh_host_fingerprint = fields.Char(string="SSH Host Fingerprint",
-                                       readonly=True, store=True,
-                                       compute='_compute_ssh_host_fingerprint')
+    ssh_host_fingerprint = fields.Char(
+        string="SSH Host Fingerprint",
+        readonly=True,
+        store=True,
+        compute="_compute_ssh_host_fingerprint",
+    )
 
     # Issue tracking used for asynchronously reporting errors
-    issue_ids = fields.One2many(inverse_name='edi_gateway_id')
+    issue_ids = fields.One2many(inverse_name="edi_gateway_id")
 
     # Paths
-    path_ids = fields.One2many('edi.gateway.path', 'gateway_id',
-                               string="Paths")
-    path_count = fields.Integer(string="Path Count",
-                                compute='_compute_path_count')
+    path_ids = fields.One2many("edi.gateway.path", "gateway_id", string="Paths")
+    path_count = fields.Integer(string="Path Count", compute="_compute_path_count")
 
     # Transfers
-    transfer_ids = fields.One2many('edi.transfer', 'gateway_id',
-                                   string="Transfers")
-    transfer_count = fields.Integer(string="Transfer Count",
-                                    compute='_compute_transfer_count')
-    last_transfer_id = fields.Many2one('edi.transfer', string="Last Transfer",
-                                       readonly=True, copy=False)
+    transfer_ids = fields.One2many("edi.transfer", "gateway_id", string="Transfers")
+    transfer_count = fields.Integer(string="Transfer Count", compute="_compute_transfer_count")
+    last_transfer_id = fields.Many2one(
+        "edi.transfer", string="Last Transfer", readonly=True, copy=False
+    )
 
     # Documents
-    doc_ids = fields.One2many('edi.document', 'gateway_id',
-                              string="Documents", readonly=True)
-    doc_count = fields.Integer(string="Document Count",
-                               compute='_compute_doc_count')
+    doc_ids = fields.One2many("edi.document", "gateway_id", string="Documents", readonly=True)
+    doc_count = fields.Integer(string="Document Count", compute="_compute_doc_count")
 
     # Scheduled jobs
-    cron_ids = fields.One2many('ir.cron', 'edi_gateway_id',
-                               domain=[('state', '=', 'edi')],
-                               string="Schedule")
-    cron_count = fields.Integer(string="Schedule Count",
-                                compute='_compute_cron_count')
+    cron_ids = fields.One2many(
+        "ir.cron", "edi_gateway_id", domain=[("state", "=", "edi")], string="Schedule"
+    )
+    cron_count = fields.Integer(string="Schedule Count", compute="_compute_cron_count")
 
-
-    @api.depends('model_id')
+    @api.depends("model_id")
     def _compute_can_initiate(self):
         """Compute ability to initiate connections"""
-        for gw in self.filtered('model_id'):
+        for gw in self.filtered("model_id"):
             Model = self.env[gw.model_id.model]
-            gw.can_initiate = hasattr(Model, 'connect')
+            gw.can_initiate = hasattr(Model, "connect")
 
-
-    @api.depends('path_ids')
+    @api.depends("path_ids")
     def _compute_path_count(self):
         """Compute number of paths (for UI display)"""
         for gw in self:
             gw.path_count = len(gw.path_ids)
 
-
-    @api.depends('transfer_ids')
+    @api.depends("transfer_ids")
     def _compute_transfer_count(self):
         """Compute number of transfers (for UI display)"""
         for gw in self:
             gw.transfer_count = len(gw.transfer_ids)
 
-
-    @api.depends('doc_ids')
+    @api.depends("doc_ids")
     def _compute_doc_count(self):
         """Compute number of documents (for UI display)"""
         for gw in self:
             gw.doc_count = len(gw.doc_ids)
 
-
-    @api.depends('cron_ids')
+    @api.depends("cron_ids")
     def _compute_cron_count(self):
         """Compute number of scheduled jobs (for UI display)"""
         for gw in self:
             gw.cron_count = len(gw.cron_ids)
 
-
-    @api.depends('ssh_host_key')
+    @api.depends("ssh_host_key")
     def _compute_ssh_host_fingerprint(self):
         """Compute SSH host key fingerprint"""
         for gw in self:
@@ -212,18 +211,17 @@ class EdiGateway(models.Model):
                 line = base64.b64decode(gw.ssh_host_key).decode()
                 entry = paramiko.hostkeys.HostKeyEntry.from_line(line)
                 digest = entry.key.get_fingerprint()
-                gw.ssh_host_fingerprint = ':'.join('%02x' % x for x in digest)
+                gw.ssh_host_fingerprint = ":".join("%02x" % x for x in digest)
             else:
                 gw.ssh_host_fingerprint = None
 
-
-    @api.constrains('password', 'config_password')
+    @api.constrains("password", "config_password")
     def _check_passwords(self):
         for gw in self:
             if gw.password and gw.config_password:
-                raise ValidationError(_("You cannot specify both a password "
-                                        "and a password configuration option"))
-
+                raise ValidationError(
+                    _("You cannot specify both a password " "and a password configuration option")
+                )
 
     def _get_password(self):
         """Get password (from database record or from configuration file)"""
@@ -231,14 +229,12 @@ class EdiGateway(models.Model):
         if self.password:
             return self.password
         if self.config_password:
-            section, _sep, key = self.config_password.rpartition('.')
-            password = config.get_misc(section or 'edi', key)
+            section, _sep, key = self.config_password.rpartition(".")
+            password = config.get_misc(section or "edi", key)
             if password is None:
-                raise UserError(_("Missing configuration option '%s'") %
-                                self.config_password)
+                raise UserError(_("Missing configuration option '%s'") % self.config_password)
             return password
         return None
-
 
     def ssh_connect(self):
         """Connect to SSH server"""
@@ -248,20 +244,19 @@ class EdiGateway(models.Model):
             ssh.set_missing_host_key_policy(EdiAutoAddHostKeyPolicy(self))
             kwargs = {}
             if self.username:
-                kwargs['username'] = self.username
+                kwargs["username"] = self.username
             password = self._get_password()
             if password:
-                kwargs['password'] = password
+                kwargs["password"] = password
             if self.timeout:
-                kwargs['timeout'] = self.timeout
-                kwargs['banner_timeout'] = self.timeout
+                kwargs["timeout"] = self.timeout
+                kwargs["banner_timeout"] = self.timeout
             if self.port:
-                kwargs['port'] = self.port
+                kwargs["port"] = self.port
             ssh.connect(self.server, **kwargs)
         except paramiko.SSHException as err:
             raise UserError(err) from err
         return ssh
-
 
     def lock_for_transfer(self, transfer):
         """Lock gateway for transfer"""
@@ -269,50 +264,44 @@ class EdiGateway(models.Model):
         # acquires a FOR UPDATE lock on the gateway's table row, and
         # so functions as an advisory lock on the gateway for the
         # remainder of the transaction.
-        self.write({'last_transfer_id': transfer.id})
-
+        self.write({"last_transfer_id": transfer.id})
 
     def action_view_paths(self):
         """View paths"""
         self.ensure_one()
-        action = self.env.ref('edi.gateway_path_action').read()[0]
-        action['domain'] = [('gateway_id', '=', self.id)]
-        action['context'] = {'default_gateway_id': self.id}
+        action = self.env.ref("edi.gateway_path_action").read()[0]
+        action["domain"] = [("gateway_id", "=", self.id)]
+        action["context"] = {"default_gateway_id": self.id}
         return action
-
 
     def action_view_transfers(self):
         """View transfers"""
         self.ensure_one()
-        action = self.env.ref('edi.transfer_action').read()[0]
-        action['domain'] = [('gateway_id', '=', self.id)]
+        action = self.env.ref("edi.transfer_action").read()[0]
+        action["domain"] = [("gateway_id", "=", self.id)]
         return action
-
 
     def action_view_docs(self):
         """View documents"""
         self.ensure_one()
-        action = self.env.ref('edi.document_action').read()[0]
-        action['domain'] = [('gateway_id', '=', self.id)]
-        action['context'] = {'create': False}
+        action = self.env.ref("edi.document_action").read()[0]
+        action["domain"] = [("gateway_id", "=", self.id)]
+        action["context"] = {"create": False}
         return action
-
 
     def action_view_cron(self):
         """View scheduled jobs"""
         self.ensure_one()
-        action = self.env.ref('edi.cron_action').read()[0]
-        action['domain'] = [('state', '=', 'edi'),
-                            ('edi_gateway_id', '=', self.id)]
-        action['context'] = {
-            'default_model_id': self.env['ir.model']._get_id('edi.gateway'),
-            'default_state': 'edi',
-            'default_edi_gateway_id': self.id,
-            'default_numbercall': -1,
-            'create': True
+        action = self.env.ref("edi.cron_action").read()[0]
+        action["domain"] = [("state", "=", "edi"), ("edi_gateway_id", "=", self.id)]
+        action["context"] = {
+            "default_model_id": self.env["ir.model"]._get_id("edi.gateway"),
+            "default_state": "edi",
+            "default_edi_gateway_id": self.id,
+            "default_numbercall": -1,
+            "create": True,
         }
         return action
-
 
     def action_test(self):
         """Test connection"""
@@ -328,30 +317,33 @@ class EdiGateway(models.Model):
         self.message_post(body=_("Connection tested successfully"))
         return True
 
-
     def do_transfer(self, conn=None):
         """Receive input attachments, process documents, send outputs"""
         self.ensure_one()
-        transfer = self.transfer_ids.create({
-            'gateway_id': self.id,
-            'allow_process': self._context.get('default_allow_process',
-                                               self.automatic),
-        })
+        transfer = self.transfer_ids.create(
+            {
+                "gateway_id": self.id,
+                "allow_process": self._context.get("default_allow_process", self.automatic),
+            }
+        )
         self.lock_for_transfer(transfer)
         Model = self.env[self.model_id.model]
         try:
             # pylint: disable=broad-except
             if self.safety:
-                section, _sep, key = self.safety.rpartition('.')
-                safety = config.get_misc(section or 'edi', key)
+                section, _sep, key = self.safety.rpartition(".")
+                safety = config.get_misc(section or "edi", key)
                 if safety is None:
-                    raise UserError(_("Missing configuration option '%s'") %
-                                    self.safety)
+                    raise UserError(_("Missing configuration option '%s'") % self.safety)
                 if not safety:
-                    raise UserError(_("Gateway disabled via configuration "
-                                      "option '%s'") % self.safety)
+                    raise UserError(
+                        _("Gateway disabled via configuration " "option '%s'") % self.safety
+                    )
             else:
-                raise UserError(_("Gateway disabled as safety catch on gateway '%s' not configured.") % self.name)
+                raise UserError(
+                    _("Gateway disabled as safety catch on gateway '%s' not configured.")
+                    % self.name
+                )
             if conn is not None:
                 with self.env.cr.savepoint():
                     transfer.do_transfer(conn)
@@ -362,25 +354,21 @@ class EdiGateway(models.Model):
             transfer.raise_issue(_("Transfer failed: %s"), err)
         return transfer
 
-
     def action_transfer(self):
         """Receive input attachments, process documents, send outputs"""
         self.ensure_one()
         transfer = self.do_transfer()
         return not transfer.issue_ids
 
-
     def xmlrpc_transfer(self, **kwargs):
         """Receive input attachments, process documents, send outputs"""
-        self = self or self.env.ref('edi.gateway_xmlrpc')
+        self = self or self.env.ref("edi.gateway_xmlrpc")
         self.ensure_one()
         conn = dict(**kwargs)
         transfer = self.do_transfer(conn=conn)
-        conn['docs'] = [{'id': x.id, 'name': x.name, 'state': x.state}
-                        for x in transfer.doc_ids]
+        conn["docs"] = [{"id": x.id, "name": x.name, "state": x.state} for x in transfer.doc_ids]
         if transfer.issue_ids:
-            conn['errors'] = [{'id': x.id, 'name': x.name}
-                              for x in transfer.issue_ids]
+            conn["errors"] = [{"id": x.id, "name": x.name} for x in transfer.issue_ids]
         return conn
 
     @api.model
@@ -390,6 +378,6 @@ class EdiGateway(models.Model):
         First, query jail_path. If it does not exist, return None.
         *None must be handled at the point of use.*
         """
-        jail_directory = config.get_misc('edi', 'jail_path', None)
+        jail_directory = config.get_misc("edi", "jail_path", None)
 
         return jail_directory

@@ -6,21 +6,20 @@ from odoo import api, fields, models
 class EdiDocument(models.Model):
     """Extend ``edi.document`` to include sale order request records"""
 
-    _inherit = 'edi.document'
+    _inherit = "edi.document"
 
     sale_request_ids = fields.One2many(
-        'edi.sale.request.record', 'doc_id',
+        "edi.sale.request.record",
+        "doc_id",
         string="Sale Requests",
     )
 
-
-    @api.depends('sale_request_ids',
-                 'sale_request_ids.sale_id')
+    @api.depends("sale_request_ids", "sale_request_ids.sale_id")
     def _compute_sale_ids(self):
         super()._compute_sale_ids()
-        self.mapped('sale_request_ids.sale_id')
+        self.mapped("sale_request_ids.sale_id")
         for doc in self:
-            doc.sale_ids += doc.mapped('sale_request_ids.sale_id')
+            doc.sale_ids += doc.mapped("sale_request_ids.sale_id")
 
 
 class EdiSaleRequestRecord(models.Model):
@@ -37,30 +36,40 @@ class EdiSaleRequestRecord(models.Model):
     Derived models should implement :meth:`~.target_values`.
     """
 
-    _name = 'edi.sale.request.record'
-    _inherit = 'edi.record.sync'
+    _name = "edi.sale.request.record"
+    _inherit = "edi.record.sync"
     _description = "Sale Request"
 
-    _edi_sync_target = 'sale_id'
-    _edi_sync_via = 'origin'
+    _edi_sync_target = "sale_id"
+    _edi_sync_via = "origin"
 
-    sale_id = fields.Many2one('sale.order', string="Sale",
-                              domain=[('state', '!=', 'cancel')],
-                              required=False, readonly=True, index=True)
-    customer_key = fields.Char('Customer Name', required=True, readonly=True,
-                               index=True, edi_relates='customer_id.ref')
-    customer_id = fields.Many2one('res.partner', string='Customer',
-                                  required=False, readonly=True, index=True)
+    sale_id = fields.Many2one(
+        "sale.order",
+        string="Sale",
+        domain=[("state", "!=", "cancel")],
+        required=False,
+        readonly=True,
+        index=True,
+    )
+    customer_key = fields.Char(
+        "Customer Name", required=True, readonly=True, index=True, edi_relates="customer_id.ref"
+    )
+    customer_id = fields.Many2one(
+        "res.partner", string="Customer", required=False, readonly=True, index=True
+    )
 
-    _sql_constraints = [('doc_name_uniq', 'unique (doc_id, name)',
-                         "Each name may appear at most once per document")]
+    _sql_constraints = [
+        ("doc_name_uniq", "unique (doc_id, name)", "Each name may appear at most once per document")
+    ]
 
     @api.model
     def target_values(self, record_vals):
         """Construct ``sale.order`` value dictionary"""
         sale_vals = super().target_values(record_vals)
-        sale_vals.update({
-            'origin': record_vals['name'],
-            'partner_id': record_vals['customer_id'],
-        })
+        sale_vals.update(
+            {
+                "origin": record_vals["name"],
+                "partner_id": record_vals["customer_id"],
+            }
+        )
         return sale_vals

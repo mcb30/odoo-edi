@@ -4,7 +4,7 @@ import base64
 from odoo.modules.module import get_resource_path
 from . import sapidoc
 
-EDI_DC = base64.b64encode(b'EDI_DC')
+EDI_DC = base64.b64encode(b"EDI_DC")
 """Magic prefix found at the start of every SAP IDoc (after base64 encoding)"""
 
 
@@ -13,6 +13,7 @@ class SapIDocHeader(sapidoc.model.IDoc):
 
     class ControlRecord(sapidoc.model.Record):
         """SAP IDoc header control record"""
+
         IDOCTYP = sapidoc.model.CharacterField(slice(39, 69))
         MESTYP = sapidoc.model.CharacterField(slice(99, 129))
 

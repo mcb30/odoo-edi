@@ -44,8 +44,8 @@ class EdiConnectionSFTP(models.AbstractModel):
     receive EDI documents.
     """
 
-    _name = 'edi.connection.sftp'
-    _inherit = 'edi.connection.model'
+    _name = "edi.connection.sftp"
+    _inherit = "edi.connection.model"
     _description = "EDI SFTP Connection"
 
     _BATCH_SIZE = 100
@@ -61,7 +61,7 @@ class EdiConnectionSFTP(models.AbstractModel):
     @api.model
     def receive_inputs(self, conn, path, transfer):
         """Receive input attachments"""
-        Attachment = self.env['ir.attachment']
+        Attachment = self.env["ir.attachment"]
         inputs = Attachment.browse()
         attachment_data = []
 
@@ -78,26 +78,31 @@ class EdiConnectionSFTP(models.AbstractModel):
                 continue
 
             # Skip files already successfully attached to a document
-            if Attachment.search([('res_model', '=', 'edi.document'),
-                                  ('res_field', '=', 'input_ids'),
-                                  ('res_id', '!=', False),
-                                  ('name', '=', dirent.filename),
-                                  ('file_size', '=', dirent.st_size)]):
+            if Attachment.search(
+                [
+                    ("res_model", "=", "edi.document"),
+                    ("res_field", "=", "input_ids"),
+                    ("res_id", "!=", False),
+                    ("name", "=", dirent.filename),
+                    ("file_size", "=", dirent.st_size),
+                ]
+            ):
                 continue
 
             # Receive file
             filepath = os.path.join(path.path, dirent.filename)
-            _logger.info("%s receiving %s", transfer.gateway_id.name,
-                         filepath)
-            data = conn.file(filepath, mode='rb').read()
+            _logger.info("%s receiving %s", transfer.gateway_id.name, filepath)
+            data = conn.file(filepath, mode="rb").read()
 
             # Create new attachment for received file
-            attachment_data.append({
-                "name": dirent.filename,
-                "datas": base64.b64encode(data),
-                "res_model": "edi.document",
-                "res_field": "input_ids",
-            })
+            attachment_data.append(
+                {
+                    "name": dirent.filename,
+                    "datas": base64.b64encode(data),
+                    "res_model": "edi.document",
+                    "res_field": "input_ids",
+                }
+            )
 
             # attachment.file_size b64decodes datas and gets the length
             attachment_size = len(data)
@@ -105,8 +110,7 @@ class EdiConnectionSFTP(models.AbstractModel):
             # Check received size
             if attachment_size != dirent.st_size:
                 raise ValidationError(
-                    _("File size mismatch (expected %d got %d)") %
-                    (dirent.st_size, attachment_size)
+                    _("File size mismatch (expected %d got %d)") % (dirent.st_size, attachment_size)
                 )
 
         for _r, batch in batched(attachment_data, self._BATCH_SIZE):
@@ -117,9 +121,9 @@ class EdiConnectionSFTP(models.AbstractModel):
     @api.model
     def send_outputs(self, conn, path, transfer):
         """Send output attachments"""
-        Document = self.env['edi.document']
-        Attachment = self.env['ir.attachment']
-        Transfer = self.env['edi.transfer']
+        Document = self.env["edi.document"]
+        Attachment = self.env["ir.attachment"]
+        Transfer = self.env["edi.transfer"]
         outputs = Attachment.browse()
         sent = Attachment.browse()
 
@@ -127,20 +131,24 @@ class EdiConnectionSFTP(models.AbstractModel):
         files = {x.filename: x.st_size for x in conn.listdir_attr(path.path)}
 
         # Get list of output documents
-        min_date = (datetime.now() - timedelta(hours=path.age_window))
-        docs = Document.search([
-            ('execute_date', '>=', fields.Datetime.to_string(min_date)),
-            ('doc_type_id', 'in', path.doc_type_ids.mapped('id'))
-        ])
+        min_date = datetime.now() - timedelta(hours=path.age_window)
+        docs = Document.search(
+            [
+                ("execute_date", ">=", fields.Datetime.to_string(min_date)),
+                ("doc_type_id", "in", path.doc_type_ids.mapped("id")),
+            ]
+        )
 
         if not transfer.gateway_id.resend:
-            sent = Transfer.search([
-                ('create_date', '>', fields.Datetime.to_string(min_date)),
-                ('gateway_id', '=', transfer.gateway_id.id),
-            ]).mapped('output_ids')
+            sent = Transfer.search(
+                [
+                    ("create_date", ">", fields.Datetime.to_string(min_date)),
+                    ("gateway_id", "=", transfer.gateway_id.id),
+                ]
+            ).mapped("output_ids")
 
         # Send attachments
-        for attachment in docs.mapped('output_ids').sorted('id'):
+        for attachment in docs.mapped("output_ids").sorted("id"):
 
             # Skip files not matching glob pattern
             if not fnmatch.fnmatch(attachment.name, path.glob):
@@ -163,11 +171,11 @@ class EdiConnectionSFTP(models.AbstractModel):
                 continue
 
             # Send file with temporary filename
-            temppath = os.path.join(path.path, ('.%s~' % uuid.uuid4().hex))
+            temppath = os.path.join(path.path, (".%s~" % uuid.uuid4().hex))
             filepath = os.path.join(path.path, attachment.name)
             _logger.info("%s sending %s", transfer.gateway_id.name, filepath)
             data = base64.b64decode(attachment.datas)
-            conn.file(temppath, mode='wb').write(data)
+            conn.file(temppath, mode="wb").write(data)
 
             # Rename temporary file
             conn.rename(temppath, filepath)

@@ -42,27 +42,26 @@ class EdiLookupRelationship(object):
         self.key = key
         self.target = target
         self.via = via if via else key
-        self.domain = (domain if callable(domain) else
-                       (lambda self: domain) if domain else
-                       (lambda self: []))
+        self.domain = (
+            domain if callable(domain) else (lambda self: domain) if domain else (lambda self: [])
+        )
 
     def __repr__(self):
-        return '%s(%r, %r, %r)' % (self.__class__.__name__, self.key,
-                                   self.target, self.via)
+        return "%s(%r, %r, %r)" % (self.__class__.__name__, self.key, self.target, self.via)
 
 
 class EdiRecordType(models.Model):
     """EDI record type"""
 
-    _name = 'edi.record.type'
+    _name = "edi.record.type"
     _description = "EDI Record Type"
-    _order = 'sequence, id'
+    _order = "sequence, id"
 
     name = fields.Char(string="Name", required=True, index=True)
-    model_id = fields.Many2one('ir.model', string="Record Model",
-                               required=True, ondelete=('cascade'))
-    doc_type_ids = fields.Many2many('edi.document.type',
-                                    string="Document Types")
+    model_id = fields.Many2one(
+        "ir.model", string="Record Model", required=True, ondelete=("cascade")
+    )
+    doc_type_ids = fields.Many2many("edi.document.type", string="Document Types")
     sequence = fields.Integer(string="Sequence", help="Application Order")
 
 
@@ -80,10 +79,10 @@ class EdiRecord(models.AbstractModel):
     each query.
     """
 
-    BATCH_CREATE = property(attrgetter('BATCH_SIZE'))
+    BATCH_CREATE = property(attrgetter("BATCH_SIZE"))
     """Batch size for creating new records"""
 
-    BATCH_UPDATE = property(attrgetter('BATCH_SIZE'))
+    BATCH_UPDATE = property(attrgetter("BATCH_SIZE"))
     """Batch size for updating existing records"""
 
     _edi_relates = ()
@@ -100,15 +99,19 @@ class EdiRecord(models.AbstractModel):
     created within the same document.
     """
 
-    _name = 'edi.record'
+    _name = "edi.record"
     _description = "EDI Record"
-    _order = 'doc_id, id'
+    _order = "doc_id, id"
 
-    name = fields.Char(string="Name", required=True, readonly=True,
-                       index=True)
-    doc_id = fields.Many2one('edi.document', string="EDI Document",
-                             required=True, readonly=True, index=True,
-                             ondelete='cascade')
+    name = fields.Char(string="Name", required=True, readonly=True, index=True)
+    doc_id = fields.Many2one(
+        "edi.document",
+        string="EDI Document",
+        required=True,
+        readonly=True,
+        index=True,
+        ondelete="cascade",
+    )
 
     @api.model
     def _setup_complete(self):
@@ -117,14 +120,13 @@ class EdiRecord(models.AbstractModel):
         cls = type(self)
         cls._edi_relates = []
         for name, field in cls._fields.items():
-            if hasattr(field, 'edi_relates'):
-                (target, _sep, via) = field.edi_relates.partition('.')
-                domain = getattr(field, 'edi_relates_domain', None)
+            if hasattr(field, "edi_relates"):
+                (target, _sep, via) = field.edi_relates.partition(".")
+                domain = getattr(field, "edi_relates_domain", None)
                 if domain is None:
-                    domain = getattr(cls._fields[target], 'domain', None)
+                    domain = getattr(cls._fields[target], "domain", None)
                 rel = EdiLookupRelationship(name, target, via, domain)
                 cls._edi_relates.append(rel)
-
 
     def _add_edi_relates(self, required=True):
         """Add EDI lookup relationship target IDs to records
@@ -134,30 +136,41 @@ class EdiRecord(models.AbstractModel):
         """
         # pylint: disable=too-many-locals
         Record = self.browse()
-        doc = self.mapped('doc_id')
+        doc = self.mapped("doc_id")
         ready = self
 
         for rel in self._edi_relates:
             # pylint: disable=cell-var-from-loop
             # Find records missing a target, if any
             missing = self.filtered(
-                lambda x: x[rel.key] and not x[rel.target].id
+                lambda x: x[rel.key]
+                and not x[rel.target].id
                 and not isinstance(x[rel.target], models.NewId)
             )
             # Process records in batches to minimise database lookups
             keygetter = itemgetter(rel.key)
             for r, batch in missing.batched(self.BATCH_SIZE):
-                _logger.info("%s recording %s.%s %d-%d of %d", doc.name,
-                             self._name, rel.target, r[0], r[-1], len(missing))
+                _logger.info(
+                    "%s recording %s.%s %d-%d of %d",
+                    doc.name,
+                    self._name,
+                    rel.target,
+                    r[0],
+                    r[-1],
+                    len(missing),
+                )
 
                 # Search for target records by key
                 Target = Record[rel.target]
-                targets = Target.search(expression.AND([
-                    [(rel.via, 'in', list(set(keygetter(x) for x in batch)))],
-                    rel.domain(Record),
-                ]))
-                targets_by_key = {k: v.ensure_one() for k, v in
-                                  targets.groupby(rel.via)}
+                targets = Target.search(
+                    expression.AND(
+                        [
+                            [(rel.via, "in", list(set(keygetter(x) for x in batch)))],
+                            rel.domain(Record),
+                        ]
+                    )
+                )
+                targets_by_key = {k: v.ensure_one() for k, v in targets.groupby(rel.via)}
 
                 # Update target fields
                 for key, recs in batch.groupby(keygetter):
@@ -170,7 +183,6 @@ class EdiRecord(models.AbstractModel):
                         ready -= recs
         return ready
 
-
     def missing_edi_relates(self, rel, key):
         """Handle missing EDI lookup relationship targets
 
@@ -178,13 +190,12 @@ class EdiRecord(models.AbstractModel):
         Must either raise an exception or return a singleton record in
         the target model.
         """
-        func = getattr(self, 'missing_edi_relates_%s' % rel.key, None)
+        func = getattr(self, "missing_edi_relates_%s" % rel.key, None)
         if func:
             return func(rel, key)
         Record = self.browse()
         Target = Record[rel.target]
-        raise UserError(_("Cannot identify %s \"%s\"") %
-                        (Target._description, key))
+        raise UserError(_('Cannot identify %s "%s"') % (Target._description, key))
 
     @api.model
     def _add_edi_relates_vlist(self, vlist):
@@ -203,18 +214,20 @@ class EdiRecord(models.AbstractModel):
             # pylint: disable=cell-var-from-loop
 
             # Find values with a defined key but missing a target, if any
-            missing = [x for x in vlist
-                       if x.get(rel.key) and rel.target not in x]
+            missing = [x for x in vlist if x.get(rel.key) and rel.target not in x]
             if not missing:
                 continue
 
             # Search for target records by key
-            targets = self.browse()[rel.target].search(expression.AND([
-                [(rel.via, 'in', list(set(x[rel.key] for x in missing)))],
-                rel.domain(Record),
-            ]))
-            targets_by_key = {k: v.ensure_one() for k, v in
-                              targets.groupby(rel.via)}
+            targets = self.browse()[rel.target].search(
+                expression.AND(
+                    [
+                        [(rel.via, "in", list(set(x[rel.key] for x in missing)))],
+                        rel.domain(Record),
+                    ]
+                )
+            )
+            targets_by_key = {k: v.ensure_one() for k, v in targets.groupby(rel.via)}
 
             # Add target values where known
             for vals in missing:
@@ -241,13 +254,9 @@ class EdiRecord(models.AbstractModel):
         except StopIteration:
             return ()
         defaults = tuple(
-            (k, v) for k, v in
-            target._add_missing_default_values(first).items()
-            if k not in first
+            (k, v) for k, v in target._add_missing_default_values(first).items() if k not in first
         )
-        return (dict(chain(defaults, vals.items()))
-                for vals in chain((first,), iterator))
-
+        return (dict(chain(defaults, vals.items())) for vals in chain((first,), iterator))
 
     def precache(self):
         """Precache associated records
@@ -258,14 +267,13 @@ class EdiRecord(models.AbstractModel):
         single-record queries.
         """
         for rel in self._edi_relates:
-            self.mapped('%s.%s' % (rel.target, rel.via))
+            self.mapped("%s.%s" % (rel.target, rel.via))
 
     @staticmethod
     def _add_doc_id(doc, vlist):
         for record_vals in vlist:
-            record_vals['doc_id'] = doc.id
+            record_vals["doc_id"] = doc.id
             yield record_vals
-
 
     @api.model
     def prepare(self, doc, vlist):
@@ -293,9 +301,13 @@ class EdiRecord(models.AbstractModel):
                 pass
 
         # Log statistics
-        _logger.info("%s prepared %s in %.2fs, %d excess queries", doc.name,
-                     self._name, stats.elapsed, (stats.count - 1))
-
+        _logger.info(
+            "%s prepared %s in %.2fs, %d excess queries",
+            doc.name,
+            self._name,
+            stats.elapsed,
+            (stats.count - 1),
+        )
 
     def execute(self):
         """Execute records"""

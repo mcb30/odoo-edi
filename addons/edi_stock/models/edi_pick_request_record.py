@@ -6,21 +6,20 @@ from odoo import api, fields, models
 class EdiDocument(models.Model):
     """Extend ``edi.document`` to include stock transfer request records"""
 
-    _inherit = 'edi.document'
+    _inherit = "edi.document"
 
     pick_request_ids = fields.One2many(
-        'edi.pick.request.record', 'doc_id',
+        "edi.pick.request.record",
+        "doc_id",
         string="Stock Transfer Requests",
     )
 
-
-    @api.depends('pick_request_ids',
-                 'pick_request_ids.pick_id')
+    @api.depends("pick_request_ids", "pick_request_ids.pick_id")
     def _compute_pick_ids(self):
         super()._compute_pick_ids()
-        self.mapped('pick_request_ids.pick_id')
+        self.mapped("pick_request_ids.pick_id")
         for doc in self:
-            doc.pick_ids += doc.mapped('pick_request_ids.pick_id')
+            doc.pick_ids += doc.mapped("pick_request_ids.pick_id")
 
 
 class EdiPickRequestRecord(models.Model):
@@ -39,32 +38,41 @@ class EdiPickRequestRecord(models.Model):
     Derived models should implement :meth:`~.target_values`.
     """
 
-    _name = 'edi.pick.request.record'
-    _inherit = 'edi.record.sync'
+    _name = "edi.pick.request.record"
+    _inherit = "edi.record.sync"
     _description = "Stock Transfer Request"
 
-    _edi_sync_target = 'pick_id'
-    _edi_sync_via = 'origin'
+    _edi_sync_target = "pick_id"
+    _edi_sync_via = "origin"
 
-    pick_type_id = fields.Many2one('stock.picking.type', string="Type",
-                                   required=True, readonly=True, index=True)
-    pick_id = fields.Many2one('stock.picking', string="Transfer",
-                              domain=[('state', '!=', 'cancel')],
-                              required=False, readonly=True, index=True)
+    pick_type_id = fields.Many2one(
+        "stock.picking.type", string="Type", required=True, readonly=True, index=True
+    )
+    pick_id = fields.Many2one(
+        "stock.picking",
+        string="Transfer",
+        domain=[("state", "!=", "cancel")],
+        required=False,
+        readonly=True,
+        index=True,
+    )
 
-    _sql_constraints = [('doc_name_uniq', 'unique (doc_id, name)',
-                         "Each name may appear at most once per document")]
+    _sql_constraints = [
+        ("doc_name_uniq", "unique (doc_id, name)", "Each name may appear at most once per document")
+    ]
 
     @api.model
     def target_values(self, record_vals):
         """Construct ``stock.picking`` value dictionary"""
         pick_vals = super().target_values(record_vals)
-        PickingType = self.env['stock.picking.type']
-        pick_type = PickingType.browse(record_vals['pick_type_id'])
-        pick_vals.update({
-            'origin': record_vals['name'],
-            'picking_type_id': pick_type.id,
-            'location_id': pick_type.default_location_src_id.id,
-            'location_dest_id': pick_type.default_location_dest_id.id,
-        })
+        PickingType = self.env["stock.picking.type"]
+        pick_type = PickingType.browse(record_vals["pick_type_id"])
+        pick_vals.update(
+            {
+                "origin": record_vals["name"],
+                "picking_type_id": pick_type.id,
+                "location_id": pick_type.default_location_src_id.id,
+                "location_dest_id": pick_type.default_location_dest_id.id,
+            }
+        )
         return pick_vals

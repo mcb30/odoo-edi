@@ -16,13 +16,12 @@ class EdiQuantReportDocument(models.AbstractModel):
     :meth:`~.quant_domain`.
     """
 
-    _name = 'edi.quant.report.document'
-    _inherit = 'edi.document.model'
+    _name = "edi.quant.report.document"
+    _inherit = "edi.document.model"
     _description = "Stock Level Reports"
 
     @api.model
-    def quant_report_record_model(self, doc,
-                                  supermodel='edi.quant.report.record'):
+    def quant_report_record_model(self, doc, supermodel="edi.quant.report.record"):
         """Get EDI stock level report record model class
 
         Subclasses should never need to override this method.
@@ -36,7 +35,7 @@ class EdiQuantReportDocument(models.AbstractModel):
         The default implementation returns all quants found within any
         associated stock location.
         """
-        return [('location_id', 'child_of', doc.doc_type_id.location_ids.ids)]
+        return [("location_id", "child_of", doc.doc_type_id.location_ids.ids)]
 
     @api.model
     def quant_report_list(self, _doc, quants):
@@ -59,9 +58,10 @@ class EdiQuantReportDocument(models.AbstractModel):
     def prepare(self, doc):
         """Prepare document"""
         QuantReport = self.quant_report_record_model(doc)
-        Quant = self.env['stock.quant']
+        Quant = self.env["stock.quant"]
         # Construct quant list
-        quants = Quant.search(self.quant_report_domain(doc), order='id')
-        quantlist = (x.with_prefetch(quants._prefetch_ids) for x in
-                     self.quant_report_list(doc, quants))
+        quants = Quant.search(self.quant_report_domain(doc), order="id")
+        quantlist = (
+            x.with_prefetch(quants._prefetch_ids) for x in self.quant_report_list(doc, quants)
+        )
         QuantReport.prepare(doc, quantlist)

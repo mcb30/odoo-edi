@@ -25,13 +25,12 @@ class EdiProcurementDocument(models.AbstractModel):
     :meth:`~.procurement_record_values`.
     """
 
-    _name = 'edi.procurement.document'
-    _inherit = 'edi.document.sync'
+    _name = "edi.procurement.document"
+    _inherit = "edi.document.sync"
     _description = "Procurement Rules"
 
     @api.model
-    def procurement_record_model(self, doc,
-                                 supermodel='edi.procurement.record'):
+    def procurement_record_model(self, doc, supermodel="edi.procurement.record"):
         """Get EDI procurement rule record model class
 
         Subclasses should never need to override this method.
@@ -52,8 +51,11 @@ class EdiProcurementDocument(models.AbstractModel):
     def prepare(self, doc):
         """Prepare document"""
         super().prepare(doc)
-        self.procurement_record_model(doc).prepare(doc, (
-            record_vals
-            for _fname, data in doc.inputs()
-            for record_vals in self.procurement_record_values(data)
-        ))
+        self.procurement_record_model(doc).prepare(
+            doc,
+            (
+                record_vals
+                for _fname, data in doc.inputs()
+                for record_vals in self.procurement_record_values(data)
+            ),
+        )

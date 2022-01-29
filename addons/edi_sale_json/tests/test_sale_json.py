@@ -21,7 +21,13 @@ class TestEdiSaleJSON(EdiSaleCase):
 
         cls.dame_title = Title.create({"name": "Dame", "shortcut": "Dm"})
         cls.usa = cls.env["res.country"].create({"name": "USA"})
-        cls.new_york = State.create({"name": "New York", "country_id": cls.usa.id, "code": "NY",})
+        cls.new_york = State.create(
+            {
+                "name": "New York",
+                "country_id": cls.usa.id,
+                "code": "NY",
+            }
+        )
 
         cls.alice = Partner.create(
             {

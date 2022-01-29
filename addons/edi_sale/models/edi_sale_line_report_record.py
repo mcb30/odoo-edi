@@ -7,10 +7,11 @@ from odoo.addons import decimal_precision as dp
 class EdiDocument(models.Model):
     """Extend ``edi.document`` to include sale order line report records"""
 
-    _inherit = 'edi.document'
+    _inherit = "edi.document"
 
     sale_line_report_ids = fields.One2many(
-        'edi.sale.line.report.record', 'doc_id',
+        "edi.sale.line.report.record",
+        "doc_id",
         string="Sale Order Line Reports",
     )
 
@@ -26,25 +27,35 @@ class EdiSaleLineReportRecord(models.Model):
     :meth:`~.prepare`.
     """
 
-    _name = 'edi.sale.line.report.record'
-    _inherit = 'edi.record'
+    _name = "edi.sale.line.report.record"
+    _inherit = "edi.record"
     _description = "Sale Order Line Report"
 
     line_ids = fields.Many2many(
-        'sale.order.line', string="Lines",
-        required=True, readonly=True, index=True,
+        "sale.order.line",
+        string="Lines",
+        required=True,
+        readonly=True,
+        index=True,
     )
     product_id = fields.Many2one(
-        'product.product', string="Product",
-        required=False, readonly=True, index=True,
+        "product.product",
+        string="Product",
+        required=False,
+        readonly=True,
+        index=True,
     )
     qty_ordered = fields.Float(
-        string="Ordered", readonly=True, required=True,
-        digits='Product Unit of Measure',
+        string="Ordered",
+        readonly=True,
+        required=True,
+        digits="Product Unit of Measure",
     )
     qty_delivered = fields.Float(
-        string="Delivered", readonly=True, required=True,
-        digits='Product Unit of Measure',
+        string="Delivered",
+        readonly=True,
+        required=True,
+        digits="Product Unit of Measure",
     )
 
     @api.model
@@ -55,13 +66,13 @@ class EdiSaleLineReportRecord(models.Model):
         corresponding value dictionary for an EDI sale order line
         report record.
         """
-        product = lines.mapped('product_id').ensure_one()
+        product = lines.mapped("product_id").ensure_one()
         return {
-            'name': lines.env.context.get('default_name', product.default_code),
-            'line_ids': [(6, 0, lines.ids)],
-            'product_id': product.id,
-            'qty_ordered': sum(x.product_uom_qty for x in lines),
-            'qty_delivered': sum(x.qty_delivered for x in lines),
+            "name": lines.env.context.get("default_name", product.default_code),
+            "line_ids": [(6, 0, lines.ids)],
+            "product_id": product.id,
+            "qty_ordered": sum(x.product_uom_qty for x in lines),
+            "qty_delivered": sum(x.qty_delivered for x in lines),
         }
 
     @api.model

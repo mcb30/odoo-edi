@@ -6,10 +6,11 @@ from odoo import api, fields, models
 class EdiDocument(models.Model):
     """Extend ``edi.document`` to include sale order report records"""
 
-    _inherit = 'edi.document'
+    _inherit = "edi.document"
 
     sale_report_ids = fields.One2many(
-        'edi.sale.report.record', 'doc_id',
+        "edi.sale.report.record",
+        "doc_id",
         string="Sale Order Reports",
     )
 
@@ -31,15 +32,17 @@ class EdiSaleReportRecord(models.Model):
     :meth:`~.prepare`.
     """
 
-    _name = 'edi.sale.report.record'
-    _inherit = 'edi.record'
+    _name = "edi.sale.report.record"
+    _inherit = "edi.record"
     _description = "Sale Order Report"
 
-    sale_id = fields.Many2one('sale.order', string="Sale Order",
-                              required=True, readonly=True, index=True)
+    sale_id = fields.Many2one(
+        "sale.order", string="Sale Order", required=True, readonly=True, index=True
+    )
 
-    _sql_constraints = [('doc_name_uniq', 'unique (doc_id, name)',
-                         "Each name may appear at most once per document")]
+    _sql_constraints = [
+        ("doc_name_uniq", "unique (doc_id, name)", "Each name may appear at most once per document")
+    ]
 
     @api.model
     def record_values(self, sale):
@@ -50,8 +53,8 @@ class EdiSaleReportRecord(models.Model):
         report record.
         """
         return {
-            'name': sale.name,
-            'sale_id': sale.id,
+            "name": sale.name,
+            "sale_id": sale.id,
         }
 
     @api.model

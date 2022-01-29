@@ -21,25 +21,25 @@ from odoo import api, fields, models
 class EdiDocument(models.Model):
     """Extend ``edi.document`` to include stock transfer tutorial records"""
 
-    _inherit = 'edi.document'
+    _inherit = "edi.document"
 
     pick_report_tutorial_ids = fields.One2many(
-        'edi.pick.report.tutorial.record', 'doc_id',
+        "edi.pick.report.tutorial.record",
+        "doc_id",
         string="Stock Transfer Reports",
     )
     move_report_tutorial_ids = fields.One2many(
-        'edi.move.report.tutorial.record', 'doc_id',
+        "edi.move.report.tutorial.record",
+        "doc_id",
         string="Stock Move Reports",
     )
 
-
-    @api.depends('pick_report_tutorial_ids',
-                 'pick_report_tutorial_ids.pick_id')
+    @api.depends("pick_report_tutorial_ids", "pick_report_tutorial_ids.pick_id")
     def _compute_pick_ids(self):
         super()._compute_pick_ids()
-        self.mapped('pick_report_tutorial_ids.pick_id')
+        self.mapped("pick_report_tutorial_ids.pick_id")
         for doc in self:
-            doc.pick_ids += doc.mapped('pick_report_tutorial_ids.pick_id')
+            doc.pick_ids += doc.mapped("pick_report_tutorial_ids.pick_id")
 
 
 class EdiPickReportTutorialRecord(models.Model):
@@ -49,8 +49,8 @@ class EdiPickReportTutorialRecord(models.Model):
     beyond that provided by the base ``edi.pick.report.record``.
     """
 
-    _name = 'edi.pick.report.tutorial.record'
-    _inherit = 'edi.pick.report.record'
+    _name = "edi.pick.report.tutorial.record"
+    _inherit = "edi.pick.report.record"
     _description = "Stock Transfer Report"
 
 
@@ -61,17 +61,17 @@ class EdiMoveReportTutorialRecord(models.Model):
     beyond that required by the base ``edi.move.report.record``.
     """
 
-    _name = 'edi.move.report.tutorial.record'
-    _inherit = 'edi.move.report.record'
+    _name = "edi.move.report.tutorial.record"
+    _inherit = "edi.move.report.record"
     _description = "Stock Move Report"
 
 
 class EdiPickReportTutorialDocument(models.AbstractModel):
     """EDI stock transfer report tutorial document model"""
 
-    _name = 'edi.pick.report.tutorial.document'
-    _inherit = 'edi.pick.report.document'
-    _description = "Tutorial stock transfer report CSV file"""
+    _name = "edi.pick.report.tutorial.document"
+    _inherit = "edi.pick.report.document"
+    _description = "Tutorial stock transfer report CSV file" ""
 
     @api.model
     def move_report_list(self, _doc, moves):
@@ -82,7 +82,7 @@ class EdiPickReportTutorialDocument(models.AbstractModel):
         transfer.
         """
         return (
-            product_moves.with_context(default_name='%04d' % index)
+            product_moves.with_context(default_name="%04d" % index)
             for _pick, pick_moves in moves.groupby(lambda x: x.picking_id)
             for index, (_product, product_moves) in enumerate(
                 pick_moves.groupby(lambda x: x.product_id)
@@ -97,9 +97,9 @@ class EdiPickReportTutorialDocument(models.AbstractModel):
         EdiMoveReportRecord = self.move_report_record_model(doc)
 
         # Create output attachment for each picking
-        pick_reports = EdiPickReportRecord.search([('doc_id', '=', doc.id)])
-        move_reports = EdiMoveReportRecord.search([('doc_id', '=', doc.id)])
-        by_pick = lambda x: x.move_ids.mapped('picking_id')
+        pick_reports = EdiPickReportRecord.search([("doc_id", "=", doc.id)])
+        move_reports = EdiMoveReportRecord.search([("doc_id", "=", doc.id)])
+        by_pick = lambda x: x.move_ids.mapped("picking_id")
         for pick, recs in move_reports.groupby(by_pick, sort=False):
             # pylint: disable=cell-var-from-loop
 
@@ -109,13 +109,17 @@ class EdiPickReportTutorialDocument(models.AbstractModel):
 
             # Construct CSV file
             with io.StringIO() as output:
-                writer = csv.writer(output, dialect='unix',
-                                    quoting=csv.QUOTE_MINIMAL)
+                writer = csv.writer(output, dialect="unix", quoting=csv.QUOTE_MINIMAL)
                 for rec in recs:
-                    writer.writerow([rec.move_ids.edi_tracker_id.name,
-                                     rec.product_id.default_code, int(rec.qty)])
+                    writer.writerow(
+                        [
+                            rec.move_ids.edi_tracker_id.name,
+                            rec.product_id.default_code,
+                            int(rec.qty),
+                        ]
+                    )
                 data = output.getvalue().encode()
 
             # Create output attachment
-            filename = '%s.csv' % ''.join(pick_report.name.split('/')[-2:])
+            filename = "%s.csv" % "".join(pick_report.name.split("/")[-2:])
             doc.output(filename, data)

@@ -10,22 +10,26 @@ class TestEdiDocument(EdiCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        EdiDocumentType = cls.env['edi.document.type']
-        EdiDocument = cls.env['edi.document']
-        IrModel = cls.env['ir.model']
+        EdiDocumentType = cls.env["edi.document.type"]
+        EdiDocument = cls.env["edi.document"]
+        IrModel = cls.env["ir.model"]
 
         # Create document type
-        cls.doc_type = EdiDocumentType.create({
-            'name': "Test EDI document",
-            'model_id': IrModel._get_id('edi.document.model'),
-        })
+        cls.doc_type = EdiDocumentType.create(
+            {
+                "name": "Test EDI document",
+                "model_id": IrModel._get_id("edi.document.model"),
+            }
+        )
 
         # Create document
-        cls.doc = EdiDocument.create({
-            'name': "ToDo list",
-            'doc_type_id': cls.doc_type.id,
-            'state': 'draft',
-        })
+        cls.doc = EdiDocument.create(
+            {
+                "name": "ToDo list",
+                "doc_type_id": cls.doc_type.id,
+                "state": "draft",
+            }
+        )
 
     def test01_prepare_document(self):
         """Test action prepare"""
@@ -77,25 +81,29 @@ class TestEdiDocument(EdiCase):
 
     def test10_action_view_inputs(self):
         """Test action view inputs"""
-        Attachment = self.env['ir.attachment']
+        Attachment = self.env["ir.attachment"]
         action = self.doc.action_view_inputs()
-        self.assertEqual(len(Attachment.search(action['domain'])), 0)
-        attachment = Attachment.with_context(action['context']).create({
-            'name': "Test context input attachments",
-        })
+        self.assertEqual(len(Attachment.search(action["domain"])), 0)
+        attachment = Attachment.with_context(action["context"]).create(
+            {
+                "name": "Test context input attachments",
+            }
+        )
         self.assertIn(attachment, self.doc.input_ids)
-        self.assertEqual(len(Attachment.search(action['domain'])), 1)
+        self.assertEqual(len(Attachment.search(action["domain"])), 1)
 
     def test11_action_view_outputs(self):
         """Test action view outputs"""
-        Attachment = self.env['ir.attachment']
+        Attachment = self.env["ir.attachment"]
         action = self.doc.action_view_outputs()
-        self.assertEqual(len(Attachment.search(action['domain'])), 0)
-        attachment = Attachment.with_context(action['context']).create({
-            'name': "Test context output attachments",
-        })
+        self.assertEqual(len(Attachment.search(action["domain"])), 0)
+        attachment = Attachment.with_context(action["context"]).create(
+            {
+                "name": "Test context output attachments",
+            }
+        )
         self.assertIn(attachment, self.doc.output_ids)
-        self.assertEqual(len(Attachment.search(action['domain'])), 1)
+        self.assertEqual(len(Attachment.search(action["domain"])), 1)
 
     def test12_copy_document_one_attachment(self):
         """Test copy a document with one input attachment"""

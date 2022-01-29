@@ -9,10 +9,10 @@ class TestMoveTracker(EdiPickCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        Tracker = cls.env['edi.move.tracker']
-        cls.tracker_red = Tracker.create({'name': "Red"})
-        cls.tracker_yellow = Tracker.create({'name': "Yellow"})
-        cls.tracker_green = Tracker.create({'name': "Green"})
+        Tracker = cls.env["edi.move.tracker"]
+        cls.tracker_red = Tracker.create({"name": "Red"})
+        cls.tracker_yellow = Tracker.create({"name": "Yellow"})
+        cls.tracker_green = Tracker.create({"name": "Green"})
 
     def test01_pick_ids(self):
         """Test associated stock transfer calculation"""

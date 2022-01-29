@@ -40,15 +40,11 @@ class TestSaleForwardRequest(EdiSaleCase):
         self.assertEqual(sales_by_name["S00010"].partner_id.name, "Alice")
         order_lines = sales_by_name["S00010"].order_line
         self.assertEqual(len(order_lines), 2)
-        order_line = order_lines.filtered(
-            lambda r: r.product_id.default_code == "CXN789H"
-        )
+        order_line = order_lines.filtered(lambda r: r.product_id.default_code == "CXN789H")
         self.assertEqual(len(order_line), 1)
         self.assertEqual(order_line.product_uom_qty, 5.0)
 
-        order_line = order_lines.filtered(
-            lambda r: r.product_id.default_code == "CXN789U"
-        )
+        order_line = order_lines.filtered(lambda r: r.product_id.default_code == "CXN789U")
         self.assertEqual(len(order_line), 1)
         self.assertEqual(order_line.product_uom_qty, 7.0)
 

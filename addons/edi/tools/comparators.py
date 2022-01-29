@@ -31,8 +31,7 @@ class Comparator(UserDict):
         """Construct comparator function"""
         if isinstance(field, fields.Many2one):
             return lambda x, y: (
-                (not x and not y and not isinstance(y, models.NewId))
-                or (x.id == y)
+                (not x and not y and not isinstance(y, models.NewId)) or (x.id == y)
             )
         elif isinstance(field, fields.Float) and field.get_digits(self.env):
             (_precision, scale) = field.get_digits(self.env)

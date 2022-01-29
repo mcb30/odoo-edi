@@ -24,8 +24,8 @@ class EdiSaleRequestDocument(models.AbstractModel):
     :meth:`~.sale_request_record_values`.
     """
 
-    _name = 'edi.sale.request.document'
-    _inherit = 'edi.document.sync'
+    _name = "edi.sale.request.document"
+    _inherit = "edi.document.sync"
     _description = "Sale Requests"
 
     _auto_confirm = False
@@ -39,8 +39,7 @@ class EdiSaleRequestDocument(models.AbstractModel):
     """Batch size for sale order confirmation"""
 
     @api.model
-    def sale_request_record_model(self, doc,
-                                  supermodel='edi.sale.request.record'):
+    def sale_request_record_model(self, doc, supermodel="edi.sale.request.record"):
         """Get EDI sale request record model class
 
         Subclasses should never need to override this method.
@@ -48,9 +47,7 @@ class EdiSaleRequestDocument(models.AbstractModel):
         return self.record_model(doc, supermodel=supermodel)
 
     @api.model
-    def sale_line_request_record_model(
-            self, doc, supermodel='edi.sale.line.request.record'
-    ):
+    def sale_line_request_record_model(self, doc, supermodel="edi.sale.line.request.record"):
         """Get EDI sale line request record model class
 
         Subclasses should never need to override this method.
@@ -81,16 +78,22 @@ class EdiSaleRequestDocument(models.AbstractModel):
     def prepare(self, doc):
         """Prepare document"""
         super().prepare(doc)
-        self.sale_request_record_model(doc).prepare(doc, (
-            record_vals
-            for _fname, data in doc.inputs()
-            for record_vals in self.sale_request_record_values(data)
-        ))
-        self.sale_line_request_record_model(doc).prepare(doc, (
-            record_vals
-            for _fname, data in doc.inputs()
-            for record_vals in self.sale_line_request_record_values(data)
-        ))
+        self.sale_request_record_model(doc).prepare(
+            doc,
+            (
+                record_vals
+                for _fname, data in doc.inputs()
+                for record_vals in self.sale_request_record_values(data)
+            ),
+        )
+        self.sale_line_request_record_model(doc).prepare(
+            doc,
+            (
+                record_vals
+                for _fname, data in doc.inputs()
+                for record_vals in self.sale_line_request_record_values(data)
+            ),
+        )
 
     @api.model
     def execute(self, doc):
@@ -100,11 +103,17 @@ class EdiSaleRequestDocument(models.AbstractModel):
         # Automatically confirm sale orders, if applicable
         if self._auto_confirm:
             SaleRequestRecord = self.sale_request_record_model(doc)
-            reqs = SaleRequestRecord.search([('doc_id', '=', doc.id)])
-            for r, sales in reqs.mapped('sale_id').batched(self.BATCH_CONFIRM):
+            reqs = SaleRequestRecord.search([("doc_id", "=", doc.id)])
+            for r, sales in reqs.mapped("sale_id").batched(self.BATCH_CONFIRM):
                 _logger.info("%s confirming %d-%d", doc.name, r[0], r[-1])
                 with self.statistics() as stats:
                     sales.action_confirm()
                     self.recompute()
-                _logger.info("%s confirmed %d-%d in %.2fs, %d queries",
-                             doc.name, r[0], r[-1], stats.elapsed, stats.count)
+                _logger.info(
+                    "%s confirmed %d-%d in %.2fs, %d queries",
+                    doc.name,
+                    r[0],
+                    r[-1],
+                    stats.elapsed,
+                    stats.count,
+                )

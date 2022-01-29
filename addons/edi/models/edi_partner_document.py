@@ -35,12 +35,12 @@ class EdiPartnerDocument(models.AbstractModel):
     :meth:`~.partner_record_values`.
     """
 
-    _name = 'edi.partner.document'
-    _inherit = 'edi.document.sync'
+    _name = "edi.partner.document"
+    _inherit = "edi.document.sync"
     _description = "Partners"
 
     @api.model
-    def partner_record_model(self, doc, supermodel='edi.partner.record'):
+    def partner_record_model(self, doc, supermodel="edi.partner.record"):
         """Get EDI partner record model class
 
         Subclasses should never need to override this method.
@@ -61,11 +61,14 @@ class EdiPartnerDocument(models.AbstractModel):
     def prepare(self, doc):
         """Prepare document"""
         super().prepare(doc)
-        self.partner_record_model(doc).prepare(doc, (
-            record_vals
-            for _fname, data in doc.inputs()
-            for record_vals in self.partner_record_values(data)
-        ))
+        self.partner_record_model(doc).prepare(
+            doc,
+            (
+                record_vals
+                for _fname, data in doc.inputs()
+                for record_vals in self.partner_record_values(data)
+            ),
+        )
 
 
 class EdiPartnerTitleDocument(models.AbstractModel):
@@ -90,13 +93,12 @@ class EdiPartnerTitleDocument(models.AbstractModel):
     :meth:`~.partner_title_record_values`.
     """
 
-    _name = 'edi.partner.title.document'
-    _inherit = 'edi.document.sync'
+    _name = "edi.partner.title.document"
+    _inherit = "edi.document.sync"
     _description = "Partner Titles"
 
     @api.model
-    def partner_title_record_model(self, doc,
-                                   supermodel='edi.partner.title.record'):
+    def partner_title_record_model(self, doc, supermodel="edi.partner.title.record"):
         """Get EDI partner title record model class
 
         Subclasses should never need to override this method.
@@ -117,8 +119,11 @@ class EdiPartnerTitleDocument(models.AbstractModel):
     def prepare(self, doc):
         """Prepare document"""
         super().prepare(doc)
-        self.partner_title_record_model(doc).prepare(doc, (
-            record_vals
-            for _fname, data in doc.inputs()
-            for record_vals in self.partner_title_record_values(data)
-        ))
+        self.partner_title_record_model(doc).prepare(
+            doc,
+            (
+                record_vals
+                for _fname, data in doc.inputs()
+                for record_vals in self.partner_title_record_values(data)
+            ),
+        )

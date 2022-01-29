@@ -26,12 +26,12 @@ class EdiOrderpointDocument(models.AbstractModel):
     :meth:`~.orderpoint_record_values`.
     """
 
-    _name = 'edi.orderpoint.document'
-    _inherit = 'edi.document.sync'
+    _name = "edi.orderpoint.document"
+    _inherit = "edi.document.sync"
     _description = "Minimum Inventory Rules"
 
     @api.model
-    def orderpoint_record_model(self, doc, supermodel='edi.orderpoint.record'):
+    def orderpoint_record_model(self, doc, supermodel="edi.orderpoint.record"):
         """Get EDI minimum inventory rule record model class
 
         Subclasses should never need to override this method.
@@ -52,8 +52,11 @@ class EdiOrderpointDocument(models.AbstractModel):
     def prepare(self, doc):
         """Prepare document"""
         super().prepare(doc)
-        self.orderpoint_record_model(doc).prepare(doc, (
-            record_vals
-            for _fname, data in doc.inputs()
-            for record_vals in self.orderpoint_record_values(data)
-        ))
+        self.orderpoint_record_model(doc).prepare(
+            doc,
+            (
+                record_vals
+                for _fname, data in doc.inputs()
+                for record_vals in self.orderpoint_record_values(data)
+            ),
+        )

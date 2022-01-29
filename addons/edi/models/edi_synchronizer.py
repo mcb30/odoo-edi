@@ -41,8 +41,8 @@ class EdiSyncDocumentModel(models.AbstractModel):
     elided from the document.
     """
 
-    _name = 'edi.document.sync'
-    _inherit = 'edi.document.model'
+    _name = "edi.document.sync"
+    _inherit = "edi.document.model"
     _description = "EDI Synchronizer Document"
 
 
@@ -71,7 +71,7 @@ class EdiSyncRecord(models.AbstractModel):
     target Odoo record.
     """
 
-    _edi_sync_via = 'name'
+    _edi_sync_via = "name"
     """EDI synchronizer target model lookup key field
 
     This is the name of the field within the target Odoo model used to
@@ -97,13 +97,16 @@ class EdiSyncRecord(models.AbstractModel):
     set this to ``False`` to gain a slight improvement in performance.
     """
 
-    _name = 'edi.record.sync'
-    _inherit = 'edi.record'
+    _name = "edi.record.sync"
+    _inherit = "edi.record"
     _description = "EDI Synchronizer Record"
 
     _sql_constraints = [
-        ('doc_name_uniq', 'unique (doc_id, name)',
-         "Each synchronizer key may appear at most once per document")
+        (
+            "doc_name_uniq",
+            "unique (doc_id, name)",
+            "Each synchronizer key may appear at most once per document",
+        )
     ]
 
     @api.model
@@ -113,18 +116,15 @@ class EdiSyncRecord(models.AbstractModel):
         cls = type(self)
         domain = cls._edi_sync_domain
         if domain is None and cls._edi_sync_target is not None:
-            domain = getattr(cls._fields[cls._edi_sync_target], 'domain', None)
+            domain = getattr(cls._fields[cls._edi_sync_target], "domain", None)
         cls._edi_sync_domain_call = (
-            domain if callable(domain) else
-            (lambda self: domain) if domain else
-            (lambda self: [])
+            domain if callable(domain) else (lambda self: domain) if domain else (lambda self: [])
         )
 
     @api.model
     def precache_targets(self, targets):
         """Precache associated target records"""
         targets.mapped(self._edi_sync_via)
-
 
     def precache(self):
         """Precache associated records"""
@@ -134,17 +134,17 @@ class EdiSyncRecord(models.AbstractModel):
     @api.model
     def targets_by_key(self, vlist):
         """Construct lookup cache of target records indexed by key field"""
-        Target = self.browse()[self._edi_sync_target].with_context(
-            active_test=False
-        )
+        Target = self.browse()[self._edi_sync_target].with_context(active_test=False)
         key = self._edi_sync_via
-        targets = Target.search(expression.AND([
-            [(key, 'in', [x['name'] for x in vlist])],
-            self._edi_sync_domain_call()
-        ]))
+        targets = Target.search(
+            expression.AND(
+                [[(key, "in", [x["name"] for x in vlist])], self._edi_sync_domain_call()]
+            )
+        )
         self.precache_targets(targets)
-        return {k: v.with_prefetch(targets._prefetch_ids).ensure_one()
-                for k, v in targets.groupby(key)}
+        return {
+            k: v.with_prefetch(targets._prefetch_ids).ensure_one() for k, v in targets.groupby(key)
+        }
 
     @api.model
     def target_values(self, record_vals):
@@ -156,10 +156,9 @@ class EdiSyncRecord(models.AbstractModel):
         a record within the target model.
         """
         target_vals = {
-            self._edi_sync_via: record_vals['name'],
+            self._edi_sync_via: record_vals["name"],
         }
         return target_vals
-
 
     def _record_values(self):
         """Reconstruct record field value dictionary
@@ -175,7 +174,7 @@ class EdiSyncRecord(models.AbstractModel):
         """
         self.ensure_one()
         record_vals = self.copy_data()[0]
-        del record_vals['doc_id']
+        del record_vals["doc_id"]
         del record_vals[self._edi_sync_target]
         return record_vals
 
@@ -227,8 +226,7 @@ class EdiSyncRecord(models.AbstractModel):
         # Process records in batches for efficiency
         for r, vbatch in batched(vlist, self.BATCH_SIZE):
 
-            _logger.info("%s preparing %s %d-%d",
-                         doc.name, self._name, r[0], r[-1])
+            _logger.info("%s preparing %s %d-%d", doc.name, self._name, r[0], r[-1])
             total += len(r)
 
             # Add EDI lookup relationship target IDs where known
@@ -244,13 +242,12 @@ class EdiSyncRecord(models.AbstractModel):
             for record_vals in vbatch:
 
                 # Look up existing target record (if any)
-                target = targets_by_key.get(record_vals['name'])
+                target = targets_by_key.get(record_vals["name"])
                 if target:
 
                     # Elide EDI records that would not change the target record
                     target_vals = self.target_values(record_vals)
-                    if all(comparator[k](target[k], v)
-                           for k, v in target_vals.items()):
+                    if all(comparator[k](target[k], v) for k, v in target_vals.items()):
                         continue
 
                     # Add target to EDI record
@@ -272,26 +269,35 @@ class EdiSyncRecord(models.AbstractModel):
 
         # Log statistics
         stats.stop()
-        excess = (stats.count - count)
-        _logger.info("%s prepared %s elided %d of %d, %d excess queries",
-                     doc.name, self._name, (total - count), total, excess)
+        excess = stats.count - count
+        _logger.info(
+            "%s prepared %s elided %d of %d, %d excess queries",
+            doc.name,
+            self._name,
+            (total - count),
+            total,
+            excess,
+        )
         if excess >= total and total > PRECACHE_WARNING_THRESHOLD:
-            _logger.warning("%s missing precaching for %s: %d records, %d "
-                            "excess queries", doc.name, self._name, total,
-                            excess)
+            _logger.warning(
+                "%s missing precaching for %s: %d records, %d " "excess queries",
+                doc.name,
+                self._name,
+                total,
+                excess,
+            )
 
     @api.model
     def matched(self, _doc, _targets):
         """Process matched target records"""
         pass
 
-
     def execute(self):
         """Execute records"""
         super().execute()
 
         # Identify containing document
-        doc = self.mapped('doc_id')
+        doc = self.mapped("doc_id")
 
         # Get target model
         target = self._edi_sync_target
@@ -300,8 +306,9 @@ class EdiSyncRecord(models.AbstractModel):
         # Identify any missing existing target records
         new = self.filtered(lambda x: not x[target])
         for r, batch in new.batched(self.BATCH_SIZE):
-            _logger.info("%s rechecking %s %d-%d of %d",
-                         doc.name, Target._name, r[0], r[-1], len(new))
+            _logger.info(
+                "%s rechecking %s %d-%d of %d", doc.name, Target._name, r[0], r[-1], len(new)
+            )
             targets_by_key = self.targets_by_key(batch)
             for rec in batch:
                 if rec.name in targets_by_key:
@@ -323,19 +330,28 @@ class EdiSyncRecord(models.AbstractModel):
             for r, batch in existing.batched(self.BATCH_UPDATE):
                 batch.precache()
                 count = len(r)
-                _logger.info("%s updating %s %d-%d of %d", doc.name,
-                             Target._name, offset, (offset + count - 1),
-                             len(self))
+                _logger.info(
+                    "%s updating %s %d-%d of %d",
+                    doc.name,
+                    Target._name,
+                    offset,
+                    (offset + count - 1),
+                    len(self),
+                )
                 with self.statistics() as stats:
-                    vals_list = [rec.target_values(rec._record_values())
-                                 for rec in batch]
+                    vals_list = [rec.target_values(rec._record_values()) for rec in batch]
                     for rec, vals in zip(batch, vals_list):
                         rec[target].write(vals)
                     self.recompute()
-                _logger.info("%s updated %s %d-%d in %.2fs, %d excess queries",
-                             doc.name, Target._name, offset,
-                             (offset + count - 1), stats.elapsed,
-                             (stats.count - count))
+                _logger.info(
+                    "%s updated %s %d-%d in %.2fs, %d excess queries",
+                    doc.name,
+                    Target._name,
+                    offset,
+                    (offset + count - 1),
+                    stats.elapsed,
+                    (stats.count - count),
+                )
                 offset += count
 
             # Create new target records
@@ -343,23 +359,33 @@ class EdiSyncRecord(models.AbstractModel):
             for r, batch in new.batched(self.BATCH_CREATE):
                 batch.precache()
                 count = len(r)
-                _logger.info("%s creating %s %d-%d of %d", doc.name,
-                             Target._name, offset, (offset + count - 1),
-                             len(self))
+                _logger.info(
+                    "%s creating %s %d-%d of %d",
+                    doc.name,
+                    Target._name,
+                    offset,
+                    (offset + count - 1),
+                    len(self),
+                )
                 with self.statistics() as stats:
-                    vals_list = list(self.add_edi_defaults(
-                        Target,
-                        (rec.target_values(rec._record_values())
-                         for rec in batch)
-                    ))
+                    vals_list = list(
+                        self.add_edi_defaults(
+                            Target, (rec.target_values(rec._record_values()) for rec in batch)
+                        )
+                    )
                     targets = Target.create(vals_list)
                     for rec, created in zip(batch, targets):
                         rec[target] = created
                     self.recompute()
-                _logger.info("%s created %s %d-%d in %.2fs, %d excess queries",
-                             doc.name, Target._name, offset,
-                             (offset + count - 1), stats.elapsed,
-                             (stats.count - 2 * count))
+                _logger.info(
+                    "%s created %s %d-%d in %.2fs, %d excess queries",
+                    doc.name,
+                    Target._name,
+                    offset,
+                    (offset + count - 1),
+                    stats.elapsed,
+                    (stats.count - 2 * count),
+                )
                 offset += count
 
 
@@ -373,7 +399,7 @@ class EdiDeactivatorRecord(models.AbstractModel):
     Derived models must override the comodel name for ``target_id``.
     """
 
-    _edi_deactivator_name = 'name'
+    _edi_deactivator_name = "name"
     """EDI deactivator target name field
 
     This is the name of the field within the target Odoo model used to
@@ -381,18 +407,18 @@ class EdiDeactivatorRecord(models.AbstractModel):
     ``name``.
     """
 
-    _name = 'edi.record.deactivator'
-    _inherit = 'edi.record'
+    _name = "edi.record.deactivator"
+    _inherit = "edi.record"
     _description = "EDI Deactivator Record"
 
-    target_id = fields.Many2one('_unknown', string="Target", required=True,
-                                readonly=True, index=True)
-
+    target_id = fields.Many2one(
+        "_unknown", string="Target", required=True, readonly=True, index=True
+    )
 
     def execute(self):
         """Execute records"""
         super().execute()
-        self.mapped('target_id').write({'active': False})
+        self.mapped("target_id").write({"active": False})
 
 
 class EdiActiveSyncRecord(models.AbstractModel):
@@ -405,17 +431,19 @@ class EdiActiveSyncRecord(models.AbstractModel):
     _edi_sync_deactivator = None
     """EDI record model for target deactivation records"""
 
-    _name = 'edi.record.sync.active'
-    _inherit = 'edi.record.sync'
+    _name = "edi.record.sync.active"
+    _inherit = "edi.record.sync"
     _description = "EDI Active Synchronizer Record"
 
     @api.model
     def target_values(self, record_vals):
         """Construct target model field value dictionary"""
         target_vals = super().target_values(record_vals)
-        target_vals.update({
-            'active': True,
-        })
+        target_vals.update(
+            {
+                "active": True,
+            }
+        )
         return target_vals
 
     @api.model
@@ -423,8 +451,14 @@ class EdiActiveSyncRecord(models.AbstractModel):
         """Process matched target records"""
         if self._edi_sync_deactivator is not None:
             Deactivator = self.env[self._edi_sync_deactivator]
-            unmatched = (targets.search(self._edi_sync_domain_call()) - targets)
-            Deactivator.prepare(doc, ({
-                'target_id': target.id,
-                'name': target[Deactivator._edi_deactivator_name],
-            } for target in unmatched))
+            unmatched = targets.search(self._edi_sync_domain_call()) - targets
+            Deactivator.prepare(
+                doc,
+                (
+                    {
+                        "target_id": target.id,
+                        "name": target[Deactivator._edi_deactivator_name],
+                    }
+                    for target in unmatched
+                ),
+            )

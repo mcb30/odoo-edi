@@ -20,13 +20,12 @@ class EdiMoveTrackerDocument(models.AbstractModel):
     :meth:`~.move_tracker_record_values`.
     """
 
-    _name = 'edi.move.tracker.document'
-    _inherit = 'edi.document.sync'
+    _name = "edi.move.tracker.document"
+    _inherit = "edi.document.sync"
     _description = "Stock Move Trackers"
 
     @api.model
-    def move_tracker_record_model(self, doc,
-                                  supermodel='edi.move.tracker.record'):
+    def move_tracker_record_model(self, doc, supermodel="edi.move.tracker.record"):
         """Get EDI stock move tracker record model class
 
         Subclasses should never need to override this method.
@@ -47,8 +46,11 @@ class EdiMoveTrackerDocument(models.AbstractModel):
     def prepare(self, doc):
         """Prepare document"""
         super().prepare(doc)
-        self.move_tracker_record_model(doc).prepare(doc, (
-            record_vals
-            for _fname, data in doc.inputs()
-            for record_vals in self.move_tracker_record_values(data)
-        ))
+        self.move_tracker_record_model(doc).prepare(
+            doc,
+            (
+                record_vals
+                for _fname, data in doc.inputs()
+                for record_vals in self.move_tracker_record_values(data)
+            ),
+        )

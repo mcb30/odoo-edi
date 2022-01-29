@@ -25,12 +25,14 @@ class DummySFTPServer(paramiko.SFTPServerInterface):
 
     def list_folder(self, path):
         """List directory contents"""
-        return [paramiko.SFTPAttributes.from_stat(x.stat(), filename=x.name)
-                for x in self.root.joinpath(path).iterdir()]
+        return [
+            paramiko.SFTPAttributes.from_stat(x.stat(), filename=x.name)
+            for x in self.root.joinpath(path).iterdir()
+        ]
 
     def open(self, path, flags, attr):
         """Open file"""
-        mode = 'wb' if flags & os.O_WRONLY else 'rb'
+        mode = "wb" if flags & os.O_WRONLY else "rb"
         file = self.root.joinpath(path).open(mode=mode)
         return DummySFTPHandle(file, flags=flags)
 
@@ -48,8 +50,7 @@ class DummySSHServer(test_edi_gateway.DummySSHServer):
 
     def create_transport(self, sock):
         transport = super().create_transport(sock)
-        transport.set_subsystem_handler('sftp', paramiko.SFTPServer,
-                                        DummySFTPServer)
+        transport.set_subsystem_handler("sftp", paramiko.SFTPServer, DummySFTPServer)
         return transport
 
 
@@ -64,17 +65,19 @@ class TestEdiConnectionSFTP(test_edi_gateway.EdiGatewayFileSystemCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        IrModel = cls.env['ir.model']
-        cls.gateway.write({
-            'name': "Test SFTP gateway",
-            'model_id': IrModel._get_id('edi.connection.sftp'),
-            'server': 'dummy',
-            'username': 'user',
-            'password': 'pass',
-            'ssh_host_key': base64.b64encode(
-                cls.files.joinpath('ssh_known_hosts').read_bytes()
-            ),
-        })
+        IrModel = cls.env["ir.model"]
+        cls.gateway.write(
+            {
+                "name": "Test SFTP gateway",
+                "model_id": IrModel._get_id("edi.connection.sftp"),
+                "server": "dummy",
+                "username": "user",
+                "password": "pass",
+                "ssh_host_key": base64.b64encode(
+                    cls.files.joinpath("ssh_known_hosts").read_bytes()
+                ),
+            }
+        )
         cls.path_receive.path = "receive"
         cls.path_send.path = "send"
         cls.SSHServer = DummySSHServer

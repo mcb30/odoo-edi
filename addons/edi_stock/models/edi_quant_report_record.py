@@ -7,10 +7,11 @@ from odoo.addons import decimal_precision as dp
 class EdiDocument(models.Model):
     """Extend ``edi.document`` to include stock level report records"""
 
-    _inherit = 'edi.document'
+    _inherit = "edi.document"
 
     quant_report_ids = fields.One2many(
-        'edi.quant.report.record', 'doc_id',
+        "edi.quant.report.record",
+        "doc_id",
         string="Stock Level Reports",
     )
 
@@ -32,14 +33,16 @@ class EdiQuantReportRecord(models.Model):
     :meth:`~.prepare`.
     """
 
-    _name = 'edi.quant.report.record'
-    _inherit = 'edi.record'
+    _name = "edi.quant.report.record"
+    _inherit = "edi.record"
     _description = "Stock Level Report"
 
-    product_id = fields.Many2one('product.product', string="Product",
-                                 required=True, readonly=True, index=True)
-    qty = fields.Float(string="Quantity", required=True, readonly=True,
-                       digits='Product Unit of Measure')
+    product_id = fields.Many2one(
+        "product.product", string="Product", required=True, readonly=True, index=True
+    )
+    qty = fields.Float(
+        string="Quantity", required=True, readonly=True, digits="Product Unit of Measure"
+    )
 
     @api.model
     def record_values(self, quants):
@@ -49,16 +52,14 @@ class EdiQuantReportRecord(models.Model):
         corresponding value dictionary for an EDI stock level report
         record.
         """
-        product = quants.mapped('product_id').ensure_one()
+        product = quants.mapped("product_id").ensure_one()
         return {
-            'name': quants.env.context.get('default_name',
-                                           product.default_code),
-            'product_id': product.id,
-            'qty': sum(x.quantity for x in quants),
+            "name": quants.env.context.get("default_name", product.default_code),
+            "product_id": product.id,
+            "qty": sum(x.quantity for x in quants),
         }
 
     @api.model
     def prepare(self, doc, quantlist):
         """Prepare records"""
-        super().prepare(doc, (self.record_values(quants)
-                              for quants in quantlist))
+        super().prepare(doc, (self.record_values(quants) for quants in quantlist))

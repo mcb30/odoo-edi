@@ -3,7 +3,7 @@
 from collections import defaultdict, namedtuple
 import time
 
-EdiMetrics = namedtuple('EdiMetrics', ('time', 'count', 'cache'))
+EdiMetrics = namedtuple("EdiMetrics", ("time", "count", "cache"))
 
 
 class EdiCacheMetrics(set):
@@ -49,8 +49,7 @@ class EdiStatistics(object):
             for field, records in self.env.cache._data.items():
                 ids[field.model_name].update(k for k, v in records.items() if v)
         cache = EdiCacheMetrics(self.env[k].browse(v) for k, v in ids.items())
-        return EdiMetrics(time=time.time(), count=self.env.cr.sql_log_count,
-                          cache=cache)
+        return EdiMetrics(time=time.time(), count=self.env.cr.sql_log_count, cache=cache)
 
     def start(self):
         """Start profiling"""
@@ -63,14 +62,14 @@ class EdiStatistics(object):
     @property
     def elapsed(self):
         """Elapsed time"""
-        return (self.stopped.time - self.started.time)
+        return self.stopped.time - self.started.time
 
     @property
     def count(self):
         """Query count"""
-        return (self.stopped.count - self.started.count)
+        return self.stopped.count - self.started.count
 
     @property
     def cached(self):
         """Newly cached records"""
-        return (self.stopped.cache - self.started.cache)
+        return self.stopped.cache - self.started.cache

@@ -8,12 +8,11 @@ from odoo.tools.translate import _
 class SaleOrder(models.Model):
     """Extend ``sale.order`` to include the EDI sale order report"""
 
-    _inherit = 'sale.order'
+    _inherit = "sale.order"
 
-    edi_sale_report_id = fields.Many2one('edi.document',
-                                         string="EDI Sale Order Report",
-                                         required=False, readonly=True,
-                                         index=True)
+    edi_sale_report_id = fields.Many2one(
+        "edi.document", string="EDI Sale Order Report", required=False, readonly=True, index=True
+    )
 
 
 class EdiSaleReportDocument(models.AbstractModel):
@@ -35,11 +34,11 @@ class EdiSaleReportDocument(models.AbstractModel):
     :meth:`~.sale_report_domain` and :meth:`~.sale_line_report_domain`.
     """
 
-    _name = 'edi.sale.report.document'
-    _inherit = 'edi.document.model'
+    _name = "edi.sale.report.document"
+    _inherit = "edi.document.model"
     _description = "Sale Order Reports"
 
-    _edi_sale_report_via = 'edi_sale_report_id'
+    _edi_sale_report_via = "edi_sale_report_id"
     """Report record field
 
     This field is used to record the EDI document used to report upon
@@ -48,8 +47,7 @@ class EdiSaleReportDocument(models.AbstractModel):
     """
 
     @api.model
-    def sale_report_record_model(self, doc,
-                                 supermodel='edi.sale.report.record'):
+    def sale_report_record_model(self, doc, supermodel="edi.sale.report.record"):
         """Get EDI sale order report record model class
 
         Subclasses should never need to override this method.
@@ -57,8 +55,7 @@ class EdiSaleReportDocument(models.AbstractModel):
         return self.record_model(doc, supermodel=supermodel)
 
     @api.model
-    def sale_line_report_record_model(self, doc,
-                                      supermodel='edi.sale.line.report.record'):
+    def sale_line_report_record_model(self, doc, supermodel="edi.sale.line.report.record"):
         """Get EDI sale order line report record model class
 
         Subclasses should never need to override this method.
@@ -72,9 +69,9 @@ class EdiSaleReportDocument(models.AbstractModel):
         The default implementation returns all completed sale orders
         for which a report has not yet been generated.
         """
-        domain = [('state', '=', 'done')]
+        domain = [("state", "=", "done")]
         if self._edi_sale_report_via is not None:
-            domain.append((self._edi_sale_report_via, '=', False))
+            domain.append((self._edi_sale_report_via, "=", False))
         return domain
 
     @api.model
@@ -84,7 +81,7 @@ class EdiSaleReportDocument(models.AbstractModel):
         The default implementation returns all completed sale order
         lines associated with the specified sale orders.
         """
-        return [('order_id', 'in', sales.ids), ('state', '=', 'done')]
+        return [("order_id", "in", sales.ids), ("state", "=", "done")]
 
     @api.model
     def sale_line_report_list(self, _doc, lines):
@@ -109,19 +106,20 @@ class EdiSaleReportDocument(models.AbstractModel):
         # pylint: disable=redefined-outer-name
         SaleReport = self.sale_report_record_model(doc)
         SaleLineReport = self.sale_line_report_record_model(doc)
-        SaleOrder = self.env['sale.order']
-        SaleOrderLine = self.env['sale.order.line']
+        SaleOrder = self.env["sale.order"]
+        SaleOrderLine = self.env["sale.order.line"]
         # Lock sale orders to prevent concurrent report generation attempts
-        sales = SaleOrder.search(self.sale_report_domain(doc), order='id')
+        sales = SaleOrder.search(self.sale_report_domain(doc), order="id")
         if self._edi_sale_report_via is not None:
             sales.write({self._edi_sale_report_via: False})
         # Construct sale order line list, if applicable
         if SaleLineReport is not None:
             lines = SaleOrderLine.search(
-                self.sale_line_report_domain(doc, sales), order='order_id, id'
+                self.sale_line_report_domain(doc, sales), order="order_id, id"
             )
-            linelist = (x.with_prefetch(lines._prefetch_ids) for x in
-                        self.sale_line_report_list(doc, lines))
+            linelist = (
+                x.with_prefetch(lines._prefetch_ids) for x in self.sale_line_report_list(doc, lines)
+            )
         # Prepare records
         SaleReport.prepare(doc, sales)
         if SaleLineReport is not None:
@@ -134,11 +132,12 @@ class EdiSaleReportDocument(models.AbstractModel):
         # Mark sale orders as reported upon by this document
         doc.ensure_one()
         SaleReport = self.sale_report_record_model(doc)
-        sale_reports = SaleReport.search([('doc_id', '=', doc.id)])
-        sales = sale_reports.mapped('sale_id')
+        sale_reports = SaleReport.search([("doc_id", "=", doc.id)])
+        sales = sale_reports.mapped("sale_id")
         if self._edi_sale_report_via is not None:
             reported_sales = sales.filtered(self._edi_sale_report_via)
             if reported_sales:
-                raise UserError(_("Report already generated for %s") %
-                                ", ".join(reported_sales.mapped('name')))
+                raise UserError(
+                    _("Report already generated for %s") % ", ".join(reported_sales.mapped("name"))
+                )
             sales.write({self._edi_sale_report_via: doc.id})

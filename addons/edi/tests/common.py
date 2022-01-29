@@ -39,62 +39,66 @@ class EdiTestFile(pathlib.PurePosixPath):
         return now if self.age is None else now - self.age
 
 
-@tagged('post_install', '-at_install')
+@tagged("post_install", "-at_install")
 class EdiCase(common.SavepointCase):
     """Base test case for EDI models"""
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.doc_type_unknown = cls.env.ref('edi.document_type_unknown')
+        cls.doc_type_unknown = cls.env.ref("edi.document_type_unknown")
 
         # Locate test file directory corresponding to the class (which
         # may be a derived class in a different module).
         module_file = sys.modules[cls.__module__].__file__
         module = get_resource_from_path(module_file)[0]
-        path = get_resource_path(module, 'tests', 'files')
+        path = get_resource_path(module, "tests", "files")
         if path:
             cls.files = pathlib.Path(path)
 
         # Delete any document types corresponding to non-existent
         # models, to avoid failures in edi.document.type.autocreate()
-        EdiDocumentType = cls.env['edi.document.type']
-        EdiDocumentType.search([]).filtered(
-            lambda x: x.model_id.model not in cls.env
-        ).unlink()
+        EdiDocumentType = cls.env["edi.document.type"]
+        EdiDocumentType.search([]).filtered(lambda x: x.model_id.model not in cls.env).unlink()
 
     @classmethod
     def create_attachment(cls, *filenames):
         """Create attachment(s)"""
-        IrAttachment = cls.env['ir.attachment']
+        IrAttachment = cls.env["ir.attachment"]
         attachments = IrAttachment.browse()
         for filename in filenames:
             path = cls.files.joinpath(filename)
-            attachments += IrAttachment.create({
-                'name': path.name,
-                'name': path.name,
-                'datas': base64.b64encode(path.read_bytes()),
-            })
+            attachments += IrAttachment.create(
+                {
+                    "name": path.name,
+                    "name": path.name,
+                    "datas": base64.b64encode(path.read_bytes()),
+                }
+            )
         return attachments
 
     @classmethod
     def create_input_attachment(cls, doc, *filenames):
         """Create input attachment(s)"""
         attachments = cls.create_attachment(*filenames)
-        attachments.write({
-            'res_model': 'edi.document',
-            'res_field': 'input_ids',
-            'res_id': doc.id,
-        })
+        attachments.write(
+            {
+                "res_model": "edi.document",
+                "res_field": "input_ids",
+                "res_id": doc.id,
+            }
+        )
         return attachments
 
     @classmethod
     def create_document(cls, doc_type):
         """Create document"""
-        EdiDocument = cls.env['edi.document']
-        doc = EdiDocument.create({
-            'doc_type_id': doc_type.id,
-        })
+        EdiDocument = cls.env["edi.document"]
+        doc = EdiDocument.create(
+            {
+                "doc_type_id": doc_type.id,
+            }
+        )
         return doc
 
     @classmethod
@@ -108,25 +112,26 @@ class EdiCase(common.SavepointCase):
     def create_output_attachment(cls, doc, *filenames):
         """Create output attachment(s)"""
         attachments = cls.create_attachment(*filenames)
-        attachments.write({
-            'res_model': 'edi.document',
-            'res_field': 'output_ids',
-            'res_id': doc.id,
-        })
+        attachments.write(
+            {
+                "res_model": "edi.document",
+                "res_field": "output_ids",
+                "res_id": doc.id,
+            }
+        )
         return attachments
 
     @classmethod
     def autoexec(cls, *filenames):
         """Autocreate and execute input document(s) from attachment(s)"""
-        EdiDocumentType = cls.env['edi.document.type']
+        EdiDocumentType = cls.env["edi.document.type"]
         attachments = cls.create_attachment(*filenames)
         docs = EdiDocumentType.autocreate(attachments)
         for doc in docs:
             doc.action_execute()
         return docs
 
-    def assertAttachment(self, attachment, filename=None, pattern=None,
-                         decode=bytes.decode):
+    def assertAttachment(self, attachment, filename=None, pattern=None, decode=bytes.decode):
         """Assert that attachment filename and content is as expected"""
         if filename is None:
             filename = attachment.name
@@ -138,27 +143,27 @@ class EdiCase(common.SavepointCase):
         try:
             maxDiff = self.maxDiff
             self.maxDiff = None
-            self.assertEqual(decode(base64.b64decode(attachment.datas)),
-                             decode(data))
+            self.assertEqual(decode(base64.b64decode(attachment.datas)), decode(data))
         finally:
             self.maxDiff = maxDiff
 
     def assertBinaryAttachment(self, attachment, filename=None, pattern=None):
         """Assert that attachment filename and content is as expected"""
-        self.assertAttachment(attachment, filename=filename, pattern=pattern,
-                              decode=lambda x: x)
+        self.assertAttachment(attachment, filename=filename, pattern=pattern, decode=lambda x: x)
 
     @contextmanager
     def assertRaisesIssue(self, entity, exception=UserError):
         """Assert that an issue is raised on the specified entity"""
-        EdiIssues = self.env['edi.issues']
+        EdiIssues = self.env["edi.issues"]
         old_issue_ids = entity.issue_ids
-        mute = ['odoo.addons.edi.models.edi_issues']
+        mute = ["odoo.addons.edi.models.edi_issues"]
         if issubclass(exception, DatabaseError):
-            mute.append('odoo.sql_db')
+            mute.append("odoo.sql_db")
         with mute_logger(*mute), patch.object(
-            EdiIssues.__class__, 'raise_issue', autospec=True,
-            side_effect=EdiIssues.__class__.raise_issue
+            EdiIssues.__class__,
+            "raise_issue",
+            autospec=True,
+            side_effect=EdiIssues.__class__.raise_issue,
         ) as mock_raise_issue:
             yield
         new_issue_ids = entity.issue_ids - old_issue_ids
@@ -172,8 +177,7 @@ class EdiCase(common.SavepointCase):
         # blame the first of those; otherwise we arbitrarily blame the
         # first exception.  This is something of a heuristic, but
         # should handle most cases correctly.
-        errors = [err for ((_self, _fmt, err), _kwargs) in
-                  mock_raise_issue.call_args_list]
+        errors = [err for ((_self, _fmt, err), _kwargs) in mock_raise_issue.call_args_list]
         scapegoat = sorted(errors, key=lambda x: isinstance(x, exception))[0]
 
         # Fail if more than one issue was raised, or if an unexpected
