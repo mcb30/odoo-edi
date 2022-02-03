@@ -6,7 +6,7 @@
     "license": "LGPL-3",
     "website": "https://unipart.io",
     "category": "Extra Tools",
-    "version": "11.0.1.0.0",
+    "version": "0.1",
     "depends": ["edi", "edi_sale", "sale_management"],
     "external_dependencies": {"python": ["jsonschema"]},
     "data": [
