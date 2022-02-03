@@ -24,7 +24,7 @@ class EdiDocument(models.Model):
 
     _inherit = "edi.document"
 
-    product_sap_ids = fields.One2many("edi.product.sap.record", "doc_id", string="Products")
+    product_sap_ids = fields.One2many("edi.product.sap.record", "doc_id", string="Products (SAP)")
 
 
 class EdiProductSapRecord(models.Model):
