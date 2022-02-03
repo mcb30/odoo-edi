@@ -41,7 +41,7 @@ class EdiProcurementRecord(models.Model):
     _edi_sync_target = "rule_id"
 
     rule_id = fields.Many2one(
-        "procurement.rule",
+        "stock.rule",
         string="Procurement Rule",
         required=False,
         readonly=True,
@@ -79,4 +79,4 @@ class EdiInactiveProcurementRecord(models.Model):
     _inherit = "edi.record.deactivator"
     _description = "Inactive Procurement Rule"
 
-    target_id = fields.Many2one("procurement.rule", string="Rule")
+    target_id = fields.Many2one("stock.rule", string="Rule")

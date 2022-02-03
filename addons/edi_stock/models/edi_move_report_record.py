@@ -12,7 +12,7 @@ class EdiDocument(models.Model):
     move_report_ids = fields.One2many(
         "edi.move.report.record",
         "doc_id",
-        string="Stock Moves",
+        string="Stock Move Reports",
     )
 
 

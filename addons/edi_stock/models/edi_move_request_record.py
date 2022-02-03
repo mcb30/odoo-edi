@@ -17,7 +17,7 @@ class EdiDocument(models.Model):
     move_request_ids = fields.One2many(
         "edi.move.request.record",
         "doc_id",
-        string="Stock Moves",
+        string="Stock Move Requests",
     )
 
 
