@@ -22,7 +22,7 @@ class TestTutorial(EdiQuantCase):
         """Create stock level report tutorial document"""
         return cls.create_document(cls.doc_type_tutorial)
 
-    def test01_basic(self):
+    def test_basic(self):
         """Basic document execution"""
         doc = self.create_tutorial()
         self.assertTrue(doc.action_prepare())
@@ -31,7 +31,7 @@ class TestTutorial(EdiQuantCase):
         self.assertEqual(len(doc.output_ids), 1)
         self.assertAttachment(doc.output_ids, "stock01.csv", pattern=r"STK\d+\.csv")
 
-    def test02_multiple(self):
+    def test_multiple(self):
         """Multiple source locations"""
         self.doc_type_tutorial.location_ids += self.loc_suppliers
         doc = self.create_tutorial()

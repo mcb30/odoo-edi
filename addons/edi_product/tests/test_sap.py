@@ -21,7 +21,7 @@ class TestSap(EdiProductCase):
         self.assertEqual(doc.input_ids, attachments)
         return doc
 
-    def test01_basic(self):
+    def test_basic(self):
         """Basic document execution"""
         doc = self.create_sap("LTESTEDI_00199014", "LTESTEDI_00199015")
         self.assertTrue(doc.action_execute())
@@ -31,7 +31,7 @@ class TestSap(EdiProductCase):
         self.assertEqual(products_by_barcode["5055365644456"].name, "Enrobed Mango")
         self.assertEqual(products_by_barcode["5055365625424"].name, "Amaretto Soaked Sultanas")
 
-    def test02_identical(self):
+    def test_identical(self):
         """Document and subsequent identical document"""
         doc1 = self.create_sap("LTESTEDI_00199014", "LTESTEDI_00199015")
         self.assertTrue(doc1.action_execute())
@@ -40,7 +40,7 @@ class TestSap(EdiProductCase):
         self.assertTrue(doc2.action_execute())
         self.assertEqual(len(doc2.product_sap_ids), 0)
 
-    def test03_correction(self):
+    def test_correction(self):
         """Document and subsequent corrected document"""
         doc1 = self.create_sap("LTESTEDI_00199014", "LTESTEDI_00199015")
         self.assertTrue(doc1.action_execute())

@@ -21,7 +21,7 @@ class TestLocation(EdiCase):
             }
         )
 
-    def test01_location(self):
+    def test_location(self):
         """Test stock location document with dummy input attachment"""
         EdiDocument = self.env["edi.document"]
         doc = EdiDocument.create(

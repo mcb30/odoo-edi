@@ -21,7 +21,7 @@ class TestRoute(EdiCase):
             }
         )
 
-    def test01_route(self):
+    def test_route(self):
         """Test stock route document with dummy input attachment"""
         EdiDocument = self.env["edi.document"]
         doc = EdiDocument.create(

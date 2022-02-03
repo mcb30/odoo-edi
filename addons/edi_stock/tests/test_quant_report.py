@@ -21,7 +21,7 @@ class TestQuantReport(EdiQuantCase):
             }
         )
 
-    def test01_empty(self):
+    def test_empty(self):
         """Test document with no stock"""
         EdiDocument = self.env["edi.document"]
         EdiQuantReport = self.env["edi.quant.report.record"]
@@ -35,7 +35,7 @@ class TestQuantReport(EdiQuantCase):
         quant_reports = EdiQuantReport.search([("doc_id", "=", doc.id)])
         self.assertFalse(quant_reports)
 
-    def test02_dummy(self):
+    def test_dummy(self):
         """Test document with dummy stock"""
         EdiDocument = self.env["edi.document"]
         EdiQuantReport = self.env["edi.quant.report.record"]

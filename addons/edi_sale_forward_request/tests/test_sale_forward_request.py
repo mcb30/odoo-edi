@@ -24,7 +24,7 @@ class TestSaleForwardRequest(EdiSaleCase):
         """Create sale order request tutorial document"""
         return cls.create_input_document(cls.doc_type_sale_forward_request, *filenames)
 
-    def test01_basic(self):
+    def test_basic(self):
         """Basic document execution"""
         doc = self.create_edi_document("order01.json")
         self.assertTrue(doc.action_execute())
@@ -48,7 +48,7 @@ class TestSaleForwardRequest(EdiSaleCase):
         self.assertEqual(len(order_line), 1)
         self.assertEqual(order_line.product_uom_qty, 7.0)
 
-    def test01_invalid_json(self):
+    def test_invalid_json(self):
         """Test json schema validation with invalid json"""
         doc = self.create_edi_document("order02.json")
         doc.action_execute()

@@ -73,14 +73,14 @@ class TestEdiTransfer(EdiCase):
         view_outputs = xfer.action_view_outputs()
         self.assertEqual(IrAttachment.search(view_outputs["domain"]), xfer.output_ids)
 
-    def test01_no_docs(self):
+    def test_no_docs(self):
         """Test with no documents"""
         self.assertEqual(self.xfer_monday.doc_count, 0)
         self.assertEqual(self.xfer_monday.input_count, 0)
         self.assertEqual(self.xfer_monday.output_count, 0)
         self.assertActionDomains(self.xfer_monday)
 
-    def test02_empty_doc(self):
+    def test_empty_doc(self):
         """Test with an empty document"""
         self.doc_todo.transfer_id = self.xfer_monday
         self.assertEqual(self.xfer_monday.doc_count, 1)
@@ -88,7 +88,7 @@ class TestEdiTransfer(EdiCase):
         self.assertEqual(self.xfer_monday.output_count, 0)
         self.assertActionDomains(self.xfer_monday)
 
-    def test03_input_doc(self):
+    def test_input_doc(self):
         """Test with a single-attachment input document"""
         self.create_input_attachment(self.doc_todo, "save_world.txt")
         self.xfer_monday.doc_ids += self.doc_todo
@@ -99,7 +99,7 @@ class TestEdiTransfer(EdiCase):
         self.assertEqual(self.xfer_monday.output_count, 0)
         self.assertActionDomains(self.xfer_monday)
 
-    def test04_output_doc(self):
+    def test_output_doc(self):
         """Test with a single-attachment output document"""
         self.create_output_attachment(self.doc_todo, "save_world.txt")
         self.xfer_monday.doc_ids += self.doc_todo
@@ -110,7 +110,7 @@ class TestEdiTransfer(EdiCase):
         self.assertEqual(self.xfer_monday.output_count, 1)
         self.assertActionDomains(self.xfer_monday)
 
-    def test05_multi_doc(self):
+    def test_multi_doc(self):
         """Test with multiple document and attachments"""
         self.create_input_attachment(self.doc_done, "hello_world.txt")
         self.create_input_attachment(self.doc_done, "save_world.txt")

@@ -16,12 +16,12 @@ class TestSapIDoc(EdiCase):
         cls.chocolate = cls.create_attachment("chocolate.txt")
         cls.hello = cls.create_attachment("hello_world.txt")
 
-    def test01_idoc_type(self):
+    def test_idoc_type(self):
         """Test detection of IDoc type"""
         self.assertEqual(sap_idoc_type(self.chocolate), ("MATMAS01", "MATMAS"))
         self.assertIsNone(sap_idoc_type(self.hello))
 
-    def test02_parser(self):
+    def test_parser(self):
         """Test IDoc parsing"""
         # pylint: disable=eval-used
         Matmas01 = SapIDoc("edi", "tests", "files", "matmas01.txt")

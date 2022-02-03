@@ -23,7 +23,7 @@ class TestRaw(EdiCase):
         self.assertEqual(docs.mapped("input_ids"), attachments)
         return docs
 
-    def test01_basic(self):
+    def test_basic(self):
         """Basic execution"""
         User = self.env["res.users"]
         doc = self.create_raw("res.users.csv")
@@ -46,14 +46,14 @@ class TestRaw(EdiCase):
         action = doc.action_view_raw()
         self.assertEqual(self.env[action["res_model"]].search(action["domain"]), users)
 
-    def test02_unknown_format(self):
+    def test_unknown_format(self):
         """Unknown file format"""
         doc = self.create_raw("res.users.csv")
         doc.input_ids.name = "res.users.garbage"
         with self.assertRaisesIssue(doc):
             doc.action_prepare()
 
-    def test03_unknown_field(self):
+    def test_unknown_field(self):
         """Unknown field in header row"""
         doc = self.create_raw("res.users.csv")
         attachment = doc.input_ids
@@ -63,7 +63,7 @@ class TestRaw(EdiCase):
         with self.assertRaisesIssue(doc):
             doc.action_prepare()
 
-    def test04_invalid_xmlid(self):
+    def test_invalid_xmlid(self):
         """Invalid value"""
         doc = self.create_raw("res.users.csv")
         attachment = doc.input_ids
@@ -77,14 +77,14 @@ class TestRaw(EdiCase):
         with self.assertRaisesIssue(doc):
             doc.action_execute()
 
-    def test05_prefixed_filename(self):
+    def test_prefixed_filename(self):
         """Prefixed model name in filename"""
         doc = self.create_raw("res.users.csv")
         attachment = doc.input_ids
         attachment.name = "01-initial-res.users.csv"
         self.assertTrue(doc.action_execute())
 
-    def test06_unknown_model(self):
+    def test_unknown_model(self):
         """Unrecognised model name in filename"""
         doc = self.create_raw("res.users.csv")
         attachment = doc.input_ids
@@ -92,7 +92,7 @@ class TestRaw(EdiCase):
         with self.assertRaisesIssue(doc):
             doc.action_prepare()
 
-    def test07_unrecognisable_filename(self):
+    def test_unrecognisable_filename(self):
         """Unrecognisable model name in filename"""
         doc = self.create_raw("res.users.csv")
         attachment = doc.input_ids

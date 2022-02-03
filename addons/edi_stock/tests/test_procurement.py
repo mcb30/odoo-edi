@@ -21,7 +21,7 @@ class TestProcurement(EdiCase):
             }
         )
 
-    def test01_procurement(self):
+    def test_procurement(self):
         """Test procurement rule document with dummy input attachment"""
         EdiDocument = self.env["edi.document"]
         doc = EdiDocument.create(

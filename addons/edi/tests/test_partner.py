@@ -39,7 +39,7 @@ class TestPartner(EdiCase):
             }
         )
 
-    def test01_partner(self):
+    def test_partner(self):
         """Test partner document with dummy input attachment"""
         EdiDocument = self.env["edi.document"]
         doc = EdiDocument.create(
@@ -51,7 +51,7 @@ class TestPartner(EdiCase):
         self.create_input_attachment(doc, "dummy.txt")
         doc.action_execute()
 
-    def test02_partner_title(self):
+    def test_partner_title(self):
         """Test partner title document with dummy input attachment"""
         EdiDocument = self.env["edi.document"]
         EdiPartnerTitleRecord = self.env["edi.partner.title.record"]

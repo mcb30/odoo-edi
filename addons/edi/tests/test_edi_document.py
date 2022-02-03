@@ -31,55 +31,55 @@ class TestEdiDocument(EdiCase):
             }
         )
 
-    def test01_prepare_document(self):
+    def test_prepare_document(self):
         """Test action prepare"""
         self.assertTrue(self.doc.action_prepare())
 
-    def test02_prepare_unknown_document(self):
+    def test_prepare_unknown_document(self):
         """Test action prepare unknown document"""
         self.doc.doc_type_id = self.doc_type_unknown
         with self.assertRaisesIssue(self.doc):
             self.doc.action_prepare()
 
-    def test03_unprepare_document(self):
+    def test_unprepare_document(self):
         """Test action unprepare"""
         self.assertTrue(self.doc.action_prepare())
         self.assertTrue(self.doc.action_unprepare())
 
-    def test04_execute_document(self):
+    def test_execute_document(self):
         """Test action execute"""
         self.assertTrue(self.doc.action_execute())
 
-    def test05_unprepare_executed_document(self):
+    def test_unprepare_executed_document(self):
         """Test action unprepare of an executed document"""
         self.assertTrue(self.doc.action_execute())
         with self.assertRaises(UserError):
             self.doc.action_unprepare()
 
-    def test06_execute_executed_document(self):
+    def test_execute_executed_document(self):
         """Test action execute of an executed document"""
         self.assertTrue(self.doc.action_execute())
         with self.assertRaises(UserError):
             self.doc.action_execute()
 
-    def test07_cancel_prepared_document(self):
+    def test_cancel_prepared_document(self):
         """Test action cancel of a prepared document"""
         self.assertTrue(self.doc.action_prepare())
         self.assertTrue(self.doc.action_cancel())
 
-    def test08_cancel_executed_document(self):
+    def test_cancel_executed_document(self):
         """Test action cancel of an executed document"""
         self.assertTrue(self.doc.action_execute())
         with self.assertRaises(UserError):
             self.doc.action_cancel()
 
-    def test09_prepare_executed_document(self):
+    def test_prepare_executed_document(self):
         """Test action prepare of an executed document"""
         self.assertTrue(self.doc.action_execute())
         with self.assertRaises(UserError):
             self.doc.action_prepare()
 
-    def test10_action_view_inputs(self):
+    def test_action_view_inputs(self):
         """Test action view inputs"""
         Attachment = self.env["ir.attachment"]
         action = self.doc.action_view_inputs()
@@ -92,7 +92,7 @@ class TestEdiDocument(EdiCase):
         self.assertIn(attachment, self.doc.input_ids)
         self.assertEqual(len(Attachment.search(action["domain"])), 1)
 
-    def test11_action_view_outputs(self):
+    def test_action_view_outputs(self):
         """Test action view outputs"""
         Attachment = self.env["ir.attachment"]
         action = self.doc.action_view_outputs()
@@ -105,7 +105,7 @@ class TestEdiDocument(EdiCase):
         self.assertIn(attachment, self.doc.output_ids)
         self.assertEqual(len(Attachment.search(action["domain"])), 1)
 
-    def test12_copy_document_one_attachment(self):
+    def test_copy_document_one_attachment(self):
         """Test copy a document with one input attachment"""
         save = self.create_input_attachment(self.doc, "save_world.txt")
         self.assertIn(save, self.doc.input_ids)
@@ -113,7 +113,7 @@ class TestEdiDocument(EdiCase):
         self.assertEqual(len(doc2.input_ids), 1)
         self.assertAttachment(doc2.input_ids[0], "save_world.txt")
 
-    def test13_copy_document_two_attachments(self):
+    def test_copy_document_two_attachments(self):
         """Test copy a document with two input attachments"""
         save = self.create_input_attachment(self.doc, "save_world.txt")
         destroy = self.create_input_attachment(self.doc, "destroy_world.txt")

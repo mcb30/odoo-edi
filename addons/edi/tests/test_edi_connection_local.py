@@ -50,7 +50,7 @@ class TestEdiConnectionLocal(test_edi_gateway.EdiGatewayFileSystemCase):
             ):
                 yield ctx
 
-    def test01_no_config(self):
+    def test_no_config(self):
         with patch.object(config, "get_misc", autospec=True) as mock_get_misc:
             mock_get_misc.return_value = None
 
@@ -59,7 +59,7 @@ class TestEdiConnectionLocal(test_edi_gateway.EdiGatewayFileSystemCase):
             mock_get_misc.reset_mock()
 
     @test_edi_gateway.skipUnlessCanReceive
-    def test02_global_config(self):
+    def test_global_config(self):
         with tempfile.TemporaryDirectory() as tempdir, patch.object(
             config, "get_misc", autospec=True
         ) as mock_get_misc:
@@ -127,7 +127,7 @@ class TestEdiConnectionLocal(test_edi_gateway.EdiGatewayFileSystemCase):
                 self.gateway.do_transfer()
 
     @test_edi_gateway.skipUnlessCanSend
-    def test03_path_in_file_name(self):
+    def test_path_in_file_name(self):
         """Local fs gateway used to accept filenames like ../../file, letting the user write
         to arbitrary locations.
         This checks if it throws an error in such a case."""

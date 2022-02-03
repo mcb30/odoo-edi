@@ -16,7 +16,7 @@ class TestPartnerTutorial(EdiCase):
         """Create partner tutorial document"""
         return cls.create_input_document(cls.doc_type_tutorial, *filenames)
 
-    def test01_basic(self):
+    def test_basic(self):
         """Basic document execution"""
         doc = self.create_tutorial("friends.csv")
         self.assertTrue(doc.action_execute())
@@ -28,7 +28,7 @@ class TestPartnerTutorial(EdiCase):
         self.assertEqual(partners_by_ref["E"].title.name, "Ms")
         self.assertFalse(partners_by_ref["U"].title)
 
-    def test02_identical(self):
+    def test_identical(self):
         """Document and subsequent identical document"""
         doc1 = self.create_tutorial("friends.csv")
         self.assertTrue(doc1.action_execute())
@@ -37,7 +37,7 @@ class TestPartnerTutorial(EdiCase):
         self.assertTrue(doc2.action_execute())
         self.assertEqual(len(doc2.partner_tutorial_ids), 0)
 
-    def test03_correction(self):
+    def test_correction(self):
         """Document and subsequent correction document"""
         doc1 = self.create_tutorial("friends.csv")
         self.assertTrue(doc1.action_execute())
@@ -51,7 +51,7 @@ class TestPartnerTutorial(EdiCase):
         self.assertEqual(partners.ref, "E")
         self.assertEqual(partners.email, "eve@example.com")
 
-    def test04_correction2(self):
+    def test_correction2(self):
         """Document and subsequent correction document"""
         Title = self.env["res.partner.title"]
         doc1 = self.create_tutorial("friends.csv")

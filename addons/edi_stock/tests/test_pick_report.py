@@ -39,7 +39,7 @@ class TestPickReport(EdiPickCase):
         cls.create_move(cls.pick_in, None, cls.apple, 5)
         cls.create_move(cls.pick_in, None, cls.banana, 7)
 
-    def test01_empty(self):
+    def test_empty(self):
         """Test document with no pickings"""
         EdiDocument = self.env["edi.document"]
         EdiPickReport = self.env["edi.pick.report.record"]
@@ -56,7 +56,7 @@ class TestPickReport(EdiPickCase):
         self.assertFalse(pick_reports)
         self.assertFalse(move_reports)
 
-    def test02_dummy(self):
+    def test_dummy(self):
         """Test document with dummy picking"""
         EdiDocument = self.env["edi.document"]
         EdiPickReport = self.env["edi.pick.report.record"]
@@ -78,7 +78,7 @@ class TestPickReport(EdiPickCase):
         self.assertEqual(move_reports_by_product["APPLE"].qty, 5)
         self.assertEqual(move_reports_by_product["BANANA"].qty, 7)
 
-    def test03_duplicate(self):
+    def test_duplicate(self):
         """Test attempt to create duplicate pick report"""
         EdiDocument = self.env["edi.document"]
         self.complete_picks(self.pick_in)

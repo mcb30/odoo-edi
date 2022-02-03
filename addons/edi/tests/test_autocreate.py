@@ -32,7 +32,7 @@ class TestAutocreate(EdiCase):
         )
         return wizard
 
-    def test01_basic(self):
+    def test_basic(self):
         """Basic autocreation"""
         doc1 = self.autocreate("dummy.txt")
         self.assertEqual(len(doc1), 1)
@@ -41,7 +41,7 @@ class TestAutocreate(EdiCase):
         self.assertEqual(len(doc2), 1)
         self.assertEqual(doc2.doc_type_id, self.doc_type_raw)
 
-    def test02_order(self):
+    def test_order(self):
         """Order of autocreated documents"""
         EdiDocument = self.env["edi.document"]
         docs = self.autocreate("dummy.txt", "res.users.csv", "hello_world.txt")
@@ -59,7 +59,7 @@ class TestAutocreate(EdiCase):
         )
         self.assertEqual(list(docs), list(EdiDocument.search([("id", "in", docs.ids)])))
 
-    def test03_wizard_create(self):
+    def test_wizard_create(self):
         """Autocreate via wizard"""
         EdiDocument = self.env["edi.document"]
         wizard = self.create_wizard("dummy.txt", "res.users.csv", "friends.csv")
@@ -73,7 +73,7 @@ class TestAutocreate(EdiCase):
         self.assertEqual(wizard.doc_ids[1].state, "draft")
         self.assertEqual(EdiDocument.search(action["domain"]), wizard.doc_ids)
 
-    def test04_wizard_prepare(self):
+    def test_wizard_prepare(self):
         """Autocreate and prepare via wizard"""
         EdiDocument = self.env["edi.document"]
         wizard = self.create_wizard("res.users.csv")
@@ -83,7 +83,7 @@ class TestAutocreate(EdiCase):
         self.assertEqual(wizard.doc_ids.state, "prep")
         self.assertEqual(EdiDocument.search(action["domain"]), wizard.doc_ids)
 
-    def test05_wizard_execute(self):
+    def test_wizard_execute(self):
         """Autocreate and execute via wizard"""
         EdiDocument = self.env["edi.document"]
         wizard = self.create_wizard("res.users.csv")
@@ -93,7 +93,7 @@ class TestAutocreate(EdiCase):
         self.assertEqual(wizard.doc_ids.state, "done")
         self.assertEqual(EdiDocument.search(action["domain"]), wizard.doc_ids)
 
-    def test06_no_inputs(self):
+    def test_no_inputs(self):
         """Missing input attachments"""
         wizard = self.create_wizard()
         with self.assertRaises(UserError):

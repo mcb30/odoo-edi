@@ -16,7 +16,7 @@ class TestLocationTutorial(EdiCase):
         """Create stock location tutorial document"""
         return cls.create_input_document(cls.doc_type_tutorial, *filenames)
 
-    def test01_basic(self):
+    def test_basic(self):
         """Basic document execution"""
         doc = self.create_tutorial("places.csv")
         self.assertTrue(doc.action_execute())
@@ -28,7 +28,7 @@ class TestLocationTutorial(EdiCase):
         self.assertEqual(locs_by_code["LOC003"].barcode, "LOC003")
         self.assertEqual(locs_by_code["LOC101"].location_id, locs_by_code["ZONE01"])
 
-    def test02_identical(self):
+    def test_identical(self):
         """Document and subsequent identical document"""
         doc1 = self.create_tutorial("places.csv")
         self.assertTrue(doc1.action_execute())

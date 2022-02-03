@@ -16,7 +16,7 @@ class TestTutorial(EdiPickCase):
         """Create stock transfer request tutorial document"""
         return cls.create_input_document(cls.doc_type_tutorial, *filenames)
 
-    def test01_basic(self):
+    def test_basic(self):
         """Basic document execution"""
 
         # out01 creates two moves
@@ -53,7 +53,7 @@ class TestTutorial(EdiPickCase):
         self.assertNotEqual(moves_by_code["APPLE"].state, "cancel")
         self.assertEqual(moves_by_code["BANANA"].state, "cancel")
 
-    def test02_no_match(self):
+    def test_no_match(self):
         """Filename with no matched picking type"""
         doc = self.create_tutorial("out01.csv")
         self.pick_type_out.sequence_id.prefix = "WH/NOTOUT/"
@@ -62,7 +62,7 @@ class TestTutorial(EdiPickCase):
         self.pick_type_out.sequence_id.prefix = "OUT"
         self.assertTrue(doc.action_prepare())
 
-    def test03_multi_match(self):
+    def test_multi_match(self):
         """Filename with multiple matched picking types"""
         doc = self.create_tutorial("out01.csv")
         self.pick_type_in.sequence_id.prefix = "ALSO/OUT/"
@@ -74,7 +74,7 @@ class TestTutorial(EdiPickCase):
         self.assertEqual(len(pick_types), 1)
         self.assertEqual(pick_types, self.pick_type_in)
 
-    def test04_started_picking(self):
+    def test_started_picking(self):
         """Picking already started but not validated"""
         doc = self.create_tutorial("out01.csv")
         self.assertTrue(doc.action_execute())
@@ -88,7 +88,7 @@ class TestTutorial(EdiPickCase):
         with self.assertRaisesIssue(doc):
             doc.action_execute()
 
-    def test05_partially_completed_picking(self):
+    def test_partially_completed_picking(self):
         """Picking completed but the request partially fulfilled. Creates a
         backorder which can be updated with a new update request
         """
@@ -107,7 +107,7 @@ class TestTutorial(EdiPickCase):
         self.assertEqual(moves_by_code["APPLE"].product_uom_qty, 3)
         self.assertEqual(moves_by_code["BANANA"].product_uom_qty, 5)
 
-    def test06_repeat_create(self):
+    def test_repeat_create(self):
         """Create the same two times"""
         doc = self.create_tutorial("out01.csv")
         self.assertTrue(doc.action_execute())
@@ -115,19 +115,19 @@ class TestTutorial(EdiPickCase):
         with self.assertRaisesIssue(doc):
             doc.action_execute()
 
-    def test07_update_without_create(self):
+    def test_update_without_create(self):
         """Update without create"""
         doc = self.create_tutorial("out02.csv")
         with self.assertRaisesIssue(doc):
             doc.action_execute()
 
-    def test08_cancel_without_create(self):
+    def test_cancel_without_create(self):
         """Cancel without create"""
         doc = self.create_tutorial("out03.csv")
         with self.assertRaisesIssue(doc):
             doc.action_execute()
 
-    def test09_no_tracking(self):
+    def test_no_tracking(self):
         """Input with no tracking key"""
         doc = self.create_tutorial("out01.csv")
         self.assertTrue(doc.action_prepare())
@@ -137,7 +137,7 @@ class TestTutorial(EdiPickCase):
         self.assertEqual(len(moves), 2)
         self.assertFalse(moves.mapped("edi_tracker_id"))
 
-    def test10_multiple_moves(self):
+    def test_multiple_moves(self):
         """Test failure when multiple existing moves found"""
         doc1 = self.create_tutorial("out01.csv")
         self.assertTrue(doc1.action_execute())

@@ -27,7 +27,7 @@ class TestTutorial(EdiPickCase):
         """Create stock transfer report tutorial document"""
         return cls.create_document(cls.doc_type_tutorial)
 
-    def test01_basic(self):
+    def test_basic(self):
         """Basic document execution"""
         self.complete_picks(self.pick_morning)
         doc = self.create_tutorial()
@@ -37,7 +37,7 @@ class TestTutorial(EdiPickCase):
         self.assertEqual(len(doc.output_ids), 1)
         self.assertAttachment(doc.output_ids, "in01.csv", pattern=r"IN\d+\.csv")
 
-    def test02_combined(self):
+    def test_combined(self):
         """Multiple pickings"""
         self.complete_picks(self.pick_morning)
         self.complete_picks(self.pick_afternoon)
@@ -48,7 +48,7 @@ class TestTutorial(EdiPickCase):
         self.assertAttachment(in01, "in01.csv", pattern=r"IN\d+\.csv")
         self.assertAttachment(in02, "in02.csv", pattern=r"IN\d+\.csv")
 
-    def test03_multiple(self):
+    def test_multiple(self):
         """Multiple reports"""
         self.complete_picks(self.pick_morning)
         doc1 = self.create_tutorial()
@@ -61,7 +61,7 @@ class TestTutorial(EdiPickCase):
         self.assertEqual(len(doc2.output_ids), 1)
         self.assertAttachment(doc2.output_ids, "in02.csv", pattern=r"IN\d+\.csv")
 
-    def test04_cancelled_pick(self):
+    def test_cancelled_pick(self):
         """Cancelled picks"""
         self.pick_morning.action_cancel()
         self.complete_picks(self.pick_afternoon)
@@ -70,7 +70,7 @@ class TestTutorial(EdiPickCase):
         self.assertEqual(len(doc.output_ids), 1)
         self.assertAttachment(doc.output_ids, "in02.csv", pattern=r"IN\d+\.csv")
 
-    def test05_cancelled_move(self):
+    def test_cancelled_move(self):
         """Cancelled moves"""
         self.pick_morning.move_lines.filtered(lambda x: x.product_id == self.apple)._action_cancel()
         self.complete_picks(self.pick_morning)
@@ -79,14 +79,14 @@ class TestTutorial(EdiPickCase):
         self.assertEqual(len(doc.output_ids), 1)
         self.assertAttachment(doc.output_ids, "in03.csv", pattern=r"IN\d+\.csv")
 
-    def test06_autoemit(self):
+    def test_autoemit(self):
         """Autoemit functionality"""
         self.complete_picks(self.pick_morning)
         doc = self.doc_type_tutorial.autoemit()
         self.assertEqual(len(doc.output_ids), 1)
         self.assertAttachment(doc.output_ids, "in01.csv", pattern=r"IN\d+\.csv")
 
-    def test07_trigger_autoemit(self):
+    def test_trigger_autoemit(self):
         """Autoemit functionality triggered on pick completion"""
         self.pick_type_in.edi_pick_report_autoemit = True
         self.complete_picks(self.pick_morning)

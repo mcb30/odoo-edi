@@ -223,7 +223,7 @@ class EdiGatewayCommonCase(EdiGatewayCase):
             }
         )
 
-    def test01_action_view_cron(self):
+    def test_action_view_cron(self):
         """Test view scheduled jobs"""
         IrCron = self.env["ir.cron"]
         action = self.gateway.action_view_cron()
@@ -238,7 +238,7 @@ class EdiGatewayCommonCase(EdiGatewayCase):
         action = self.gateway.action_view_cron()
         self.assertEqual(len(IrCron.search(action["domain"])), 1)
 
-    def test02_action_view_paths(self):
+    def test_action_view_paths(self):
         """Test view paths"""
         EdiPath = self.env["edi.gateway.path"]
         action = self.gateway.action_view_paths()
@@ -253,21 +253,21 @@ class EdiGatewayCommonCase(EdiGatewayCase):
         action = self.gateway.action_view_paths()
         self.assertIn(path, EdiPath.search(action["domain"]))
 
-    def test03_action_view_transfers(self):
+    def test_action_view_transfers(self):
         """Test view transfers"""
         EdiTransfer = self.env["edi.transfer"]
         action = self.gateway.action_view_transfers()
         self.assertEqual(EdiTransfer.search(action["domain"]), self.xfer)
         self.assertEqual(len(EdiTransfer.search(action["domain"])), self.gateway.transfer_count)
 
-    def test04_action_view_docs(self):
+    def test_action_view_docs(self):
         """Test view documents"""
         EdiDocument = self.env["edi.document"]
         action = self.gateway.action_view_docs()
         self.assertEqual(EdiDocument.search(action["domain"]), self.doc)
         self.assertEqual(len(EdiDocument.search(action["domain"])), self.gateway.doc_count)
 
-    def test05_ssh_connect(self):
+    def test_ssh_connect(self):
         """Test connect to SSH server"""
         self.gateway.server = "dummy"
         self.gateway.username = "user"
@@ -298,7 +298,7 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
         pass
 
     @skipUnlessCanInitiate
-    def test01_action_test(self):
+    def test_action_test(self):
         """Test the ability to test the connection"""
         old_messages = self.gateway.message_ids
         self.gateway.action_test()
@@ -306,7 +306,7 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
         self.assertEqual(len(new_messages), 1)
 
     @skipUnlessCanInitiate
-    def test02_transfer_no_paths(self):
+    def test_transfer_no_paths(self):
         """Test transfer (with no paths defined)"""
         self.gateway.path_ids.unlink()
         old_transfers = self.gateway.transfer_ids
@@ -316,14 +316,14 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
         self.assertEqual(len(new_transfers), 1)
 
     @skipUnlessCanInitiate
-    def test03_action_transfer_no_paths(self):
+    def test_action_transfer_no_paths(self):
         """Test transfer action (with no paths defined)"""
         self.gateway.path_ids.unlink()
         self.assertTrue(self.gateway.action_transfer())
 
     @skipUnlessCanInitiate
     @skipUnlessCanReceive
-    def test04_transfer_receive(self):
+    def test_transfer_receive(self):
         """Test receiving attachments"""
         self.gateway.automatic = False
         with self.patch_paths({self.path_receive: ["hello_world.txt"]}):
@@ -346,7 +346,7 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
 
     @skipUnlessCanInitiate
     @skipUnlessCanSend
-    def test05_transfer_send(self):
+    def test_transfer_send(self):
         """Test sending attachments"""
         EdiDocument = self.env["edi.document"]
         today = fields.Datetime.now()
@@ -374,7 +374,7 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
 
     @skipUnlessCanInitiate
     @skipUnlessCanReceive
-    def test06_receive_age_window(self):
+    def test_receive_age_window(self):
         """Test receive age window"""
         old_file = EdiTestFile("hello_world.txt", age=timedelta(hours=36))
         with self.patch_paths({self.path_receive: [old_file]}):
@@ -396,7 +396,7 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
             self.assertAttachment(transfer.input_ids, "hello_world.txt")
 
     @skipUnlessCanInitiate
-    def test07_safety_catch(self):
+    def test_safety_catch(self):
         """Test safety catch"""
         EdiTransfer = self.env["edi.transfer"]
         self.gateway.path_ids.unlink()
@@ -444,7 +444,7 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
 
     @skipUnlessCanInitiate
     @skipUnlessCanReceive
-    def test08_transfer_receive_processing(self):
+    def test_transfer_receive_processing(self):
         """Test receiving attachments and processing"""
         EdiDocumentType = self.env["edi.document.type"]
         IrModel = self.env["ir.model"]
@@ -476,7 +476,7 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
             self.assertEqual(doc.state, "draft")
 
     @skipUnlessCanInitiate
-    def test09_action_test_fail(self):
+    def test_action_test_fail(self):
         """Test the ability to test the connection"""
         Model = self.env[self.gateway.model_id.model]
         with patch.object(Model.__class__, "connect", autospec=True, side_effect=Exception):
@@ -489,7 +489,7 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
 
     @skipUnlessCanInitiate
     @skipUnlessCanReceive
-    def test10_transfer_receive_glob(self):
+    def test_transfer_receive_glob(self):
         """Test filtering receive path by glob"""
         with self.patch_paths({self.path_receive: ["hello_world.txt"]}):
             self.path_receive.glob = "*.csv"
@@ -512,7 +512,7 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
 
     @skipUnlessCanInitiate
     @skipUnlessCanSend
-    def test11_transfer_send_glob(self):
+    def test_transfer_send_glob(self):
         """Test filtering send path by glob"""
         EdiDocument = self.env["edi.document"]
         today = fields.Datetime.now()
@@ -542,7 +542,7 @@ class EdiGatewayConnectionCase(EdiGatewayCase):
     @skipUnlessCanInitiate
     @skipUnlessCanSend
     @skipUnlessConfigurableResend
-    def test12_transfer_send_once(self):
+    def test_transfer_send_once(self):
         """Test persist flag stops file from being sent in second transfer"""
         EdiDocument = self.env["edi.document"]
         EdiTransfer = self.env["edi.transfer"]

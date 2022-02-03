@@ -26,7 +26,7 @@ class TestTutorial(EdiSaleCase):
         """Create sale order report tutorial document"""
         return cls.create_document(cls.doc_type_tutorial)
 
-    def test01_basic(self):
+    def test_basic(self):
         """Basic document execution"""
         self.complete_sale(self.fruit_salad)
         doc = self.create_tutorial()

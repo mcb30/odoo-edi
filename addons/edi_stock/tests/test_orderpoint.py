@@ -26,7 +26,7 @@ class TestOrderpoint(EdiOrderpointCase):
             }
         )
 
-    def test01_empty(self):
+    def test_empty(self):
         """Test document with no input attachments"""
         EdiDocument = self.env["edi.document"]
         doc = EdiDocument.create(
@@ -38,7 +38,7 @@ class TestOrderpoint(EdiOrderpointCase):
         with self.assertRaisesIssue(doc):
             doc.action_prepare()
 
-    def test02_dummy(self):
+    def test_dummy(self):
         """Test document with dummy input attachment"""
         EdiDocument = self.env["edi.document"]
         doc = EdiDocument.create(

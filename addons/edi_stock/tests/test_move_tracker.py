@@ -14,7 +14,7 @@ class TestMoveTracker(EdiPickCase):
         cls.tracker_yellow = Tracker.create({"name": "Yellow"})
         cls.tracker_green = Tracker.create({"name": "Green"})
 
-    def test01_pick_ids(self):
+    def test_pick_ids(self):
         """Test associated stock transfer calculation"""
         first = self.create_pick(self.pick_type_in)
         self.create_move(first, self.tracker_red, self.apple, 3)

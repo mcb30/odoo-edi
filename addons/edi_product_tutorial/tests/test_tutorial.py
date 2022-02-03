@@ -19,7 +19,7 @@ class TestTutorial(EdiProductCase):
         """Create product tutorial document"""
         return cls.create_input_document(cls.doc_type_tutorial, *filenames)
 
-    def test01_basic(self):
+    def test_basic(self):
         """Basic document execution"""
         doc = self.create_tutorial("books01.csv")
         self.assertTrue(doc.action_execute())
@@ -29,14 +29,14 @@ class TestTutorial(EdiProductCase):
         self.assertEqual(products_by_code["9780552146166"].uom_id, self.dozens)
         self.assertEqual(products_by_code["9780552145428"].name, "Hogfather")
 
-    def test02_basic(self):
+    def test_basic2(self):
         """Basic document execution (with fruit)"""
         doc = self.create_tutorial("fruit01.csv")
         self.assertTrue(doc.action_execute())
         products = doc.mapped("product_tutorial_ids.product_id")
         self.assertEqual(len(products), 3)
 
-    def test03_identical(self):
+    def test_identical(self):
         """Document and subsequent identical document"""
         doc1 = self.create_tutorial("books01.csv")
         self.assertTrue(doc1.action_execute())
@@ -45,7 +45,7 @@ class TestTutorial(EdiProductCase):
         self.assertTrue(doc2.action_execute())
         self.assertEqual(len(doc2.product_tutorial_ids), 0)
 
-    def test04_correction(self):
+    def test_correction(self):
         """Document and subsequent corrected document"""
         doc1 = self.create_tutorial("books01.csv")
         self.assertTrue(doc1.action_execute())
@@ -58,7 +58,7 @@ class TestTutorial(EdiProductCase):
         self.assertEqual(product.uom_id, self.units)
         self.assertEqual(product.name, "The Fifth Elephant")
 
-    def test05_deactivate(self):
+    def test_deactivate(self):
         """Deactivation of unmentioned products"""
         doc1 = self.create_tutorial("books02.csv")
         self.assertTrue(doc1.action_execute())
@@ -72,7 +72,7 @@ class TestTutorial(EdiProductCase):
         self.assertFalse(product.active)
         self.assertEqual(product.name, "Witches Abroad")
 
-    def test06_reactivate(self):
+    def test_reactivate(self):
         """Ability to reactivate deactivated products"""
         doc1 = self.create_tutorial("books02.csv")
         self.assertTrue(doc1.action_execute())

@@ -27,7 +27,7 @@ class TestSaleReport(EdiSaleCase):
         cls.create_sale_line(cls.sale, cls.apple, 5)
         cls.create_sale_line(cls.sale, cls.banana, 7)
 
-    def test01_empty(self):
+    def test_empty(self):
         """Test document with no sale orders"""
         EdiDocument = self.env["edi.document"]
         EdiSaleReport = self.env["edi.sale.report.record"]
@@ -44,7 +44,7 @@ class TestSaleReport(EdiSaleCase):
         self.assertFalse(sale_reports)
         self.assertFalse(line_reports)
 
-    def test02_dummy(self):
+    def test_dummy(self):
         """Test document with dummy sale order"""
         EdiDocument = self.env["edi.document"]
         EdiSaleReport = self.env["edi.sale.report.record"]
@@ -66,7 +66,7 @@ class TestSaleReport(EdiSaleCase):
         self.assertEqual(line_reports_by_product["APPLE"].qty_delivered, 5)
         self.assertEqual(line_reports_by_product["BANANA"].qty_delivered, 7)
 
-    def test03_duplicate(self):
+    def test_duplicate(self):
         """Test attempt to create duplicate sale order report"""
         EdiDocument = self.env["edi.document"]
         self.complete_sale(self.sale)
