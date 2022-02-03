@@ -32,9 +32,9 @@ class StockPicking(models.Model):
 
     _inherit = "stock.picking"
 
-    def action_done(self):
+    def _action_done(self):
         """Extend action done to trigger creation of EDI documents"""
-        res = super().action_done()
+        res = super()._action_done()
         self.mapped("picking_type_id").filtered(
             lambda x: x.edi_pick_report_autoemit
         ).action_edi_pick_report()

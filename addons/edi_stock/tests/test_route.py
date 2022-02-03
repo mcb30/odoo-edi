@@ -9,7 +9,6 @@ class TestRoute(EdiCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        EdiRecordType = cls.env["edi.record.type"]
         EdiDocumentType = cls.env["edi.document.type"]
         IrModel = cls.env["ir.model"]
         cls.rec_type_route = cls.env.ref("edi_stock.route_record_type")

@@ -99,7 +99,7 @@ class TestTutorial(EdiPickCase):
         pick.action_assign()
         for move in moves:
             move.quantity_done = 1
-        pick.action_done()
+        pick._action_done()
         doc = self.create_tutorial("out02.csv")
         self.assertTrue(doc.action_execute())
         moves = doc.mapped("move_request_tutorial_ids.move_id")

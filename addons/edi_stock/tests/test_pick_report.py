@@ -25,6 +25,8 @@ class TestPickReport(EdiPickCase):
             }
         )
         cls.pick_type_in = cls.env.ref("stock.picking_type_in")
+        # Allow transfers to the location by changing it from a view location
+        cls.pick_type_in.default_location_dest_id.usage = "internal"
         cls.doc_type_pick_report = EdiDocumentType.create(
             {
                 "name": "Dummy stock transfer report document",

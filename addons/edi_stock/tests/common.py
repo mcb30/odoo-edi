@@ -100,7 +100,7 @@ class EdiPickCase(EdiCase):
         moves = picks.mapped("move_lines").filtered(lambda x: x.state not in ("done", "cancel"))
         for move in moves:
             move.quantity_done = move.product_uom_qty
-        picks.action_done()
+        picks._action_done()
         for pick in picks:
             self.assertEqual(pick.state, "done")
 
