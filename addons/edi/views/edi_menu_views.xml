@@ -13,10 +13,6 @@
     <menuitem name="Records" id="record_menu" parent="root_menu"
 	      sequence="20"/>
 
-    <!-- Records/UDES menu -->
-    <menuitem id="record_udes_menu" name="UDES"
-	      parent="record_menu" sequence="30"/>
-
     <!-- Records SAP submenu -->
     <menuitem name="SAP" id="sap_menu" parent="record_menu"
 	      sequence="50"/>

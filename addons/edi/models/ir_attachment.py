@@ -19,7 +19,6 @@ class IrAttachment(models.Model):
         )
         for attachment in edi_document_attachments:
             doc = EdiDocument.browse(attachment.res_id)
-
             if doc.doc_type_id.enforce_filename:
                 recs = EdiGatewayPath.search(
                     [("doc_type_ids", "=", doc.doc_type_id.id)]
@@ -27,11 +26,12 @@ class IrAttachment(models.Model):
                 if recs:
                     globs = recs.mapped("glob")
                     for input in doc.input_ids:
-                        passed = False
-                        for glob in globs:
-                            if fnmatch.fnmatch(input.datas_fname, glob):
-                                passed = True
-                                break
+                        passed = bool(
+                            any(
+                                fnmatch.fnmatch(input.store_fname, glob)
+                                for glob in globs
+                            )
+                        )
                         if not passed:
                             raise ValidationError(
                                 _("Invalid filename when trying to attach.")
