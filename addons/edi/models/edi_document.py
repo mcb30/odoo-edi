@@ -84,6 +84,11 @@ class EdiDocumentType(models.Model):
         default=True, string="Active", help="Display in list views or searches."
     )
 
+    # Optionally enforce filename globs
+    enforce_filename = fields.Boolean(string="Enforce Document Filenames",
+                                  help="Enforce document filenames follow glob pattern",
+                                  default=False)
+
     _sql_constraints = [("model_uniq", "unique (model_id)", "The document model must be unique")]
 
     @api.model
