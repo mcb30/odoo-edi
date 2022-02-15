@@ -43,11 +43,20 @@ class EdiLookupRelationship(object):
         self.target = target
         self.via = via if via else key
         self.domain = (
-            domain if callable(domain) else (lambda self: domain) if domain else (lambda self: [])
+            domain
+            if callable(domain)
+            else (lambda self: domain)
+            if domain
+            else (lambda self: [])
         )
 
     def __repr__(self):
-        return "%s(%r, %r, %r)" % (self.__class__.__name__, self.key, self.target, self.via)
+        return "%s(%r, %r, %r)" % (
+            self.__class__.__name__,
+            self.key,
+            self.target,
+            self.via,
+        )
 
 
 class EdiRecordType(models.Model):
@@ -170,7 +179,9 @@ class EdiRecord(models.AbstractModel):
                         ]
                     )
                 )
-                targets_by_key = {k: v.ensure_one() for k, v in targets.groupby(rel.via)}
+                targets_by_key = {
+                    k: v.ensure_one() for k, v in targets.groupby(rel.via)
+                }
 
                 # Update target fields
                 for key, recs in batch.groupby(keygetter):
@@ -254,9 +265,13 @@ class EdiRecord(models.AbstractModel):
         except StopIteration:
             return ()
         defaults = tuple(
-            (k, v) for k, v in target._add_missing_default_values(first).items() if k not in first
+            (k, v)
+            for k, v in target._add_missing_default_values(first).items()
+            if k not in first
         )
-        return (dict(chain(defaults, vals.items())) for vals in chain((first,), iterator))
+        return (
+            dict(chain(defaults, vals.items())) for vals in chain((first,), iterator)
+        )
 
     def precache(self):
         """Precache associated records
@@ -269,12 +284,6 @@ class EdiRecord(models.AbstractModel):
         for rel in self._edi_relates:
             self.mapped("%s.%s" % (rel.target, rel.via))
 
-    @staticmethod
-    def _add_doc_id(doc, vlist):
-        for record_vals in vlist:
-            record_vals["doc_id"] = doc.id
-            yield record_vals
-
     @api.model
     def prepare(self, doc, vlist):
         """Prepare records
@@ -286,13 +295,15 @@ class EdiRecord(models.AbstractModel):
         """
 
         # Initialise statistics
-        count = 0
         _logger.info("%s preparing %s", doc.name, self._name)
 
         # Create records
         with self.statistics() as stats:
             try:
-                self.create(list(self._add_doc_id(doc, vlist)))
+                vals = [
+                    {**record_vals, "doc_id": doc.id} for record_vals in vlist
+                ]
+                self.create(vals)
                 self.recompute()
             except NoRecordValuesError:
                 # Values dictionary iterable was not implemented (most
