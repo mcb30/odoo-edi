@@ -7,6 +7,7 @@ from . import test_edi_connection_sftp
 from . import test_edi_document
 from . import test_edi_issue
 from . import test_edi_transfer
+from . import test_groupby
 from . import test_iterators
 from . import test_partner
 from . import test_raw
