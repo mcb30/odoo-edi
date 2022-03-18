@@ -138,4 +138,5 @@ def _valid_field_parameter(self, field, name):
 
     if EdiRecord is not None and issubclass(self.__class__, EdiRecord.__class__):
         allowed_params.append("edi_relates")
+        allowed_params.append("edi_relates_domain")
     return name in allowed_params
