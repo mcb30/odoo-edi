@@ -69,8 +69,8 @@
 	      <group name="basic">
 		<field name="doc_type_id"
 		       attrs="{'readonly': [('create_date','!=',False)]}"/>
-		<field name="gateway_id"/>
-		<field name="transfer_id"/>
+		<field name="gateway_id" groups="edi.group_edi_gateway_view"/>
+		<field name="transfer_id" groups="edi.group_edi_gateway_view"/>
 	      </group>
 	      <group name="history">
 		<field name="create_date" readonly="1"/>
@@ -105,8 +105,8 @@
 	      decoration-danger="issue_count">
 	  <field name="name"/>
 	  <field name="doc_type_id"/>
-	  <field name="gateway_id"/>
-	  <field name="transfer_id"/>
+	  <field name="gateway_id" groups="edi.group_edi_gateway_view"/>
+	  <field name="transfer_id" groups="edi.group_edi_gateway_view"/>
 	  <field name="state"/>
 	  <field name="issue_count"/>
 	  <field name="create_date"/>
@@ -124,8 +124,8 @@
 	<search string="Search EDI Document">
 	  <field name="name"/>
 	  <field name="doc_type_id"/>
-	  <field name="gateway_id"/>
-	  <field name="transfer_id"/>
+	  <field name="gateway_id" groups="edi.group_edi_gateway_view"/>
+	  <field name="transfer_id" groups="edi.group_edi_gateway_view"/>
 	  <field name="input_ids"/>
 	  <field name="output_ids"/>
 	  <field name="state"/>
@@ -141,9 +141,9 @@
 	    <filter name="by_state" string="Status" domain="[]"
 		    context="{'group_by': 'state'}"/>
 	    <filter name="by_gateway_id" string="Gateway" domain="[]"
-		    context="{'group_by': 'gateway_id'}"/>
+		    context="{'group_by': 'gateway_id'}" groups="edi.group_edi_gateway_view"/>
 	    <filter name="by_transfer_id" string="Transfer" domain="[]"
-		    context="{'group_by': 'transfer_id'}"/>
+		    context="{'group_by': 'transfer_id'}" groups="edi.group_edi_gateway_view"/>
 	  </group>
 	</search>
       </field>

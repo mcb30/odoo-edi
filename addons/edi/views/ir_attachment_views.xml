@@ -125,7 +125,8 @@
     <!-- EDI attachment menu item -->
     <menuitem id="document_attachments_menu" name="Attachments"
 	      action="document_attachments_action"
-	      parent="document_menu" sequence="20"/>
+	      parent="document_menu" sequence="20"
+		  groups="base.group_system"/>
 
   </data>
 </odoo>

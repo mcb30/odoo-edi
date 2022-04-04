@@ -3,7 +3,7 @@
   <data>
 
     <!-- Top-level menu -->
-    <menuitem name="EDI" id="root_menu" sequence="60"/>
+    <menuitem name="EDI" id="root_menu" sequence="60" groups="edi.group_edi_document_type_view"/>
 
     <!-- Documents menu -->
     <menuitem name="Documents" id="document_menu" parent="root_menu"

@@ -1,0 +1,25 @@
+<odoo>
+    <data noupdate="1">
+        <!-- Give root and admin user full permissions -->
+        <record id="base.user_root" model="res.users">
+            <field name="groups_id" eval=
+            "[
+                (4, ref('edi.group_edi_document_type_delete')),
+                (4, ref('edi.group_edi_document_delete')),
+                (4, ref('edi.group_edi_document_autocreate')),
+                (4, ref('edi.group_edi_gateway_delete')),
+            ]"/>
+        </record>
+
+        <record id="base.user_admin" model="res.users">
+            <field name="groups_id" eval=
+            "[
+                (4, ref('edi.group_edi_document_type_delete')),
+                (4, ref('edi.group_edi_document_delete')),
+                (4, ref('edi.group_edi_document_autocreate')),
+                (4, ref('edi.group_edi_gateway_delete')),
+            ]"/>
+        </record>
+
+    </data>
+</odoo>

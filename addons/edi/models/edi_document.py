@@ -130,7 +130,7 @@ class EdiDocumentType(models.Model):
         by_first_input = lambda x: input_ids.index(min(x.inputs.ids))
         for autodetect in sorted(autodetects, key=by_first_input):
             doc = Document.create({"doc_type_id": autodetect.type.id})
-            autodetect.inputs.write({"res_id": doc.id})
+            autodetect.inputs.sudo().write({"res_id": doc.id})
             docs += doc
         return docs
 
@@ -195,7 +195,12 @@ class EdiDocument(models.Model):
 
     # Communications
     transfer_id = fields.Many2one(
-        "edi.transfer", string="Transfer", readonly=True, copy=False, index=True
+        "edi.transfer",
+        string="Transfer",
+        readonly=True,
+        copy=False,
+        index=True,
+        groups="edi.group_edi_gateway_view",
     )
     gateway_id = fields.Many2one(
         "edi.gateway",
@@ -204,6 +209,7 @@ class EdiDocument(models.Model):
         store=True,
         copy=False,
         index=True,
+        groups="edi.group_edi_gateway_view",
     )
 
     # Attachments (e.g. CSV files)
@@ -484,7 +490,7 @@ class EdiDocument(models.Model):
     def action_view_inputs(self):
         """View input attachments"""
         self.ensure_one()
-        action = self.env.ref("edi.document_attachments_action").read()[0]
+        action = self.env.ref("edi.document_attachments_action").sudo().read()[0]
         action["name"] = _("Inputs")
         action["domain"] = [
             ("res_model", "=", "edi.document"),
@@ -501,7 +507,7 @@ class EdiDocument(models.Model):
     def action_view_outputs(self):
         """View output attachments"""
         self.ensure_one()
-        action = self.env.ref("edi.document_attachments_action").read()[0]
+        action = self.env.ref("edi.document_attachments_action").sudo().read()[0]
         action["name"] = _("Outputs")
         action["domain"] = [
             ("res_model", "=", "edi.document"),

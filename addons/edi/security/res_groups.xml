@@ -1,0 +1,85 @@
+<odoo>
+    <data>
+        <!-- EDI Document Types -->
+        <record id="group_edi_document_type_view" model="res.groups">
+            <field name="name">View Only</field>
+            <field name="category_id" ref="edi.module_category_edi_doc_type"/>
+        </record>
+
+        <record id="group_edi_document_type_edit" model="res.groups">
+            <field name="name">View &amp; Edit</field>
+            <field name="category_id" ref="edi.module_category_edi_doc_type"/>
+            <field name="implied_ids" eval="[(4, ref('edi.group_edi_document_type_view'))]" />
+        </record>
+
+        <record id="group_edi_document_type_create" model="res.groups">
+            <field name="name">View, Edit &amp; Create</field>
+            <field name="category_id" ref="edi.module_category_edi_doc_type"/>
+            <field name="implied_ids" eval="[(4, ref('edi.group_edi_document_type_edit'))]"/>
+        </record>
+
+        <record id="group_edi_document_type_delete" model="res.groups">
+            <field name="name">View, Edit, Create &amp; Delete</field>
+            <field name="category_id" ref="edi.module_category_edi_doc_type"/>
+            <field name="implied_ids" eval="[(4, ref('edi.group_edi_document_type_create'))]"/>
+        </record>
+
+        <!-- EDI Documents -->
+        <record id="group_edi_document_view" model="res.groups">
+            <field name="name">View Only</field>
+            <field name="category_id" ref="edi.module_category_edi_doc"/>
+            <field name="implied_ids" eval="[(4, ref('edi.group_edi_document_type_view'))]" />
+        </record>
+
+        <record id="group_edi_document_edit" model="res.groups">
+            <field name="name">View &amp; Edit</field>
+            <field name="category_id" ref="edi.module_category_edi_doc"/>
+            <field name="implied_ids" eval="[(4, ref('edi.group_edi_document_view'))]" />
+        </record>
+
+        <record id="group_edi_document_create" model="res.groups">
+            <field name="name">View, Edit &amp; Create</field>
+            <field name="category_id" ref="edi.module_category_edi_doc"/>
+            <field name="implied_ids" eval="[(4, ref('edi.group_edi_document_edit'))]"/>
+        </record>
+
+        <record id="group_edi_document_delete" model="res.groups">
+            <field name="name">View, Edit, Create &amp; Delete</field>
+            <field name="category_id" ref="edi.module_category_edi_doc"/>
+            <field name="implied_ids" eval="[(4, ref('edi.group_edi_document_create'))]"/>
+        </record>
+
+        <!-- EDI Document Autocreate -->
+        <record id="group_edi_document_autocreate" model="res.groups">
+            <field name="name">Autocreate EDI Documents</field>
+            <field name="category_id" ref="edi.module_category_edi_doc_autocreate"/>
+            <field name="implied_ids" eval="[(4, ref('edi.group_edi_document_create'))]"/>
+        </record>
+
+        <!-- EDI Gateways -->
+        <record id="group_edi_gateway_view" model="res.groups">
+            <field name="name">View Only</field>
+            <field name="category_id" ref="edi.module_category_edi_gateway"/>
+            <field name="implied_ids" eval="[(4, ref('edi.group_edi_document_type_view'))]" />
+        </record>
+
+        <record id="group_edi_gateway_edit" model="res.groups">
+            <field name="name">View &amp; Edit</field>
+            <field name="category_id" ref="edi.module_category_edi_gateway"/>
+            <field name="implied_ids" eval="[(4, ref('edi.group_edi_gateway_view'))]" />
+        </record>
+
+        <record id="group_edi_gateway_create" model="res.groups">
+            <field name="name">View, Edit &amp; Create</field>
+            <field name="category_id" ref="edi.module_category_edi_gateway"/>
+            <field name="implied_ids" eval="[(4, ref('edi.group_edi_gateway_edit'))]"/>
+        </record>
+
+        <record id="group_edi_gateway_delete" model="res.groups">
+            <field name="name">View, Edit, Create &amp; Delete</field>
+            <field name="category_id" ref="edi.module_category_edi_gateway"/>
+            <field name="implied_ids" eval="[(4, ref('edi.group_edi_gateway_create'))]"/>
+        </record>
+
+    </data>
+</odoo>

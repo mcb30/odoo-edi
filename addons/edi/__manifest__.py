@@ -28,6 +28,8 @@ Key Features
     "author": "Michael Brown <mbrown@fensystems.co.uk>",
     "category": "Extra Tools",
     "data": [
+        "data/ir_module_category_data.xml",
+        "security/res_groups.xml",
         "security/ir.model.access.csv",
         "data/project_issue_data.xml",
         "data/edi_document_data.xml",
@@ -36,6 +38,7 @@ Key Features
         "data/edi_gateway_xmlrpc_data.xml",
         "data/edi_partner_data.xml",
         "data/edi_raw_data.xml",
+        "data/res_users_data.xml",
         "views/edi_menu_views.xml",
         "views/edi_document_views.xml",
         "views/edi_document_type_views.xml",
