@@ -22,7 +22,10 @@ class EdiDocument(models.Model):
     _inherit = "edi.document"
 
     pick_ids = fields.One2many(
-        "stock.picking", string="Stock Transfers", compute="_compute_pick_ids"
+        comodel_name="stock.picking",
+        string="Stock Transfers",
+        compute="_compute_pick_ids",
+        compute_sudo=True,
     )
 
     def _compute_pick_ids(self):
