@@ -13,7 +13,9 @@ class EdiDocument(models.Model):
 
     _inherit = "edi.document"
 
-    sale_ids = fields.One2many("sale.order", string="Sale Orders", compute="_compute_sale_ids")
+    sale_ids = fields.One2many(
+        "sale.order", string="Sale Orders", compute="_compute_sale_ids", compute_sudo=True
+    )
 
     def _compute_sale_ids(self):
         """Calculate associated sale orders"""
