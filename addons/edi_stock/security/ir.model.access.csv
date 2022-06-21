@@ -68,5 +68,3 @@ access_edi_route_record_view,edi_route_record_view,model_edi_route_record,edi.gr
 access_edi_route_record_edit,edi_route_record_edit,model_edi_route_record,edi.group_edi_document_edit,1,1,0,0
 access_edi_route_record_create,edi_route_record_create,model_edi_route_record,edi.group_edi_document_edit,1,1,1,0
 access_edi_route_record_delete,edi_route_record_delete,model_edi_route_record,edi.group_edi_document_edit,1,1,1,1
-,,,,,,,,
-stock.access_stock_quant_manager,stock.quant manager,stock.model_stock_quant,stock.group_stock_manager,1,0,1,0
