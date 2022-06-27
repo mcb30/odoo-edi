@@ -12,17 +12,20 @@
 	    <field name="can_initiate" invisible="1"/>
 	    <button name="action_transfer" type="object"
 		    string="Transfer" class="oe_highlight"
+		    groups="edi.group_edi_transfer_create"
 		    attrs="{'invisible':[('can_initiate','=',False)]}"/>
 	    <button name="action_test" type="object"
 		    string="Test Connection"
 		    attrs="{'invisible':[('can_initiate','=',False)]}"/>
 	    <button name="action_transfer" type="object"
 		    string="Receive Only"
+		    groups="edi.group_edi_transfer_create"
 		    context="{'default_allow_process': False,
 			      'default_allow_send': False}"
 		    attrs="{'invisible':[('can_initiate','=',False)]}"/>
 	    <button name="action_transfer" type="object"
 		    string="Send Only"
+		    groups="edi.group_edi_transfer_create"
 		    context="{'default_allow_receive': False,
 			      'default_allow_process': False}"
 		    attrs="{'invisible':[('can_initiate','=',False)]}"/>

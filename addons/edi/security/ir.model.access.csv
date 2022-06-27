@@ -34,10 +34,10 @@ access_edi_gateway_path_edit,edi_gateway_path_edit,model_edi_gateway_path,edi.gr
 access_edi_gateway_path_create,edi_gateway_path_create,model_edi_gateway_path,edi.group_edi_gateway_create,1,1,1,0
 access_edi_gateway_path_delete,edi_gateway_path_delete,model_edi_gateway_path,edi.group_edi_gateway_delete,1,1,1,1
 ,,,,,,,,
-access_edi_transfer_view,edi_transfer_view,model_edi_transfer,edi.group_edi_gateway_view,1,0,0,0
-access_edi_transfer_edit,edi_transfer_edit,model_edi_transfer,edi.group_edi_gateway_edit,1,1,0,0
-access_edi_transfer_create,edi_transfer_create,model_edi_transfer,edi.group_edi_gateway_create,1,1,1,0
-access_edi_transfer_delete,edi_transfer_delete,model_edi_transfer,edi.group_edi_gateway_delete,1,1,1,1
+access_edi_transfer_view,edi_transfer_view,model_edi_transfer,edi.group_edi_transfer_view,1,0,0,0
+access_edi_transfer_edit,edi_transfer_edit,model_edi_transfer,edi.group_edi_transfer_edit,1,1,0,0
+access_edi_transfer_create,edi_transfer_create,model_edi_transfer,edi.group_edi_transfer_create,1,1,1,0
+access_edi_transfer_delete,edi_transfer_delete,model_edi_transfer,edi.group_edi_transfer_delete,1,1,1,1
 ,,,,,,,,
 access_edi_raw_record_view,edi_raw_record_view,model_edi_raw_record,edi.group_edi_document_view,1,0,0,0
 access_edi_raw_record_edit,edi_raw_record_edit,model_edi_raw_record,edi.group_edi_document_edit,1,1,0,0

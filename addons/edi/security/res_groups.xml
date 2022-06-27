@@ -81,5 +81,34 @@
             <field name="implied_ids" eval="[(4, ref('edi.group_edi_gateway_create'))]"/>
         </record>
 
+        <!-- EDI Transfers -->
+        <record id="group_edi_transfer_view" model="res.groups">
+            <field name="name">View Only</field>
+            <field name="category_id" ref="edi.module_category_edi_transfer"/>
+            <field name="implied_ids" eval="[(4, ref('edi.group_edi_gateway_view'))]" />
+        </record>
+
+        <record id="group_edi_transfer_edit" model="res.groups">
+            <field name="name">View &amp; Edit</field>
+            <field name="category_id" ref="edi.module_category_edi_transfer"/>
+            <field name="implied_ids" eval="[(4, ref('edi.group_edi_transfer_view'))]" />
+        </record>
+
+        <record id="group_edi_transfer_create" model="res.groups">
+            <field name="name">View, Edit &amp; Create</field>
+            <field name="category_id" ref="edi.module_category_edi_transfer"/>
+            <field name="implied_ids" eval="[(4, ref('edi.group_edi_transfer_edit'))]"/>
+        </record>
+
+        <record id="group_edi_transfer_delete" model="res.groups">
+            <field name="name">View, Edit, Create &amp; Delete</field>
+            <field name="category_id" ref="edi.module_category_edi_transfer"/>
+            <field name="implied_ids" eval="[(4, ref('edi.group_edi_transfer_create'))]"/>
+        </record>
+
+        <record id="edi.group_edi_gateway_view" model="res.groups">
+            <field name="implied_ids" eval="[(4, ref('edi.group_edi_transfer_view'))]" />
+        </record>
+
     </data>
 </odoo>

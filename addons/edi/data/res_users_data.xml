@@ -8,6 +8,7 @@
                 (4, ref('edi.group_edi_document_delete')),
                 (4, ref('edi.group_edi_document_autocreate')),
                 (4, ref('edi.group_edi_gateway_delete')),
+                (4, ref('edi.group_edi_transfer_delete')),
             ]"/>
         </record>
 
@@ -18,6 +19,7 @@
                 (4, ref('edi.group_edi_document_delete')),
                 (4, ref('edi.group_edi_document_autocreate')),
                 (4, ref('edi.group_edi_gateway_delete')),
+                (4, ref('edi.group_edi_transfer_delete')),
             ]"/>
         </record>
 
