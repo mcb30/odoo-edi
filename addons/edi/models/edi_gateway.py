@@ -306,6 +306,7 @@ class EdiGateway(models.Model):
     def action_test(self):
         """Test connection"""
         self.ensure_one()
+        self = self.run_with_sudo_if_has_transfer_create_rights()
         Model = self.env[self.model_id.model]
         try:
             # pylint: disable=broad-except
@@ -357,8 +358,18 @@ class EdiGateway(models.Model):
     def action_transfer(self):
         """Receive input attachments, process documents, send outputs"""
         self.ensure_one()
+        self = self.run_with_sudo_if_has_transfer_create_rights()
         transfer = self.do_transfer()
         return not transfer.issue_ids
+
+    def run_with_sudo_if_has_transfer_create_rights(self):
+        """Return self with sudo if user has rights to create transfers, otherwise
+        return self without any change"""
+        if self.env.user.has_group("edi.group_edi_transfer_create"):
+            # Giving sudo rights if user has create edi transfer rights.
+            # Support users have rights to create transfers but not gateways.
+            self = self.sudo()
+        return self
 
     def xmlrpc_transfer(self, **kwargs):
         """Receive input attachments, process documents, send outputs"""
