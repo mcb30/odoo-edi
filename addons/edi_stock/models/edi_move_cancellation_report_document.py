@@ -20,6 +20,19 @@ class StockMove(models.Model):
         index=True,
     )
 
+    cancelled_by_id = fields.Many2one("res.users", string="Cancelled By", readonly=True)
+
+    def _action_cancel(self):
+        """
+        Set the cancelled_by_id to be the id of the user who cancels the move. This is 
+        needed to ensure that the user who cancels the pick is shown when the Move Cancellation
+        EDI document is created as before it would only show Admin user.
+        """
+        User = self.env["res.users"]
+
+        self.write({"cancelled_by_id": User.get_current_user_id()})
+        super()._action_cancel()
+
 
 class EdiDocument(models.Model):
     """Extend ``edi.document`` to include stock move cancellation records"""

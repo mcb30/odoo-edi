@@ -48,7 +48,7 @@
             <div style="display:table-header-group;">
                 <div style="display:table-row;">
                     <div style="display:table-cell; padding: 0px 5px;">Part Number</div>
-                    <div style="display:table-cell; padding: 0px 5px;">Quantity Ordered</div>
+                    <div style="display:table-cell; padding: 0px 5px;">Quantity Cancelled</div>
                     <div style="display:table-cell; padding: 0px 5px;">Cancelled By</div>
                 </div>
             </div>
@@ -57,13 +57,9 @@
                     <div style="display:table-row;">
                         <div style="display:table-cell; padding: 0px 5px;">${move.product_id.name_get()[0][1]}</div>
                         <div style="display:table-cell; padding: 0px 5px;">
-                            % if move.sale_line_id:
-                                ${move.sale_line_id.product_uom_qty}
-                            % else:
-                                ${move.product_uom_qty}
-                            % endif
+                            ${move.product_uom_qty}
                         </div>
-                        <div style="display:table-cell; padding: 0px 5px;">${move.write_uid.name}</div>
+                        <div style="display:table-cell; padding: 0px 5px;">${move.cancelled_by_id.name}</div>
                     </div>
                 % endfor
             </div>
