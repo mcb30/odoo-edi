@@ -100,10 +100,17 @@ class EdiSaleRequestDocument(models.AbstractModel):
         """Execute document"""
         super().execute(doc)
 
+        SaleRequestRecord = self.sale_request_record_model(doc)
+        reqs = SaleRequestRecord.search([("doc_id", "=", doc.id)])
+
+        if not doc.fail_fast:
+            self.remove_sales_for_invalid_partner_updates(doc)
+            self.remove_empty_orders(doc, reqs)
+            if self.report_invalid_records(doc):
+                self._clear_errors(doc)
+
         # Automatically confirm sale orders, if applicable
         if self._auto_confirm:
-            SaleRequestRecord = self.sale_request_record_model(doc)
-            reqs = SaleRequestRecord.search([("doc_id", "=", doc.id)])
             for r, sales in reqs.mapped("sale_id").batched(self.BATCH_CONFIRM):
                 _logger.info("%s confirming %d-%d", doc.name, r[0], r[-1])
                 with self.statistics() as stats:
@@ -117,3 +124,100 @@ class EdiSaleRequestDocument(models.AbstractModel):
                     stats.elapsed,
                     stats.count,
                 )
+
+    def get_invalid_partners(self, doc):
+        """Identify and return EDI partner records with invalid updates"""
+        PartnerRecord = self.partner_record_model(doc)
+        invalid_partners = PartnerRecord.search([('error', '!=', False), ('doc_id', '=', doc.id)])
+        return invalid_partners
+
+    def remove_sales_for_invalid_partner_updates(self, doc):
+        """Remove sale orders for partners with invalid updates."""
+        SaleRequestRecord = self.sale_request_record_model(doc)
+
+        invalid_partners = self.get_invalid_partners(doc)
+        # Identify sale orders created for invalid partners.
+        invalid_sales = SaleRequestRecord.search([('doc_id', '=', doc.id),
+                                                  ('customer_id', 'in', invalid_partners.mapped('partner_id').ids)])
+        invalid_sales.mapped('sale_id').unlink()
+        return
+
+    def remove_empty_orders(self, doc, reqs):
+        """Delete sale orders with no order lines, and related partners."""
+        Partner = self.env['res.partner']
+
+        to_remove = reqs.mapped('sale_id').filtered(lambda s: len(s.mapped('order_line')) == 0)
+        orderless_partners = to_remove.mapped('partner_id')
+        to_remove.unlink()
+        # Remove partners with no orders in the current document and no
+        # historic orders.
+        domain = [('id', 'in', orderless_partners.mapped('id')),
+                  ('sale_order_ids', '=', False)]
+        Partner.search(domain).unlink()
+        return
+
+    def report_invalid_records(self, doc):
+        """Post a message listing records that were not processed.
+
+        Returns True if there are records with errors, False otherwise.
+        """
+        PartnerRecord = self.partner_record_model(doc)
+        SaleLineRequestRecord = self.sale_line_request_record_model(doc)
+        SaleRequestRecord = self.sale_request_record_model(doc)
+
+        error_domain = [('doc_id', '=', doc.id), ('error', '!=', False)]
+        lines = SaleLineRequestRecord.search(error_domain)
+        orders = SaleRequestRecord.search(error_domain)
+        partners = PartnerRecord.search(error_domain)
+        message = []
+        if lines:
+            message.extend(self._build_invalid_order_lines_report(lines))
+        if orders:
+            message.extend(self._build_invalid_orders_report(orders))
+        if partners:
+            message.extend(self._build_invalid_partners_report(partners))
+        if message:
+            doc.sudo().with_context(tracking_disable=False).message_post(body='\n'.join(message),
+                                                                         content_subtype='plaintext')
+        return any([lines, orders, partners])
+
+    def _build_invalid_order_lines_report(self, lines):
+        report_lines = ['Missing order lines']
+        for line in lines:
+            item = '\t'.join([str(x) for x in self._extract_invalid_order_line(line)])
+            report_lines.append(item)
+        return report_lines
+
+    def _extract_invalid_order_line(self, line):
+        return [line.order_key, line.product_key, int(line.qty), line.error]
+
+    def _build_invalid_orders_report(self, orders):
+        report_lines = ['Missing orders']
+        for order in orders:
+            item = '\t'.join([str(x) for x in self._extract_invalid_order(order)])
+            report_lines.append(item)
+        return report_lines
+
+    def _extract_invalid_order(self, order):
+        return [order.name, order.error]
+
+    def _build_invalid_partners_report(self, partners):
+        report_lines = ['Missing partners']
+        for partner in partners:
+            item = '\t'.join([str(x) for x in self._extract_invalid_partner(partner)])
+            report_lines.append(item)
+        return report_lines
+
+    def _extract_invalid_partner(self, partner):
+        return [partner.error.replace('\n', ' ')]
+
+    def _clear_errors(self, doc):
+        PartnerRecord = self.partner_record_model(doc)
+        SaleLineRequestRecord = self.sale_line_request_record_model(doc)
+        SaleRequestRecord = self.sale_request_record_model(doc)
+
+        error_domain = [('doc_id', '=', doc.id), ('error', '!=', False)]
+        for model in (PartnerRecord, SaleLineRequestRecord, SaleRequestRecord):
+            records = model.search(error_domain)
+            records.write({'error': False})
+        return

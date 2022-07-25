@@ -3,6 +3,7 @@
 import logging
 from odoo import api, fields, models
 from odoo.addons import decimal_precision as dp
+from odoo.odoo.exceptions import ValidationError
 
 _logger = logging.getLogger(__name__)
 
@@ -75,11 +76,15 @@ class EdiSaleLineRequestRecord(models.Model):
 
     def execute(self):
         """Execute records"""
-        super().execute()
+        ready = super().execute()
         SaleLine = self.env["sale.order.line"]
 
         # Identify containing EDI document
         doc = self.mapped("doc_id")
+
+        if not doc.fail_fast:
+            # Remove lines with missing relates.
+            self &= ready
 
         # Process records in batches for efficiency
         for r, batch in self.batched(self.BATCH_CREATE):
@@ -95,7 +100,13 @@ class EdiSaleLineRequestRecord(models.Model):
                     self.add_edi_defaults(SaleLine, (rec.sale_line_values() for rec in batch))
                 )
                 for rec, vals in zip(batch, vals_list):
-                    rec.sale_line_id = SaleLine.create(vals)
+                    try:
+                        rec.sale_line_id = SaleLine.create(vals)
+                    except ValidationError as ex:
+                        _logger.warning('Could not create sale in due to %s', ex.name)
+                        if doc.fail_fast:
+                            raise
+                        rec.write({'error': ex.name})
                 self.recompute()
             _logger.info(
                 "%s created %s %d-%d in %.2fs, %d excess queries",
