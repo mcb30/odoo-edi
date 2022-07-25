@@ -94,6 +94,12 @@ class EdiRecord(models.AbstractModel):
     BATCH_UPDATE = property(attrgetter("BATCH_SIZE"))
     """Batch size for updating existing records"""
 
+    CLEAR_CACHE_PREPARE = 0
+    """Number of records where to clear cache on PREPARE: 0 for disabled"""
+
+    CLEAR_CACHE_EXECUTE = 0
+    """Number of records where to clear cache on EXECUTE: 0 for disabled"""
+
     _edi_relates = ()
     """EDI lookup relationships"""
 
@@ -121,6 +127,8 @@ class EdiRecord(models.AbstractModel):
         index=True,
         ondelete="cascade",
     )
+
+    error = fields.Char(string='Error', help='Records errors in execution')
 
     @api.model
     def _setup_complete(self):
@@ -187,7 +195,13 @@ class EdiRecord(models.AbstractModel):
                 for key, recs in batch.groupby(keygetter):
                     target = targets_by_key.get(key)
                     if required and not target:
-                        target = recs.missing_edi_relates(rel, key)
+                        try:
+                            target = recs.missing_edi_relates(rel, key)
+                        except UserError as ex:
+                            if doc.fail_fast:
+                                raise
+                            _logger.warning('Suppressed error for missing relate %r, %r, %r', recs, rel, key)
+                            recs.write({'error': ex.name})
                     if target:
                         recs.write({rel.target: target.id})
                     else:
@@ -330,4 +344,4 @@ class EdiRecord(models.AbstractModel):
         # the execution of earlier EDI records has created objects to
         # which this EDI record refers via a lookup relationship.
         #
-        self._add_edi_relates(required=self._edi_relates_required)
+        return self._add_edi_relates(required=self._edi_relates_required)
