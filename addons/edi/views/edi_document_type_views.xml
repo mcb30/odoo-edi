@@ -23,6 +23,7 @@
 	      </group>
 	      <group name="issues" string="Issues">
 		<field name="project_id"/>
+		<field name="fail_fast"/>
 	      </group>
 	      <group name="extras" string="Extras"/>
 	    </group>
