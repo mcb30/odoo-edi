@@ -72,6 +72,10 @@ class EdiRecordType(models.Model):
     )
     doc_type_ids = fields.Many2many("edi.document.type", string="Document Types")
     sequence = fields.Integer(string="Sequence", help="Application Order")
+    # Control visibility in the UI.
+    active = fields.Boolean(
+        default=True, string="Active", help="Display in list views or searches."
+    )
 
 
 class EdiRecord(models.AbstractModel):
