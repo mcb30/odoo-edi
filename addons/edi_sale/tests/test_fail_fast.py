@@ -34,13 +34,13 @@ class TestFailFast(EdiSaleCase):
             with self.subTest(sale=sale):
                 self.assertEqual(sale.state, state)
 
-    def test01_basic(self):
+    def test_basic(self):
         """Fails immediately on missing product."""
         doc = self.create_tutorial('order02.csv')
         with tools.mute_logger('odoo.addons.edi.models.edi_issues'):
             self.assertFalse(doc.action_execute())
 
-    def test02_removes_line_with_unknown_product(self):
+    def test_removes_line_with_unknown_product(self):
         """Skips lines for unknown products"""
         doc = self.create_tutorial('order02.csv', fail_fast=False)
         self.assertTrue(doc.action_execute())
@@ -55,7 +55,7 @@ class TestFailFast(EdiSaleCase):
         self.assertEqual(sales_by_name['ORD01'].partner_id.name, 'Alice')
         self.assertEqual(len(sales_by_name['ORD01'].order_line), 1)
 
-    def test03_removes_orders_if_all_lines_removed(self):
+    def test_removes_orders_if_all_lines_removed(self):
         """Deletes orders if no lines exist."""
         doc = self.create_tutorial('order03.csv', fail_fast=False)
         self.assertTrue(doc.action_execute())
@@ -72,7 +72,7 @@ class TestFailFast(EdiSaleCase):
                          self.apple)
         self.assertEqual(sales_by_name['ORD03'].order_line.product_uom_qty, 2)
 
-    def test04_removes_new_partners_with_no_orders(self):
+    def test_removes_new_partners_with_no_orders(self):
         """Deletes partners if no lines exist."""
         doc = self.create_tutorial('order03.csv', fail_fast=False)
         self.assertTrue(doc.action_execute())
@@ -92,7 +92,7 @@ class TestFailFast(EdiSaleCase):
                          self.apple)
         self.assertEqual(sales_by_name['ORD03'].order_line.product_uom_qty, 2)
 
-    def test05_does_not_remove_existing_partners_with_no_orders(self):
+    def test_does_not_remove_existing_partners_with_no_orders(self):
         """Only deletes partners if no existing orders."""
         doc1 = self.create_tutorial('order03.csv', fail_fast=False)
         self.assertTrue(doc1.action_execute())
@@ -125,7 +125,7 @@ class TestFailFast(EdiSaleCase):
     # Consideration: are we trying to test a case when a whole order fails apart from incorrect details?
     #                In that case we would need a better way to replicate a that scenario rather than hacky solutions.
     @unittest.skip("Test is not valid at the moment")
-    def test06_removes_order_if_creation_fails(self):
+    def test_removes_order_if_creation_fails(self):
         """Handle the case where an error occurs during order creation."""
         Sale = self.env['sale.order']
         create_method = Sale.create
@@ -154,7 +154,7 @@ class TestFailFast(EdiSaleCase):
                          self.cherry)
         self.assertEqual(sales_by_name['ORD03'].order_line.product_uom_qty, 3)
 
-    def test07_reports_missing_order_line(self):
+    def test_reports_missing_order_line(self):
         """Test reports missing lines from otherwise valid orders."""
         SaleRequestDocument = self.env['edi.sale.request.document']
 
@@ -171,7 +171,7 @@ class TestFailFast(EdiSaleCase):
 
     # Same issue here as referenced above with the hacky method
     @unittest.skip("Test is not valid at the moment")
-    def test08_reports_lines_from_missing_order(self):
+    def test_reports_lines_from_missing_order(self):
         """Test reports lines from completely invalid order."""
         Sale = self.env['sale.order']
         SaleRequestDocument = self.env['edi.sale.request.document']

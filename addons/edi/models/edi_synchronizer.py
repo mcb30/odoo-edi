@@ -340,11 +340,11 @@ class EdiSyncRecord(models.AbstractModel):
             ready = remaining._add_edi_relates(required=False)
             if not ready:
                 ready = remaining._add_edi_relates(required=True)
-            if not ready:
-                # No more progress can be made. Do not raise an error, since
-                # fail_fast must be off here, otherwise
-                # _add_edi_relates(required=True) would have already raised one.
-                break
+                if not ready:
+                    # No more progress can be made. Do not raise an error, since
+                    # fail_fast must be off here, otherwise
+                    # _add_edi_relates(required=True) would have already raised one.
+                    break
             remaining -= ready
 
             # Update existing target records

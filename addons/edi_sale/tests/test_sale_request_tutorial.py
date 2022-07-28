@@ -21,7 +21,7 @@ class TestTutorial(EdiSaleCase):
         """Create sale order request tutorial document"""
         return cls.create_input_document(cls.doc_type_tutorial, *filenames)
 
-    def test01_basic(self):
+    def test_basic(self):
         """Basic document execution"""
         doc = self.create_tutorial('order01.csv')
         self.assertTrue(doc.action_execute())
