@@ -157,9 +157,7 @@ class EdiSyncRecord(models.AbstractModel):
         :meth:`~odoo.models.Model.write` in order to create or update
         a record within the target model.
         """
-        target_vals = {
-            self._edi_sync_via: record_vals["name"],
-        }
+        target_vals = {self._edi_sync_via: record_vals["name"]}
         return target_vals
 
     def _record_values(self):
@@ -270,7 +268,9 @@ class EdiSyncRecord(models.AbstractModel):
 
                 # Elide EDI records that are duplicates of earlier records
                 if produced is not None:
-                    frozen_record_vals = frozenset((k, v) for k, v in record_vals.items() if not isinstance(v, models.NewId))
+                    frozen_record_vals = frozenset(
+                        (k, v) for k, v in record_vals.items() if not isinstance(v, models.NewId)
+                    )
                     if frozen_record_vals in produced:
                         continue
                     produced.add(frozen_record_vals)
@@ -361,8 +361,7 @@ class EdiSyncRecord(models.AbstractModel):
                     len(self),
                 )
                 with self.statistics() as stats:
-                    vals_list = [rec.target_values(rec._record_values())
-                                 for rec in batch]
+                    vals_list = [rec.target_values(rec._record_values()) for rec in batch]
                     if doc.fail_fast:
                         for rec, vals in zip(batch, vals_list):
                             rec[target].write(vals)
@@ -379,15 +378,22 @@ class EdiSyncRecord(models.AbstractModel):
                             except ValidationError as ex:
                                 rec[target].invalidate_cache()
                                 rec.error = ex.name
-                                _logger.exception('Failed to update for %r, %s', rec, rec.name)
+                                _logger.exception("Failed to update for %r, %s", rec, rec.name)
                     self.recompute()
-                _logger.info("%s updated %s %d-%d in %.2fs, %d excess queries",
-                             doc.name, Target._name, offset,
-                             (offset + count - 1), stats.elapsed,
-                             (stats.count - count))
+                _logger.info(
+                    "%s updated %s %d-%d in %.2fs, %d excess queries",
+                    doc.name,
+                    Target._name,
+                    offset,
+                    (offset + count - 1),
+                    stats.elapsed,
+                    (stats.count - count),
+                )
                 offset += count
                 clear_cache_count += count
-                clear_cache_count = self.check_clear_cache(self.CLEAR_CACHE_EXECUTE, clear_cache_count)
+                clear_cache_count = self.check_clear_cache(
+                    self.CLEAR_CACHE_EXECUTE, clear_cache_count
+                )
 
             # Create new target records
             new = ready.filtered(lambda x: not x[target])
@@ -418,7 +424,7 @@ class EdiSyncRecord(models.AbstractModel):
                                 instance = Target.create(vals)
                                 targets.append(instance)
                             except ValidationError as ex:
-                                _logger.exception('Failed to create for %r, %s', rec, rec.name)
+                                _logger.exception("Failed to create for %r, %s", rec, rec.name)
                                 rec.error = ex.name
                                 bad_recs |= rec
                         if bad_recs:
@@ -438,7 +444,9 @@ class EdiSyncRecord(models.AbstractModel):
                 )
                 offset += count
                 clear_cache_count += count
-                clear_cache_count = self.check_clear_cache(self.CLEAR_CACHE_EXECUTE, clear_cache_count)
+                clear_cache_count = self.check_clear_cache(
+                    self.CLEAR_CACHE_EXECUTE, clear_cache_count
+                )
 
 
 class EdiDeactivatorRecord(models.AbstractModel):
@@ -491,11 +499,7 @@ class EdiActiveSyncRecord(models.AbstractModel):
     def target_values(self, record_vals):
         """Construct target model field value dictionary"""
         target_vals = super().target_values(record_vals)
-        target_vals.update(
-            {
-                "active": True,
-            }
-        )
+        target_vals.update({"active": True})
         return target_vals
 
     @api.model
@@ -507,10 +511,7 @@ class EdiActiveSyncRecord(models.AbstractModel):
             Deactivator.prepare(
                 doc,
                 (
-                    {
-                        "target_id": target.id,
-                        "name": target[Deactivator._edi_deactivator_name],
-                    }
+                    {"target_id": target.id, "name": target[Deactivator._edi_deactivator_name]}
                     for target in unmatched
                 ),
             )

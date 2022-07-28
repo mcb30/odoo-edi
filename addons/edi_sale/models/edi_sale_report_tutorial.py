@@ -25,9 +25,7 @@ class EdiDocument(models.Model):
     _inherit = "edi.document"
 
     sale_report_tutorial_ids = fields.One2many(
-        "edi.sale.report.tutorial.record",
-        "doc_id",
-        string="Tutorial Sale Order Reports",
+        "edi.sale.report.tutorial.record", "doc_id", string="Tutorial Sale Order Reports"
     )
     sale_line_report_tutorial_ids = fields.One2many(
         "edi.sale.line.report.tutorial.record",

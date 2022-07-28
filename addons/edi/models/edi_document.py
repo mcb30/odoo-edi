@@ -71,18 +71,12 @@ class EdiDocumentType(models.Model):
 
     # Sequence for generating document names
     sequence_id = fields.Many2one(
-        "ir.sequence",
-        string="Document Name Sequence",
-        required=True,
-        default=_default_sequence_id,
+        "ir.sequence", string="Document Name Sequence", required=True, default=_default_sequence_id
     )
 
     # Issue tracker used for asynchronously reporting errors
     project_id = fields.Many2one(
-        "project.project",
-        string="Issue Tracker",
-        required=True,
-        default=_default_project_id,
+        "project.project", string="Issue Tracker", required=True, default=_default_project_id
     )
 
     # Control visibility in the UI.
@@ -91,9 +85,11 @@ class EdiDocumentType(models.Model):
     )
 
     # Control behaviour if an error occurs.
-    fail_fast = fields.Boolean(string="End document execution immediately on error",
-                               help="End document execution immediately on error",
-                               default=True)
+    fail_fast = fields.Boolean(
+        string="End document execution immediately on error",
+        help="End document execution immediately on error",
+        default=True,
+    )
 
     # Optionally enforce filename globs
     enforce_filename = fields.Boolean(
@@ -102,20 +98,13 @@ class EdiDocumentType(models.Model):
         default=False,
     )
 
-    _sql_constraints = [
-        ("model_uniq", "unique (model_id)", "The document model must be unique")
-    ]
+    _sql_constraints = [("model_uniq", "unique (model_id)", "The document model must be unique")]
 
     @api.model
     def autocreate(self, inputs):
         """Autocreate documents based on input attachments"""
         Document = self.env["edi.document"]
-        inputs.write(
-            {
-                "res_model": "edi.document",
-                "res_field": "input_ids",
-            }
-        )
+        inputs.write({"res_model": "edi.document", "res_field": "input_ids"})
         input_ids = inputs.ids
         autodetects = []
         for doc_type in self or self.search([]):
@@ -174,12 +163,7 @@ class EdiDocument(models.Model):
         states={"done": [("readonly", True)], "cancel": [("readonly", True)]},
     )
     state = fields.Selection(
-        [
-            ("draft", "New"),
-            ("cancel", "Cancelled"),
-            ("prep", "Prepared"),
-            ("done", "Completed"),
-        ],
+        [("draft", "New"), ("cancel", "Cancelled"), ("prep", "Prepared"), ("done", "Completed")],
         string="Status",
         readonly=True,
         index=True,
@@ -188,11 +172,7 @@ class EdiDocument(models.Model):
         tracking=True,
     )
     doc_type_id = fields.Many2one(
-        "edi.document.type",
-        string="Document Type",
-        required=True,
-        readonly=True,
-        index=True,
+        "edi.document.type", string="Document Type", required=True, readonly=True, index=True
     )
     prepare_date = fields.Datetime(string="Prepared on", readonly=True, copy=False)
     execute_date = fields.Datetime(string="Executed on", readonly=True, copy=False)
@@ -230,9 +210,7 @@ class EdiDocument(models.Model):
         domain=[("res_model", "=", "edi.document"), ("res_field", "=", "output_ids")],
         string="Output Attachments",
     )
-    input_count = fields.Integer(
-        string="Input Count", compute="_compute_input_count", store=True
-    )
+    input_count = fields.Integer(string="Input Count", compute="_compute_input_count", store=True)
     output_count = fields.Integer(
         string="Output Count", compute="_compute_output_count", store=True
     )
@@ -242,11 +220,9 @@ class EdiDocument(models.Model):
     issue_ids = fields.One2many(inverse_name="edi_doc_id")
 
     # Record type names (solely for use by views)
-    rec_type_names = fields.Char(
-        string="Record Type Names", compute="_compute_rec_type_names"
-    )
+    rec_type_names = fields.Char(string="Record Type Names", compute="_compute_rec_type_names")
 
-    fail_fast = fields.Boolean(related='doc_type_id.fail_fast', readonly=True)
+    fail_fast = fields.Boolean(related="doc_type_id.fail_fast", readonly=True)
 
     @api.depends("input_ids", "input_ids.res_id")
     def _compute_input_count(self):
@@ -305,12 +281,7 @@ class EdiDocument(models.Model):
         self.ensure_one()
         new = super().copy(default)
         for attachment in self.input_ids.sorted("id"):
-            attachment.copy(
-                {
-                    "res_id": new.id,
-                    "datas": attachment.datas,
-                }
-            )
+            attachment.copy({"res_id": new.id, "datas": attachment.datas})
         return new
 
     def lock_for_action(self):
@@ -361,8 +332,7 @@ class EdiDocument(models.Model):
             count = len(recs)
             if count:
                 _logger.info(
-                    "%s executed %s in %.2fs, %d records, %d queries "
-                    "(%d per record)",
+                    "%s executed %s in %.2fs, %d records, %d queries " "(%d per record)",
                     self.name,
                     RecModel._name,
                     stats.elapsed,
@@ -404,9 +374,7 @@ class EdiDocument(models.Model):
             return False
         # Mark as prepared
         self.state = "prep"
-        _logger.info(
-            "Prepared %s in %.2fs, %d queries", self.name, stats.elapsed, stats.count
-        )
+        _logger.info("Prepared %s in %.2fs, %d queries", self.name, stats.elapsed, stats.count)
         return True
 
     def action_unprepare(self):
@@ -418,9 +386,7 @@ class EdiDocument(models.Model):
         self.lock_for_action()
         # Check document state
         if self.state != "prep":
-            raise UserError(
-                _("Cannot unprepare a %s document") % self._get_state_name()
-            )
+            raise UserError(_("Cannot unprepare a %s document") % self._get_state_name())
         # Close any stale issues
         self.close_issues()
         # Delete any records
@@ -472,9 +438,7 @@ class EdiDocument(models.Model):
         # Mark as processed
         self.execute_date = fields.Datetime.now()
         self.state = "done"
-        _logger.info(
-            "Executed %s in %.2fs, %d queries", self.name, stats.elapsed, stats.count
-        )
+        _logger.info("Executed %s in %.2fs, %d queries", self.name, stats.elapsed, stats.count)
         return True
 
     def action_cancel(self):
@@ -557,8 +521,7 @@ class EdiDocumentModel(models.AbstractModel):
             return None
         if len(Models) != 1:
             raise ValueError(
-                _("Expected singleton record model: %s")
-                % ",".join(x._name for x in Models)
+                _("Expected singleton record model: %s") % ",".join(x._name for x in Models)
             )
         return Models[0]
 

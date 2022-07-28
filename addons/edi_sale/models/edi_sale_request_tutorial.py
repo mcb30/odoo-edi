@@ -21,14 +21,10 @@ class EdiDocument(models.Model):
     _inherit = "edi.document"
 
     sale_request_tutorial_ids = fields.One2many(
-        "edi.sale.request.tutorial.record",
-        "doc_id",
-        string="Tutorial Sale Requests",
+        "edi.sale.request.tutorial.record", "doc_id", string="Tutorial Sale Requests"
     )
     sale_line_request_tutorial_ids = fields.One2many(
-        "edi.sale.line.request.tutorial.record",
-        "doc_id",
-        string="Tutorial Sale Line Requests",
+        "edi.sale.line.request.tutorial.record", "doc_id", string="Tutorial Sale Line Requests"
     )
 
     @api.depends("sale_request_tutorial_ids", "sale_line_request_tutorial_ids.order_id")
@@ -106,24 +102,10 @@ class EdiSaleRequestTutorialDocument(models.AbstractModel):
 
             # Create partner records
             EdiPartnerRecord.prepare(
-                doc,
-                (
-                    {
-                        "name": customer,
-                        "full_name": customer,
-                    }
-                    for customer in customers
-                ),
+                doc, ({"name": customer, "full_name": customer} for customer in customers)
             )
 
             # Create sale order request records
             EdiSaleRequestRecord.prepare(
-                doc,
-                (
-                    {
-                        "name": order,
-                        "customer_key": customer,
-                    }
-                    for order, customer in orders
-                ),
+                doc, ({"name": order, "customer_key": customer} for order, customer in orders)
             )
