@@ -86,7 +86,7 @@ class EdiDocumentType(models.Model):
 
     # Control behaviour if an error occurs.
     fail_fast = fields.Boolean(
-        string="End document execution immediately on error",
+        string="Fail Fast",
         help="End document execution immediately on error",
         default=True,
     )
