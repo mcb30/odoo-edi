@@ -8,11 +8,7 @@ class EdiDocument(models.Model):
 
     _inherit = "edi.document"
 
-    sale_request_ids = fields.One2many(
-        "edi.sale.request.record",
-        "doc_id",
-        string="Sale Requests",
-    )
+    sale_request_ids = fields.One2many("edi.sale.request.record", "doc_id", string="Sale Requests")
 
     @api.depends("sale_request_ids", "sale_request_ids.sale_id")
     def _compute_sale_ids(self):
@@ -66,10 +62,5 @@ class EdiSaleRequestRecord(models.Model):
     def target_values(self, record_vals):
         """Construct ``sale.order`` value dictionary"""
         sale_vals = super().target_values(record_vals)
-        sale_vals.update(
-            {
-                "origin": record_vals["name"],
-                "partner_id": record_vals["customer_id"],
-            }
-        )
+        sale_vals.update({"origin": record_vals["name"], "partner_id": record_vals["customer_id"]})
         return sale_vals

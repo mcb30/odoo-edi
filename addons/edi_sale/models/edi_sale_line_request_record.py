@@ -14,9 +14,7 @@ class EdiDocument(models.Model):
     _inherit = "edi.document"
 
     sale_line_request_ids = fields.One2many(
-        "edi.sale.line.request.record",
-        "doc_id",
-        string="Sale Line Requests",
+        "edi.sale.line.request.record", "doc_id", string="Sale Line Requests"
     )
 
 
@@ -103,10 +101,10 @@ class EdiSaleLineRequestRecord(models.Model):
                     try:
                         rec.sale_line_id = SaleLine.create(vals)
                     except ValidationError as ex:
-                        _logger.warning('Could not create sale in due to %s', ex.name)
+                        _logger.warning("Could not create sale in due to %s", ex.name)
                         if doc.fail_fast:
                             raise
-                        rec.write({'error': ex.name})
+                        rec.write({"error": ex.name})
                 self.recompute()
             _logger.info(
                 "%s created %s %d-%d in %.2fs, %d excess queries",

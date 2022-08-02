@@ -87,10 +87,7 @@ class EdiConnectionXMLRPC(models.AbstractModel):
             outputs -= (
                 self.env["edi.transfer"]
                 .search(
-                    [
-                        ("output_ids", "in", outputs.ids),
-                        ("gateway_id", "=", transfer.gateway_id.id),
-                    ]
+                    [("output_ids", "in", outputs.ids), ("gateway_id", "=", transfer.gateway_id.id)]
                 )
                 .mapped("output_ids")
             )

@@ -58,10 +58,7 @@ class EdiPartnerRecord(models.Model):
         """Construct ``res.partner`` field value dictionary"""
         partner_vals = super().target_values(record_vals)
         partner_vals.update(
-            {
-                "name": record_vals["full_name"],
-                "title": record_vals.get("title_id"),
-            }
+            {"name": record_vals["full_name"], "title": record_vals.get("title_id")}
         )
         return partner_vals
 
@@ -111,9 +108,5 @@ class EdiPartnerTitleRecord(models.Model):
     def target_values(self, record_vals):
         """Construct ``res.partner.title`` field value dictionary"""
         title_vals = super().target_values(record_vals)
-        title_vals.update(
-            {
-                "shortcut": record_vals["shortcut"],
-            }
-        )
+        title_vals.update({"shortcut": record_vals["shortcut"]})
         return title_vals

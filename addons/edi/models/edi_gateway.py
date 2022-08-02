@@ -170,7 +170,9 @@ class EdiGateway(models.Model):
     cron_ids = fields.One2many(
         "ir.cron", "edi_gateway_id", domain=[("state", "=", "edi")], string="Schedule"
     )
-    cron_count = fields.Integer(string="Schedule Count", compute="_compute_cron_count", compute_sudo=True)
+    cron_count = fields.Integer(
+        string="Schedule Count", compute="_compute_cron_count", compute_sudo=True
+    )
 
     @api.depends("model_id")
     def _compute_can_initiate(self):

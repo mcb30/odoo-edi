@@ -10,9 +10,7 @@ class EdiDocument(models.Model):
     _inherit = "edi.document"
 
     sale_line_report_ids = fields.One2many(
-        "edi.sale.line.report.record",
-        "doc_id",
-        string="Sale Order Line Reports",
+        "edi.sale.line.report.record", "doc_id", string="Sale Order Line Reports"
     )
 
 
@@ -32,30 +30,16 @@ class EdiSaleLineReportRecord(models.Model):
     _description = "Sale Order Line Report"
 
     line_ids = fields.Many2many(
-        "sale.order.line",
-        string="Lines",
-        required=True,
-        readonly=True,
-        index=True,
+        "sale.order.line", string="Lines", required=True, readonly=True, index=True
     )
     product_id = fields.Many2one(
-        "product.product",
-        string="Product",
-        required=False,
-        readonly=True,
-        index=True,
+        "product.product", string="Product", required=False, readonly=True, index=True
     )
     qty_ordered = fields.Float(
-        string="Ordered",
-        readonly=True,
-        required=True,
-        digits="Product Unit of Measure",
+        string="Ordered", readonly=True, required=True, digits="Product Unit of Measure"
     )
     qty_delivered = fields.Float(
-        string="Delivered",
-        readonly=True,
-        required=True,
-        digits="Product Unit of Measure",
+        string="Delivered", readonly=True, required=True, digits="Product Unit of Measure"
     )
 
     @api.model

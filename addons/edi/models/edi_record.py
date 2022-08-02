@@ -43,20 +43,11 @@ class EdiLookupRelationship(object):
         self.target = target
         self.via = via if via else key
         self.domain = (
-            domain
-            if callable(domain)
-            else (lambda self: domain)
-            if domain
-            else (lambda self: [])
+            domain if callable(domain) else (lambda self: domain) if domain else (lambda self: [])
         )
 
     def __repr__(self):
-        return "%s(%r, %r, %r)" % (
-            self.__class__.__name__,
-            self.key,
-            self.target,
-            self.via,
-        )
+        return "%s(%r, %r, %r)" % (self.__class__.__name__, self.key, self.target, self.via)
 
 
 class EdiRecordType(models.Model):
@@ -132,7 +123,7 @@ class EdiRecord(models.AbstractModel):
         ondelete="cascade",
     )
 
-    error = fields.Char(string='Error', help='Records errors in execution')
+    error = fields.Char(string="Error", help="Records errors in execution")
 
     @api.model
     def _setup_complete(self):
@@ -191,9 +182,7 @@ class EdiRecord(models.AbstractModel):
                         ]
                     )
                 )
-                targets_by_key = {
-                    k: v.ensure_one() for k, v in targets.groupby(rel.via)
-                }
+                targets_by_key = {k: v.ensure_one() for k, v in targets.groupby(rel.via)}
 
                 # Update target fields
                 for key, recs in batch.groupby(keygetter):
@@ -204,8 +193,10 @@ class EdiRecord(models.AbstractModel):
                         except UserError as ex:
                             if doc.fail_fast:
                                 raise
-                            _logger.warning('Suppressed error for missing relate %r, %r, %r', recs, rel, key)
-                            recs.write({'error': ex.name})
+                            _logger.warning(
+                                "Suppressed error for missing relate %r, %r, %r", recs, rel, key
+                            )
+                            recs.write({"error": ex.name})
                     if target:
                         recs.write({rel.target: target.id})
                     else:
@@ -250,10 +241,7 @@ class EdiRecord(models.AbstractModel):
             # Search for target records by key
             targets = self.browse()[rel.target].search(
                 expression.AND(
-                    [
-                        [(rel.via, "in", list(set(x[rel.key] for x in missing)))],
-                        rel.domain(Record),
-                    ]
+                    [[(rel.via, "in", list(set(x[rel.key] for x in missing)))], rel.domain(Record)]
                 )
             )
             targets_by_key = {k: v.ensure_one() for k, v in targets.groupby(rel.via)}
@@ -283,13 +271,9 @@ class EdiRecord(models.AbstractModel):
         except StopIteration:
             return ()
         defaults = tuple(
-            (k, v)
-            for k, v in target._add_missing_default_values(first).items()
-            if k not in first
+            (k, v) for k, v in target._add_missing_default_values(first).items() if k not in first
         )
-        return (
-            dict(chain(defaults, vals.items())) for vals in chain((first,), iterator)
-        )
+        return (dict(chain(defaults, vals.items())) for vals in chain((first,), iterator))
 
     def precache(self):
         """Precache associated records
@@ -318,9 +302,7 @@ class EdiRecord(models.AbstractModel):
         # Create records
         with self.statistics() as stats:
             try:
-                vals = [
-                    {**record_vals, "doc_id": doc.id} for record_vals in vlist
-                ]
+                vals = [{**record_vals, "doc_id": doc.id} for record_vals in vlist]
                 self.create(vals)
                 self.recompute()
             except NoRecordValuesError:
