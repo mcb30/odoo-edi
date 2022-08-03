@@ -1,6 +1,6 @@
 """EDI sale order request tutorial tests"""
 
-from odoo.addons.edi_sale.tests.common import EdiSaleCase
+from .common import EdiSaleCase
 
 
 class TestTutorial(EdiSaleCase):
@@ -9,7 +9,16 @@ class TestTutorial(EdiSaleCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.sale_request_tutorial_record_type = cls.env.ref(
+            "edi_sale.sale_request_tutorial_record_type"
+        )
+        cls.sale_line_request_tutorial_record_type = cls.env.ref(
+            "edi_sale.sale_line_request_tutorial_record_type"
+        )
         cls.doc_type_tutorial = cls.env.ref("edi_sale.sale_request_tutorial_document_type")
+        cls.doc_type_tutorial.active = True
+        cls.sale_request_tutorial_record_type.active = True
+        cls.sale_line_request_tutorial_record_type.active = True
 
     @classmethod
     def create_tutorial(cls, *filenames):

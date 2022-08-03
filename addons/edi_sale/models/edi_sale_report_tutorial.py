@@ -25,14 +25,12 @@ class EdiDocument(models.Model):
     _inherit = "edi.document"
 
     sale_report_tutorial_ids = fields.One2many(
-        "edi.sale.report.tutorial.record",
-        "doc_id",
-        string="Sale Order Reports",
+        "edi.sale.report.tutorial.record", "doc_id", string="Tutorial Sale Order Reports"
     )
     sale_line_report_tutorial_ids = fields.One2many(
         "edi.sale.line.report.tutorial.record",
         "doc_id",
-        string="Sale Order Line Move Reports",
+        string="Tutorial Sale Order Line Move Reports",
     )
 
     @api.depends("sale_report_tutorial_ids", "sale_report_tutorial_ids.sale_id")
@@ -52,7 +50,7 @@ class EdiSaleReportTutorialRecord(models.Model):
 
     _name = "edi.sale.report.tutorial.record"
     _inherit = "edi.sale.report.record"
-    _description = "Sale Order Report"
+    _description = "Tutorial Sale Order Report"
 
 
 class EdiSaleLineReportTutorialRecord(models.Model):
@@ -64,7 +62,7 @@ class EdiSaleLineReportTutorialRecord(models.Model):
 
     _name = "edi.sale.line.report.tutorial.record"
     _inherit = "edi.sale.line.report.record"
-    _description = "Sale Line Report"
+    _description = "Tutorial Sale Line Report"
 
     currency_id = fields.Many2one("res.currency", string="Currency", readonly=True, required=True)
     price_subtotal = fields.Monetary(string="Subtotal", required=True, readonly=True)

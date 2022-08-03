@@ -43,20 +43,11 @@ class EdiLookupRelationship(object):
         self.target = target
         self.via = via if via else key
         self.domain = (
-            domain
-            if callable(domain)
-            else (lambda self: domain)
-            if domain
-            else (lambda self: [])
+            domain if callable(domain) else (lambda self: domain) if domain else (lambda self: [])
         )
 
     def __repr__(self):
-        return "%s(%r, %r, %r)" % (
-            self.__class__.__name__,
-            self.key,
-            self.target,
-            self.via,
-        )
+        return "%s(%r, %r, %r)" % (self.__class__.__name__, self.key, self.target, self.via)
 
 
 class EdiRecordType(models.Model):
@@ -72,6 +63,10 @@ class EdiRecordType(models.Model):
     )
     doc_type_ids = fields.Many2many("edi.document.type", string="Document Types")
     sequence = fields.Integer(string="Sequence", help="Application Order")
+    # Control visibility in the UI.
+    active = fields.Boolean(
+        default=True, string="Active", help="Display in list views or searches."
+    )
 
 
 class EdiRecord(models.AbstractModel):
@@ -93,6 +88,12 @@ class EdiRecord(models.AbstractModel):
 
     BATCH_UPDATE = property(attrgetter("BATCH_SIZE"))
     """Batch size for updating existing records"""
+
+    CLEAR_CACHE_PREPARE = 0
+    """Number of records where to clear cache on PREPARE: 0 for disabled"""
+
+    CLEAR_CACHE_EXECUTE = 0
+    """Number of records where to clear cache on EXECUTE: 0 for disabled"""
 
     _edi_relates = ()
     """EDI lookup relationships"""
@@ -121,6 +122,8 @@ class EdiRecord(models.AbstractModel):
         index=True,
         ondelete="cascade",
     )
+
+    error = fields.Char(string="Error", help="Records errors in execution")
 
     @api.model
     def _setup_complete(self):
@@ -179,15 +182,21 @@ class EdiRecord(models.AbstractModel):
                         ]
                     )
                 )
-                targets_by_key = {
-                    k: v.ensure_one() for k, v in targets.groupby(rel.via)
-                }
+                targets_by_key = {k: v.ensure_one() for k, v in targets.groupby(rel.via)}
 
                 # Update target fields
                 for key, recs in batch.groupby(keygetter):
                     target = targets_by_key.get(key)
                     if required and not target:
-                        target = recs.missing_edi_relates(rel, key)
+                        try:
+                            target = recs.missing_edi_relates(rel, key)
+                        except UserError as ex:
+                            if doc.fail_fast:
+                                raise
+                            _logger.warning(
+                                "Suppressed error for missing relate %r, %r, %r", recs, rel, key
+                            )
+                            recs.write({"error": ex.name})
                     if target:
                         recs.write({rel.target: target.id})
                     else:
@@ -232,10 +241,7 @@ class EdiRecord(models.AbstractModel):
             # Search for target records by key
             targets = self.browse()[rel.target].search(
                 expression.AND(
-                    [
-                        [(rel.via, "in", list(set(x[rel.key] for x in missing)))],
-                        rel.domain(Record),
-                    ]
+                    [[(rel.via, "in", list(set(x[rel.key] for x in missing)))], rel.domain(Record)]
                 )
             )
             targets_by_key = {k: v.ensure_one() for k, v in targets.groupby(rel.via)}
@@ -265,13 +271,9 @@ class EdiRecord(models.AbstractModel):
         except StopIteration:
             return ()
         defaults = tuple(
-            (k, v)
-            for k, v in target._add_missing_default_values(first).items()
-            if k not in first
+            (k, v) for k, v in target._add_missing_default_values(first).items() if k not in first
         )
-        return (
-            dict(chain(defaults, vals.items())) for vals in chain((first,), iterator)
-        )
+        return (dict(chain(defaults, vals.items())) for vals in chain((first,), iterator))
 
     def precache(self):
         """Precache associated records
@@ -300,9 +302,7 @@ class EdiRecord(models.AbstractModel):
         # Create records
         with self.statistics() as stats:
             try:
-                vals = [
-                    {**record_vals, "doc_id": doc.id} for record_vals in vlist
-                ]
+                vals = [{**record_vals, "doc_id": doc.id} for record_vals in vlist]
                 self.create(vals)
                 self.recompute()
             except NoRecordValuesError:
@@ -330,4 +330,4 @@ class EdiRecord(models.AbstractModel):
         # the execution of earlier EDI records has created objects to
         # which this EDI record refers via a lookup relationship.
         #
-        self._add_edi_relates(required=self._edi_relates_required)
+        return self._add_edi_relates(required=self._edi_relates_required)

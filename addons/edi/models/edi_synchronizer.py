@@ -3,6 +3,8 @@
 import logging
 from odoo import api, fields, models
 from odoo.osv import expression
+
+from odoo.odoo.exceptions import ValidationError
 from ..tools import batched, Comparator
 
 _logger = logging.getLogger(__name__)
@@ -155,9 +157,7 @@ class EdiSyncRecord(models.AbstractModel):
         :meth:`~odoo.models.Model.write` in order to create or update
         a record within the target model.
         """
-        target_vals = {
-            self._edi_sync_via: record_vals["name"],
-        }
+        target_vals = {self._edi_sync_via: record_vals["name"]}
         return target_vals
 
     def _record_values(self):
@@ -177,6 +177,16 @@ class EdiSyncRecord(models.AbstractModel):
         del record_vals["doc_id"]
         del record_vals[self._edi_sync_target]
         return record_vals
+
+    @api.model
+    def check_clear_cache(self, threshold, value):
+        """Check if cache has to be invalidated from the threshold, where 0 means
+        disabled."""
+        if threshold and threshold <= value:
+            value = 0
+            self.invalidate_cache()
+
+        return value
 
     @api.model
     def prepare(self, doc, vlist):
@@ -221,13 +231,16 @@ class EdiSyncRecord(models.AbstractModel):
         # Initialise statistics
         total = 0
         count = 0
+        clear_cache_count = 0
         stats = self.statistics()
 
         # Process records in batches for efficiency
         for r, vbatch in batched(vlist, self.BATCH_SIZE):
 
             _logger.info("%s preparing %s %d-%d", doc.name, self._name, r[0], r[-1])
-            total += len(r)
+            len_r = len(r)
+            total += len_r
+            clear_cache_count += len_r
 
             # Add EDI lookup relationship target IDs where known
             self._add_edi_relates_vlist(vbatch)
@@ -255,7 +268,9 @@ class EdiSyncRecord(models.AbstractModel):
 
                 # Elide EDI records that are duplicates of earlier records
                 if produced is not None:
-                    frozen_record_vals = frozenset((k, v) for k, v in record_vals.items() if not isinstance(v, models.NewId))
+                    frozen_record_vals = frozenset(
+                        (k, v) for k, v in record_vals.items() if not isinstance(v, models.NewId)
+                    )
                     if frozen_record_vals in produced:
                         continue
                     produced.add(frozen_record_vals)
@@ -263,6 +278,7 @@ class EdiSyncRecord(models.AbstractModel):
                 # Create EDI record
                 count += 1
                 yield record_vals
+            clear_cache_count = self.check_clear_cache(self.CLEAR_CACHE_PREPARE, clear_cache_count)
 
         # Process all matched target records
         self.matched(doc, Target.browse(matched_ids))
@@ -317,12 +333,18 @@ class EdiSyncRecord(models.AbstractModel):
         # Process records in order of lookup relationship readiness
         remaining = self
         offset = 0
+        clear_cache_count = 0
         while remaining:
 
             # Identify records for which all lookup relationships are ready
             ready = remaining._add_edi_relates(required=False)
-            if remaining and not ready:
-                remaining._add_edi_relates(required=True)
+            if not ready:
+                ready = remaining._add_edi_relates(required=True)
+                if not ready:
+                    # No more progress can be made. Do not raise an error, since
+                    # fail_fast must be off here, otherwise
+                    # _add_edi_relates(required=True) would have already raised one.
+                    break
             remaining -= ready
 
             # Update existing target records
@@ -340,8 +362,23 @@ class EdiSyncRecord(models.AbstractModel):
                 )
                 with self.statistics() as stats:
                     vals_list = [rec.target_values(rec._record_values()) for rec in batch]
-                    for rec, vals in zip(batch, vals_list):
-                        rec[target].write(vals)
+                    if doc.fail_fast:
+                        for rec, vals in zip(batch, vals_list):
+                            rec[target].write(vals)
+                    else:
+                        for rec, vals in zip(batch, vals_list):
+                            try:
+                                # We use a savepoint here to handle the case where
+                                # vals violate an api.constrains on the target.
+                                # These constraints are checked after updates are
+                                # sent to the database, so the offending change
+                                # must be rolled back for the affected object.
+                                with self.env.cr.savepoint():
+                                    rec[target].write(vals)
+                            except ValidationError as ex:
+                                rec[target].invalidate_cache()
+                                rec.error = ex.name
+                                _logger.exception("Failed to update for %r, %s", rec, rec.name)
                     self.recompute()
                 _logger.info(
                     "%s updated %s %d-%d in %.2fs, %d excess queries",
@@ -353,6 +390,10 @@ class EdiSyncRecord(models.AbstractModel):
                     (stats.count - count),
                 )
                 offset += count
+                clear_cache_count += count
+                clear_cache_count = self.check_clear_cache(
+                    self.CLEAR_CACHE_EXECUTE, clear_cache_count
+                )
 
             # Create new target records
             new = ready.filtered(lambda x: not x[target])
@@ -373,7 +414,22 @@ class EdiSyncRecord(models.AbstractModel):
                             Target, (rec.target_values(rec._record_values()) for rec in batch)
                         )
                     )
-                    targets = Target.create(vals_list)
+                    if doc.fail_fast:
+                        targets = [Target.create(vals) for vals in vals_list]
+                    else:
+                        targets = []
+                        bad_recs = batch.browse()
+                        for rec, vals in zip(batch, vals_list):
+                            try:
+                                instance = Target.create(vals)
+                                targets.append(instance)
+                            except ValidationError as ex:
+                                _logger.exception("Failed to create for %r, %s", rec, rec.name)
+                                rec.error = ex.name
+                                bad_recs |= rec
+                        if bad_recs:
+                            batch -= bad_recs
+
                     for rec, created in zip(batch, targets):
                         rec[target] = created
                     self.recompute()
@@ -387,6 +443,10 @@ class EdiSyncRecord(models.AbstractModel):
                     (stats.count - 2 * count),
                 )
                 offset += count
+                clear_cache_count += count
+                clear_cache_count = self.check_clear_cache(
+                    self.CLEAR_CACHE_EXECUTE, clear_cache_count
+                )
 
 
 class EdiDeactivatorRecord(models.AbstractModel):
@@ -439,11 +499,7 @@ class EdiActiveSyncRecord(models.AbstractModel):
     def target_values(self, record_vals):
         """Construct target model field value dictionary"""
         target_vals = super().target_values(record_vals)
-        target_vals.update(
-            {
-                "active": True,
-            }
-        )
+        target_vals.update({"active": True})
         return target_vals
 
     @api.model
@@ -455,10 +511,7 @@ class EdiActiveSyncRecord(models.AbstractModel):
             Deactivator.prepare(
                 doc,
                 (
-                    {
-                        "target_id": target.id,
-                        "name": target[Deactivator._edi_deactivator_name],
-                    }
+                    {"target_id": target.id, "name": target[Deactivator._edi_deactivator_name]}
                     for target in unmatched
                 ),
             )

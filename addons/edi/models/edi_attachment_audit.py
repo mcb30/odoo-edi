@@ -20,11 +20,7 @@ class Message(models.Model):
             msg = self.browse(value["id"])
             if msg.edi_attachment_audit_ids:
                 edi_attachment_audit_ids = msg.edi_attachment_audit_ids.read(
-                    [
-                        "name",
-                        "file_size",
-                        "checksum",
-                    ]
+                    ["name", "file_size", "checksum"]
                 )
                 value["edi_attachment_audit_ids"] = edi_attachment_audit_ids
         return values

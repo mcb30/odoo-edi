@@ -7,6 +7,7 @@
       <field name="name">Sale Order Request Tutorial</field>
       <field name="model_id" ref="model_edi_sale_request_tutorial_record"/>
       <field name="sequence" eval="405"/>
+      <field name="active" eval="False"/>
     </record>
 
     <!-- EDI sale order line request tutorial record type -->
@@ -14,6 +15,7 @@
       <field name="name">Sale Order Line Request Tutorial</field>
       <field name="model_id" ref="model_edi_sale_line_request_tutorial_record"/>
       <field name="sequence" eval="410"/>
+      <field name="active" eval="False"/>
     </record>
 
     <!-- EDI sale order request tutorial document type -->
@@ -26,6 +28,7 @@
 	     eval="[(6, False, [ref('edi.partner_record_type'),
 		   ref('sale_request_tutorial_record_type'),
 		   ref('sale_line_request_tutorial_record_type')])]"/>
+      <field name="active" eval="False"/>
     </record>
 
     <!-- EDI sale order request tutorial XML-RPC gateway path -->

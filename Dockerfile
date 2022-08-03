@@ -14,4 +14,4 @@ ADD addons /opt/odoo-addons
 
 # Module tests
 #
-CMD ["--test-enable", "-i", "edi,edi_product,edi_stock,edi_sale"]
+CMD ["--test-enable", "-i", "edi,edi_product,edi_stock,edi_sale,edi_sale_notifier"]

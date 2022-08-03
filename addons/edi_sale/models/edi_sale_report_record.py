@@ -9,9 +9,7 @@ class EdiDocument(models.Model):
     _inherit = "edi.document"
 
     sale_report_ids = fields.One2many(
-        "edi.sale.report.record",
-        "doc_id",
-        string="Sale Order Reports",
+        "edi.sale.report.record", "doc_id", string="Sale Order Reports"
     )
 
 
@@ -52,10 +50,7 @@ class EdiSaleReportRecord(models.Model):
         corresponding value dictionary for an EDI sale order
         report record.
         """
-        return {
-            "name": sale.name,
-            "sale_id": sale.id,
-        }
+        return {"name": sale.name, "sale_id": sale.id}
 
     @api.model
     def prepare(self, doc, sales):

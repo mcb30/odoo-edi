@@ -19,11 +19,16 @@ Key Features
     "data": [
         "security/ir.model.access.csv",
         "data/edi_sale_report_data.xml",
+        'data/edi_sale_report_tutorial_data.xml',
         "data/edi_sale_request_data.xml",
+        'data/edi_sale_request_tutorial_data.xml',
         "views/edi_sale_document_views.xml",
         "views/edi_sale_request_views.xml",
         "views/edi_sale_line_request_views.xml",
         "views/edi_sale_report_views.xml",
         "views/edi_sale_line_report_views.xml",
+        #  Disable tutorial views by default
+        # "views/edi_sale_request_tutorial_views.xml",
+        # "views/edi_sale_report_tutorial_views.xml",
     ],
 }

@@ -74,6 +74,7 @@ def groupby(self, key, sort=True):
     Any recordsets within a tuple in ``key`` will be replaced with a list of IDs from each
     recordset.
     """
+
     def tuple_contains_recordset(tup):
         """Returns True if the supplied tuple contains a recordset, otherwise False"""
         for item in tup:
@@ -108,9 +109,7 @@ def groupby(self, key, sort=True):
                 recs = recs.sorted(key=lambda x: get_ids_from_recordset_in_tuple(key(x)))
             else:
                 recs = recs.sorted(key=key)
-    return ((k, self.browse(x.id for x in v))
-            for k, v in itertools.groupby(recs, key=key))
-
+    return ((k, self.browse(x.id for x in v)) for k, v in itertools.groupby(recs, key=key))
 
 
 @add_if_not_exists(models.BaseModel)
