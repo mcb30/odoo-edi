@@ -19,7 +19,7 @@ class EdiTransfer(models.Model):
     _inherit = ['edi.issues', 'mail.thread']
 
     def _default_name(self):
-        return fields.Datetime.now()
+        return fields.Datetime.now
 
     # Basic fields
     name = fields.Char(string="Name", required=True, index=True,
