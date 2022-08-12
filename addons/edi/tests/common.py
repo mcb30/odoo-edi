@@ -204,3 +204,15 @@ class EdiCase(common.SavepointCase):
         doc = EdiDocument.create({'doc_type_id': document_type.id})
         doc.action_execute()
         return doc
+
+    def _prepare_edi_for(self, document_type):
+        """
+        Create, prepare, and return an edi document of the given edi.document.type
+
+        :param: document_type: edi.document.type which should be created and executed
+        :returns: edi.document recordset
+        """
+        EdiDocument = self.env["edi.document"]
+        doc = EdiDocument.create({'doc_type_id': document_type.id})
+        doc.action_prepare()
+        return doc
