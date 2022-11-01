@@ -64,6 +64,8 @@ class EdiRecordType(models.Model):
     doc_type_ids = fields.Many2many('edi.document.type',
                                     string="Document Types")
     sequence = fields.Integer(string="Sequence", help="Application Order")
+    # Allow record types to be de-activated (i.e tutorial record types)
+    active = fields.Boolean(default=True)
 
 
 class EdiRecord(models.AbstractModel):
