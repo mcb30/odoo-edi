@@ -177,9 +177,12 @@ class EdiGateway(models.Model):
     @api.depends("model_id")
     def _compute_can_initiate(self):
         """Compute ability to initiate connections"""
-        for gw in self.filtered("model_id"):
-            Model = self.env[gw.model_id.model]
-            gw.can_initiate = hasattr(Model, "connect")
+        for gw in self:
+            can_initiate = False
+            if gw.model_id:
+                Model = self.env[gw.model_id.model]
+                can_initiate = hasattr(Model, "connect")
+            gw.can_initiate = can_initiate
 
     @api.depends("path_ids")
     def _compute_path_count(self):
