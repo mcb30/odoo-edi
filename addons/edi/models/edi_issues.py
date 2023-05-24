@@ -7,9 +7,6 @@ from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
-EDI_FIELD_MAP = [(field, ('edi_%s' % field))
-                 for field in ('doc_id', 'gateway_id', 'transfer_id')]
-
 
 class Project(models.Model):
     """Extend ``project.project`` to include EDI information"""
@@ -34,46 +31,51 @@ class ProjectTask(models.Model):
                                       index=True, ondelete='cascade')
 
 
-class EdiIssue(models.AbstractModel):
-    """EDI Issue-Tracked Object
+class BaseIssue(models.AbstractModel):
+    """Base Issue-Tracked Object"""
 
-    EDI errors are raised in an issue tracker (and logged as messages
-    on the originating object).
-    """
+    # To consider: Would be good to move this abstract class in a module that only depends
+    # on project module in the future. So if we want to replicate this solution not to depend on
+    # EDI module by force.
+    _name = "base.issues"
+    _inherit = "mail.thread"
+    _description = "Base Issue Object"
 
-    _name = 'edi.issues'
-    _description = "EDI Issue-Tracked Object"
-    _inherit = ['mail.thread']
+    # Empty list variable, will be overriden in the specific models where used.
+    ISSUES_FIELD_MAP = []
 
-    def _default_project_id(self):
-        return self.env.ref('edi.project_default')
+    issue_ids = fields.One2many(
+        "project.task",
+        string="Issues",
+        domain=["|", ("stage_id.fold", "=", False), ("stage_id", "=", False)],
+    )
+    issue_count = fields.Integer(string="Issue Count", compute="_compute_issue_counts", store=True)
+    rel_issue_count = fields.Integer(
+        string="Related Issue Count", compute="_compute_issue_counts", store=True
+    )
 
-    project_id = fields.Many2one('project.project', string="Issue Tracker",
-                                 required=True, default=_default_project_id)
-    issue_ids = fields.One2many('project.task', string="Issues",
-                                domain=['|', ('stage_id.fold', '=', False),
-                                        ('stage_id', '=', False)])
-    issue_count = fields.Integer(string="Issue Count",
-                                 compute='_compute_issue_counts', store=True)
-    rel_issue_count = fields.Integer(string="Related Issue Count",
-                                     compute='_compute_issue_counts',
-                                     store=True)
+    @api.model
+    def display_issue_counts_depends(self):
+        """
+        Base fields which _compute_issue_counts depends on, it will be extended with super call
+        on specific models where used.
+        """
+        return ["issue_ids", "issue_ids.stage_id"]
 
-    @api.multi
-    @api.depends('issue_ids', 'issue_ids.stage_id', 'issue_ids.edi_doc_id',
-                 'issue_ids.edi_gateway_id', 'issue_ids.edi_transfer_id')
+    @api.depends(lambda self: self.display_issue_counts_depends())
     def _compute_issue_counts(self):
         """Compute number of open issues (for UI display)"""
-        inverse = self._fields['issue_ids'].inverse_name
-        related = [edi_field
-                   for field, edi_field in EDI_FIELD_MAP
-                   if edi_field != inverse and field not in self._fields]
+        inverse = self._fields["issue_ids"].inverse_name
+        related = [
+            base_field
+            for field, base_field in self.ISSUES_FIELD_MAP
+            if base_field != inverse and field not in self._fields
+        ]
         for issues in self:
-            issues.issue_count = len(issues.issue_ids.filtered(
-                lambda x: all(not getattr(x, f) for f in related)
-            ))
-            issues.rel_issue_count = (len(issues.issue_ids) -
-                                      issues.issue_count)
+            issues.issue_count = len(
+                issues.issue_ids.filtered(lambda x: all(not getattr(x, f) for f in related))
+            )
+            issues.rel_issue_count = len(issues.issue_ids) - issues.issue_count
 
     @api.multi
     def _issue_vals(self):
@@ -81,11 +83,11 @@ class EdiIssue(models.AbstractModel):
         self.ensure_one()
         vals = {'project_id': self.project_id.id}
         vals[self._fields['issue_ids'].inverse_name] = self.id
-        for field, edi_field in EDI_FIELD_MAP:
+        for field, base_field in self.ISSUES_FIELD_MAP:
             if hasattr(self, field):
                 rec = getattr(self, field)
                 if rec:
-                    vals[edi_field] = rec.id
+                    vals[base_field] = rec.id
         return vals
 
     @api.multi
@@ -107,7 +109,7 @@ class EdiIssue(models.AbstractModel):
 
         # Construct list of threads
         threads = [self]
-        for field, _edi_field in EDI_FIELD_MAP:
+        for field, _issue_field in self.ISSUES_FIELD_MAP:
             if field in self._fields:
                 thread = getattr(self, field)
                 if thread:
@@ -153,3 +155,39 @@ class EdiIssue(models.AbstractModel):
         """Close all open issues"""
         self.close_issues()
         return True
+
+
+class EdiIssue(models.AbstractModel):
+    """EDI Issue-Tracked Object
+
+    EDI errors are raised in an issue tracker (and logged as messages
+    on the originating object).
+    """
+
+    _name = "edi.issues"
+    _inherit = "base.issues"
+    _description = "EDI Issue-Tracked Object"
+
+    # Mapping fields from models where issues can be created into a class attribute.
+    # Class attribute is used when raising a new issue, computing issue counts and creating values
+    # of issues depending on the model that the issue is being created from.
+    ISSUES_FIELD_MAP = [
+        (field, ("edi_%s" % field)) for field in ("doc_id", "gateway_id", "transfer_id")
+    ]
+
+    def _default_project_id(self):
+        return self.env.ref("edi.project_default")
+
+    project_id = fields.Many2one(
+        "project.project", string="Issue Tracker", required=True, default=_default_project_id
+    )
+
+    def display_issue_counts_depends(self):
+        # Extend with super display_issue_counts_depends defined in base.issues model
+        # by adding specific edi fields that _compute_issue_counts method depends on.
+        result = super().display_issue_counts_depends()
+        return result + [
+            "issue_ids.edi_doc_id",
+            "issue_ids.edi_gateway_id",
+            "issue_ids.edi_transfer_id",
+        ]
