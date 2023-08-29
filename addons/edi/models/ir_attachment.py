@@ -57,7 +57,7 @@ class IrAttachment(models.Model):
                     globs = recs.mapped("glob")
                     for input_file in doc.input_ids:
                         passed = bool(
-                            any(fnmatch.fnmatch(input_file.store_fname, glob) for glob in globs)
+                            any(fnmatch.fnmatch(input_file.display_name, glob) for glob in globs)
                         )
                         if not passed:
                             raise ValidationError(_("Invalid filename when trying to attach."))
