@@ -52,7 +52,6 @@ Key Features
         "views/ir_attachment_views.xml",
         "views/ir_actions_views.xml",
         "views/ir_cron_views.xml",
-        "views/mail_views.xml",
         "views/project_issue_views.xml",
         "wizard/edi_autocreate.xml",
     ],
