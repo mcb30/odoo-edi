@@ -6,6 +6,7 @@ from odoo import tools
 from odoo.exceptions import ValidationError
 
 from .common import EdiSaleCase
+import logging
 
 
 class TestFailFast(EdiSaleCase):
@@ -119,13 +120,6 @@ class TestFailFast(EdiSaleCase):
         Partner = self.env["res.partner"]
         self.assertEqual(Partner.search_count([("name", "=", "Alice")]), 1)
 
-    # Not Working because the hack for create_sale is not raising an exception, is returning it
-    # which is not getting picked up by the edi_synchronizer execute() method in the try and catch
-    # for the creation of target model records.
-    #
-    # Consideration: are we trying to test a case when a whole order fails apart from incorrect details?
-    #                In that case we would need a better way to replicate a that scenario rather than hacky solutions.
-    @unittest.skip("Test is not valid at the moment")
     def test_removes_order_if_creation_fails(self):
         """Handle the case where an error occurs during order creation."""
         Sale = self.env["sale.order"]
@@ -135,14 +129,23 @@ class TestFailFast(EdiSaleCase):
         def create_sale(*args, **kwargs):
             cls, vals = args
             if vals["origin"] == "ORD02":
-                return ValidationError("Test Error")
+                raise ValidationError("Test Error")
             return create_method(vals)
+
+        expected_pattern = (
+            r"Failed to create for edi\.sale\.request\.tutorial\.record\(\d+,\), ORD02"
+        )
 
         doc = self.create_tutorial("order05.csv", fail_fast=False)
         with mock.patch.object(
             Sale.__class__, "create", create=True, autospec=True, side_effect=create_sale
         ):
-            self.assertTrue(doc.action_execute())
+            with self.assertLogs("odoo.addons.edi.models.edi_synchronizer", level="ERROR") as cm:
+                self.assertTrue(doc.action_execute())
+
+            record = cm.records[0]
+            self.assertRegex(record.getMessage(), expected_pattern)
+
         sales = doc.mapped("sale_request_tutorial_ids.sale_id")
         self.assertEqual(len(sales), 2)
         self.assertEqual(doc.sale_ids, sales)
@@ -173,30 +176,35 @@ class TestFailFast(EdiSaleCase):
         self.assertEqual(expected_message, messages[0].body)
         self.assertEqual(SaleLineRequestRecord.search_count(error_domain), 0)
 
-    # Same issue here as referenced above with the hacky method
-    @unittest.skip("Test is not valid at the moment")
     def test_reports_lines_from_missing_order(self):
         """Test reports lines from completely invalid order."""
         Sale = self.env["sale.order"]
         SaleRequestDocument = self.env["edi.sale.request.document"]
 
-        expected_message = (
-            '<p>Missing order lines<br>ORD02\tBANANA\t2\tCannot identify Quotation "ORD02"</p>'
-        )
+        expected_message = '<p>Missing order lines\nORD02\tBANANA\t2\tCannot identify Sales Order "ORD02"\nMissing orders\nORD02\tTest Error</p>'
         create_method = Sale.create
+
+        expected_pattern = (
+            r"Failed to create for edi\.sale\.request\.tutorial\.record\(\d+,\), ORD02"
+        )
 
         # This is a bit hacky
         def create_sale(*args, **kw):
             cls, vals = args
             if vals["origin"] == "ORD02":
-                return ValidationError("Test Error")
+                raise ValidationError("Test Error")
             return create_method(vals)
 
         doc = self.create_tutorial("order05.csv", fail_fast=False)
         with mock.patch.object(
             Sale.__class__, "create", create=True, autospec=True, side_effect=create_sale
         ):
-            self.assertTrue(doc.action_execute())
+            with self.assertLogs("odoo.addons.edi.models.edi_synchronizer", level="ERROR") as cm:
+                self.assertTrue(doc.action_execute())
+
+            record = cm.records[0]
+            self.assertRegex(record.getMessage(), expected_pattern)
+
         SaleLineRequestRecord = SaleRequestDocument.browse().sale_line_request_record_model(doc)
         error_domain = [("doc_id", "=", doc.id), ("error", "!=", False)]
 

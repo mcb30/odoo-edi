@@ -4,7 +4,7 @@ import logging
 from odoo import api, fields, models
 from odoo.osv import expression
 
-from odoo.odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError
 from ..tools import batched, Comparator
 
 _logger = logging.getLogger(__name__)

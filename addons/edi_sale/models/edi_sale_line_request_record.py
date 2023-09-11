@@ -3,7 +3,7 @@
 import logging
 from odoo import api, fields, models
 from odoo.addons import decimal_precision as dp
-from odoo.odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError
 
 _logger = logging.getLogger(__name__)
 
