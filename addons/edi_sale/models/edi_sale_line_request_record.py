@@ -74,6 +74,11 @@ class EdiSaleLineRequestRecord(models.Model):
 
     def execute(self):
         """Execute records"""
+        # Some subclasses also inherit 'edi.record.sync' and want to create/update via
+        # synchronizer. Don't create records in such cases.
+        if self._context.get("update_via_sync"):
+            return super().execute()
+
         ready = super().execute()
         SaleLine = self.env["sale.order.line"]
 
