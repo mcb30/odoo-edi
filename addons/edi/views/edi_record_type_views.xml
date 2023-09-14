@@ -19,6 +19,10 @@
 	      <field name="model_id"/>
 	      <field name="doc_type_ids" widget="many2many_tags"/>
 	    </group>
+	    <group name="technical" string="Technical" groups="base.group_system">
+	      <field name="clear_cache_prepare"/>
+	      <field name="clear_cache_execute"/>
+	    </group>
 	  </sheet>
 	</form>
       </field>

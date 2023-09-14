@@ -67,6 +67,16 @@ class EdiRecordType(models.Model):
     active = fields.Boolean(
         default=True, string="Active", help="Display in list views or searches."
     )
+    clear_cache_prepare = fields.Integer(
+        string="Max Prepare Cache Size",
+        help="Number of records where to clear cache on PREPARE: 0 for disabled",
+        default=0,
+    )
+    clear_cache_execute = fields.Integer(
+        string="Max Execute Cache Size",
+        help="Number of records where to clear cache on EXECUTE: 0 for disabled",
+        default=0,
+    )
 
 
 class EdiRecord(models.AbstractModel):
@@ -89,11 +99,25 @@ class EdiRecord(models.AbstractModel):
     BATCH_UPDATE = property(attrgetter("BATCH_SIZE"))
     """Batch size for updating existing records"""
 
-    CLEAR_CACHE_PREPARE = 0
-    """Number of records where to clear cache on PREPARE: 0 for disabled"""
+    @property
+    def clear_cache_prepare(self):
+        """Number of records where to clear cache on PREPARE: 0 for disabled"""
+        IrModel = self.env["ir.model"]
+        EdiRecordType = self.env["edi.record.type"]
 
-    CLEAR_CACHE_EXECUTE = 0
-    """Number of records where to clear cache on EXECUTE: 0 for disabled"""
+        ir_model = IrModel.search([("model", "=", self._name)])
+        edi_record_type = EdiRecordType.search([("model_id", "=", ir_model.id)])
+        return edi_record_type.clear_cache_prepare
+
+    @property
+    def clear_cache_execute(self):
+        """Number of records where to clear cache on EXECUTE: 0 for disabled"""
+        IrModel = self.env["ir.model"]
+        EdiRecordType = self.env["edi.record.type"]
+
+        ir_model = IrModel.search([("model", "=", self._name)])
+        edi_record_type = EdiRecordType.search([("model_id", "=", ir_model.id)])
+        return edi_record_type.clear_cache_execute
 
     _edi_relates = ()
     """EDI lookup relationships"""

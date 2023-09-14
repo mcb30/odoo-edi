@@ -278,7 +278,7 @@ class EdiSyncRecord(models.AbstractModel):
                 # Create EDI record
                 count += 1
                 yield record_vals
-            clear_cache_count = self.check_clear_cache(self.CLEAR_CACHE_PREPARE, clear_cache_count)
+            clear_cache_count = self.check_clear_cache(self.clear_cache_prepare, clear_cache_count)
 
         # Process all matched target records
         self.matched(doc, Target.browse(matched_ids))
@@ -392,7 +392,7 @@ class EdiSyncRecord(models.AbstractModel):
                 offset += count
                 clear_cache_count += count
                 clear_cache_count = self.check_clear_cache(
-                    self.CLEAR_CACHE_EXECUTE, clear_cache_count
+                    self.clear_cache_execute, clear_cache_count
                 )
 
             # Create new target records
@@ -445,7 +445,7 @@ class EdiSyncRecord(models.AbstractModel):
                 offset += count
                 clear_cache_count += count
                 clear_cache_count = self.check_clear_cache(
-                    self.CLEAR_CACHE_EXECUTE, clear_cache_count
+                    self.clear_cache_execute, clear_cache_count
                 )
 
 
