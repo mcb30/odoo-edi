@@ -9,15 +9,11 @@ class TestPartner(EdiCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        EdiRecordType = cls.env["edi.record.type"]
         EdiDocumentType = cls.env["edi.document.type"]
         IrModel = cls.env["ir.model"]
-        cls.rec_type_partner = EdiRecordType.create(
-            {
-                "name": "Dummy partner record",
-                "model_id": IrModel._get_id("edi.partner.record"),
-            }
-        )
+
+        cls.rec_type_partner = cls.env.ref("edi.partner_record_type")
+
         cls.doc_type_partner = EdiDocumentType.create(
             {
                 "name": "Dummy partner document",
@@ -25,12 +21,8 @@ class TestPartner(EdiCase):
                 "rec_type_ids": [(6, 0, [cls.rec_type_partner.id])],
             }
         )
-        cls.rec_type_partner_title = EdiRecordType.create(
-            {
-                "name": "Dummy partner title record",
-                "model_id": IrModel._get_id("edi.partner.title.record"),
-            }
-        )
+        cls.rec_type_partner_title = cls.env.ref("edi.partner_title_record_type")
+
         cls.doc_type_partner_title = EdiDocumentType.create(
             {
                 "name": "Dummy partner title document",
