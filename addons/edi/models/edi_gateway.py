@@ -193,8 +193,17 @@ class EdiGateway(models.Model):
     @api.depends('transfer_ids')
     def _compute_transfer_count(self):
         """Compute number of transfers (for UI display)"""
+
+        # We use the read_group method to aggregate data from the edi.transfer model. 
+        # We specify the search domain to filter transfers related to the current edi.gateway, 
+        # group the results by gateway_id, and count the number of records for each group.
+    
+        transfers_data = self.env['edi.transfer'].read_group(
+        [('gateway_id', 'in', self.ids)],
+        ['gateway_id'], ['gateway_id'])
+        transfer_count_dict = {data['gateway_id'][0]: data['gateway_id_count'] for data in transfers_data}
         for gw in self:
-            gw.transfer_count = len(gw.transfer_ids)
+            gw.transfer_count = transfer_count_dict.get(gw.id, 0)
 
     @api.multi
     @api.depends('doc_ids')
